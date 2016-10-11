@@ -1,0 +1,2755 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>CoverView Results Browser v1.1.0</title>
+	<link rel="shortcut icon" href="lib/favicon.ico" />
+	<script src="data/results.js"> type="text/javascript" </script>
+	<link rel="stylesheet" type="text/css" href="lib/layout.css">
+	<link rel="stylesheet" type="text/css" href="lib/btn.css">
+	<link class="include" rel="stylesheet" type="text/css" href="lib/jqplot/jquery.jqplot.min.css" />
+	<link rel="stylesheet" type="text/css" href="lib/loader.css" />
+	<link rel="stylesheet" type="text/css" href="lib/jqplot/jquery.jqplot.min.css">
+	<script class="include" type="text/javascript" src="lib/jquery.min.js"></script>
+    <script type="text/javascript" src="lib/jqplot/jquery.jqplot.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="lib/jquery.dataTables.css">
+	<!--[if lt IE 9]><script language="javascript" type="text/javascript" src="../excanvas.js"></script><![endif]-->
+	<script class="include" language="javascript" type="text/javascript" src="lib/jqplot.cursor.min.js"></script>
+	<script type="text/javascript">	
+
+	$(window).load(function() {
+		$(".loader").fadeOut(3000);
+	})
+	</script>
+</head>
+
+<body>
+	
+	<div class="loader"></div>
+	
+	<div class="blended_grid">
+
+		<!-- Header -->
+		<div class="pageHeader">
+			<button id="infob" class="button" style="position: relative;background: #F08080">Info</button>
+			<button id="summaryb" class="button" style="position: relative; background: #F08080">Summary View</button>
+			<button id="profilesb" class="button" style="position: relative; background: #800000">Profiles View</button>
+			<button id="genomeb" class="button" style="position: relative; background: #F08080">Genome View</button>
+			<a href="http://mcgprogramme.com/"><img src="lib/mcglogo.jpg" height="28px" style="position: absolute; background: #F08080; left: 910px" ></a>
+		</div>
+
+		<!-- Left menu -->
+		<div id="leftmenu" class="pageLeftMenu">
+			<table id="targettable" cellspacing="0" width="20%" class="display cell-border" >
+				<thead color=white>
+					<tr> <th>Region Name</th> </tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+			<button id="switchb" class="button" style="position: relative; top: 20px; left: 20px; background: green">Show summary!</button>
+		</div>
+
+		<!-- Profiles view -->
+		<div id="pc" class="pageContent">
+			<button id="normtotalb" type="button" style="z-index: 20; position: absolute; top:19px; left:653px;">Total</button>
+			<button id="normmaxb" type="button" style="z-index: 20; position: absolute; top:19px; left:686px;">Max</button>
+			<div id="chart1" style="width: 730px; height: 400px; top: 4px; left: 30px;"></div>
+			<canvas id="canvas" width=730px; height=20px;></canvas>
+			<div id="navbar" style="position: relative; width: 300px; height: 10px; left: 30px; top: 6px; ">
+				<button id="goleft" class="button" style="position: relative;"><</button>
+				<p style="position: absolute; top:0px; left:40px; color:black; font-size:160%; width:400px; color: #191970" id="interval"> </p>
+				<!-- <button id="rescalebtn" class="button" style="position: relative; left: 460px">Rescale axis</button>-->
+				<button id="zoomoutbtn" class="button" style="position: relative; left: 550px">Zoom out</button>
+				<button id="goright" class="button" style="position: relative; left:560px">></button>
+
+				<button id="covb" class="button" style="position: absolute; top:40px; left:150px; color: yellow;  border: solid; border-color: black; border-width: 1px;">COV</button>
+				<button id="qcovb" class="button" style="position: absolute; top:40px; left:210px; border: solid; border-color: black; border-width: 0px;">QCOV</button>
+				<button id="flmqb" class="button" style="position: absolute; top:40px; left:280px; border: solid; border-color: black; border-width: 0px;">FLMQ</button>
+				<button id="medmqb" class="button" style="position: absolute; top:40px; left:347px; border: solid; border-color: black; border-width: 0px;">MEDMQ</button>
+				<button id="flbqb" class="button" style="position: absolute; top:40px; left:427px; color: yellow;  border: solid; border-color: black; border-width: 1px;">FLBQ</button>
+				<button id="medbqb" class="button" style="position: absolute; top:40px; left:490px; border: solid; border-color: black; border-width: 0px;">MEDBQ</button>
+
+				<canvas id="covbcutoff" width="52" height="6" style="position: absolute; top:72px; left:150px; background-color: white; "></canvas>
+				<canvas id="qcovbcutoff" width="52" height="4" style="position: absolute; top:72px; left:215px;  "></canvas>
+				<canvas id="flmqbcutoff" width="52" height="4" style="position: absolute; top:72px; left:284px; "></canvas>
+				<canvas id="medmqbcutoff" width="52" height="4" style="position: absolute; top:72px; left:359px; "></canvas>
+				<canvas id="flbqbcutoff" width="52" height="4" style="position: absolute; top:72px; left:431px; background-color: rgb(220,20,60); "></canvas>
+				<canvas id="medbqbcutoff" width="52" height="4" style="position: absolute; top:72px; left:501px;  "></canvas>
+
+				<button id="combinedb" class="button" style="position: absolute; top:0px; left: 420px; width: 38px; color: yellow; border: solid; border-color: black; border-width: 1px; ">+/-</button>
+				<button id="forwardb" class="button" style="position: absolute; top:0px; left: 460px; border: solid; border-color: black; border-width: 0px;  ">+</button>
+				<button id="reverseb" class="button" style="position: absolute; top:0px; left: 491px; border: solid; border-color: black; border-width: 0px; ">-</button>
+			</div>	  
+		</div>
+
+		<!-- Summary view -->
+		<div id="sv" class="summaryview">
+			<table id="sumtable" cellspacing="0" class="display cell-border" style="position: relative; top: 10px; " >
+				<thead color=white>
+					<tr>
+						<th>Region Name</th>
+						<th>RC</th>
+						<th>MEDCOV</th>
+						<th>MINCOV</th>
+						<th>MEDQCOV</th>
+						<th>MINQCOV</th>
+						<th>MAXFLMQ</th>
+						<th>MAXFLBQ</th>
+						<th>PASS?</th>
+					</tr>
+				</thead>
+				<tbody> </tbody>
+			</table>
+			
+		  <div style="position: relative; top: 15px; left: 20px;">
+			 <font size="4">Search region:    </font>
+			  <input style="font-size:15px; position: relative; left: 5px;" id='searchtarget' type="search" placeholder="Region name" list="tnames">
+			  <button id="searchb" type="button" style="font-size:16px; position: relative; left: 8px;">Find</button>
+		  	  <datalist id="tnames"></datalist>
+		  </div>
+		  			
+			<button id="showprofile" class="button" style="position: relative; top: -10px; left: 810px; background: green">Show profile!</button>
+			<button id="sumcombinedb" class="button" style="position: absolute; top:452px; left: 420px; width: 38px; color: yellow; border: solid; border-color: black; border-width: 1px; ">+/-</button>
+			<button id="sumforwardb" class="button" style="position: absolute; top:452px; left: 460px; border: solid; border-color: black; border-width: 0px;  ">+</button>
+			<button id="sumreverseb" class="button" style="position: absolute; top:452px; left: 491px; border: solid; border-color: black; border-width: 0px; ">-</button>
+			<button id="sumall" class="button" style="position: absolute; top:452px; left: 570px; width: 38px; color: yellow; border: solid; border-color: black; border-width: 1px; ">All</button>		
+			<button id="sumfail" class="button" style="position: absolute; top:452px; left: 610px; width: 60px; border: solid; border-color: black; border-width: 0px; ">Failed</button>	
+		</div>
+
+		<!-- Genome view -->
+		<div id="gv" class="genomeview">
+			<div id="gplot" style="width: 850px; height: 450px; top: 4px; left: 70px;"></div>
+			<div id="pie" style="position: absolute; width: 600px; height: 450px; top: 14px; left: 190px; z-index: 200"></div>
+			<button id="showchrom" class="button" style="position: absolute; left:495px; top:460px; ">Chromosomes</button>
+			<button id="showpie" class="button" style="position: absolute; left:390px; top:460px; color: yellow; border: solid; border-color: black; border-width: 1px;">Full genome</button>
+		</div>
+
+		<!-- Info view -->
+		<div id="iv" class="infoview">
+			<label style="position: absolute; left: 40px; top: 30px; color: Navy;" id='date'></label>
+			<label style="position: absolute; left: 40px; top: 100px;" id='inputname'></label>
+			<label style="position: absolute; left: 40px; top: 130px;" id='bedname'></label>
+			<label style="position: absolute; left: 40px; top: 175px;" id='dupl'></label>
+			<label style="position: absolute; left: 40px; top: 295px;" id='dir'></label>
+			<label style="position: absolute; left: 40px; top: 250px;" id='deffail'></label>
+			<label style="position: absolute; left: 40px; top: 220px; color: #A00000;" id='numfails'></label>	
+		</div>
+
+	</div>
+
+    <!-- DataTables -->
+    <script type="text/javascript" charset="utf8" src="lib/jquery.dataTables.js"></script>
+	
+	<script class="code" type="text/javascript">
+
+		// Entry point
+		$(document).ready(function(){
+					
+			$.jqplot.config.enablePlugins = true;
+  
+  		  	// ---------------
+  		  	// INITIALIZATOION
+  		  	// ---------------
+  
+			// Initializing some variables
+			var leftprof="COV";
+			var rightprof="FLBQ";
+			var strand="combined";
+			var extended=false;
+			var probes=false;
+			var normtotal=false;
+			var normmax=false;
+			var total_y_max=100;
+			var total_y2_max=100;	
+			var miny=0;
+			var maxy=100;
+			var miny2=0;
+			var maxy2=100;
+			var allorfail='all';
+			var cut1shown=false;
+			var cut2shown=false;
+			var cutoff1=0;
+			var cutoff2=0;
+
+			// Reading data from file
+			var datax=readData();
+
+			$("#covbcutoff").hide();
+			$("#qcovbcutoff").hide();
+			$("#medmqbcutoff").hide();
+			$("#flmqbcutoff").hide();
+			$("#medbqbcutoff").hide();
+			$("#flbqbcutoff").hide();
+
+			var c=document.getElementById("covbcutoff");
+			var ctx=c.getContext("2d");
+			ctx.clearRect(0, 0, c.width, c.height);
+			ctx.setLineDash([8,3]);
+			ctx.lineWidth = 4;
+			ctx.beginPath();
+			ctx.moveTo(0,2);
+			ctx.lineTo(52,2);
+			ctx.strokeStyle = "rgb(0, 0, 153)";
+			ctx.stroke();
+
+
+			var c=document.getElementById("flbqbcutoff");
+			var ctx=c.getContext("2d");
+			ctx.clearRect(0, 0, c.width, c.height);
+			ctx.setLineDash([8,3]);
+			ctx.lineWidth = 4;
+			ctx.beginPath();
+			ctx.moveTo(0,2);
+			ctx.lineTo(52,2);
+			ctx.strokeStyle = "rgb(220,20,60)";
+			ctx.stroke();
+
+
+
+			if ('COV' in datax.passmets){
+				$("#covbcutoff").show();
+			}
+			if ('FLBQ' in datax.passmets){
+				$("#flbqbcutoff").show();
+			}
+
+			if ('COV' in datax.passmets){
+					cut1shown=true;
+					cutoff1=datax.passmets['COV'];
+			}
+			else {
+					cut1shown=false;
+			}
+			if ('FLBQ' in datax.passmets){
+					cut2shown=true;
+					cutoff2=datax.passmets['FLBQ'];
+			}
+			else {
+					cut2shown=false;
+			}
+
+				
+			// Setting status of buttons depending on data
+			if (datax.direction==false){
+				$("#forwardb").attr("disabled", true);
+				$("#reverseb").attr("disabled", true);
+				$("#sumforwardb").attr("disabled", true);
+				$("#sumreverseb").attr("disabled", true);
+			}
+			if (datax.nfailed==0){
+				$("#sumfail").attr("disabled", true);
+			}
+			
+			// Initializing data shown in Info view
+			
+			$("#date").text("Date/time of analysis: "+datax.date);
+			$("#date").css({ 'font-size': 26, 'font-weight': 'bold', 'font-family':'arial' });	
+			$("#inputname").text("BAM file: "+datax.input+" ("+datax.chromdata.Total+" reads)");
+			$("#inputname").css({ 'font-size': 22, 'font-family':'arial' });
+			
+			var bedtxt="BED file: "+datax.bedfile+" ("+datax.ntargets+"  regions; "+datax.unique+" unique IDs)"
+			
+			$("#bedname").text(bedtxt);
+			$("#bedname").css({ 'font-size': 22, 'font-family':'arial' });
+
+			if (datax.duplicates){
+				$("#dupl").text("Are duplicate reads included in analysis?: Yes");
+			}
+			else {
+				$("#dupl").text("Are duplicate reads included in analysis?: No");
+			}	
+			$("#dupl").css({ 'font-size': 22, 'font-family':'arial' });
+			
+			if (datax.direction){
+				$("#dir").text("Are directional metrics reported in the output?: Yes");
+			}
+			else {
+				$("#dir").text("Are directional metrics reported in the output?: No");
+			}	
+			$("#dir").css({ 'font-size': 22, 'font-family':'arial' });
+					
+			$("#numfails").text("Number of failed regions: "+datax.nfailed+" ("+datax.uniquefailed+" unique IDs)");
+			$("#numfails").css({ 'font-size': 22, 'font-family':'arial' });	
+			
+			$("#deffail").text("(Definition of 'PASS': "+datax.passdef+")");
+			$("#deffail").css({ 'font-size': 20, 'font-family':'arial' });		
+
+
+			// Extracting target names
+
+			var nonSNPtargets=[];
+  		    for (i = 0; i < datax.targets.length; i++) { 
+			   if ((datax.targets[i].End-datax.targets[i].Start)>1) {
+  			   	nonSNPtargets.push(datax.targets[i]);
+		       }
+  		    }
+			var targetnames=[];
+  		    for (i = 0; i < nonSNPtargets.length; i++) { 
+  			   	targetnames.push([nonSNPtargets[i].Name]);
+  		    }	
+		
+			// Initializing table in left side menu
+
+	        var table = $('#targettable').dataTable({
+	  			  "data": targetnames,
+	  			  "paging":   false,
+	  			  "ordering": false,
+	  			  "info":     false,
+	  	          "scrollY":  "400px",
+	  	          "scrollCollapse": true,
+				  "bFilter": false,
+			  	  "createdRow": function ( row, data, index ) {
+			       		if ( nonSNPtargets[index].PASS!=true) {
+			       	     	$('td', row).eq(0).addClass('highlight');
+			   			}
+			  	  } 
+			});
+
+			var options = '';
+
+			for(var i = 0; i < targetnames.length; i++)
+			    options += '<option value="'+targetnames[i]+'" />';
+
+		    document.getElementById('tnames').innerHTML = options;
+			
+			$("#targettable tbody tr:first").addClass('selected');
+				
+			$('#targettable tbody').on( 'click', 'tr', function () {
+				if ($(this).hasClass('selected')){ }
+				else{
+					table.$('tr.selected').removeClass('selected');
+					$(this).addClass('selected');
+					var v=switchToDifferentTarget(datax,$(this).text(),leftprof,rightprof,normtotal,normmax,strand,cut1shown,cut2shown,cutoff1,cutoff2);
+				 	profilePlot=v[0];
+					posarray=v[1];
+					sequence=v[2];
+					total_y_max=v[3];
+					total_y2_max=v[4];
+					maxy=total_y_max;
+					miny=0;
+					maxy2=total_y2_max;
+					miny2=0;
+					
+				}
+			});
+			
+			
+			// Extract summary data
+			
+			sumdata=[];
+  		    for (i = 0; i < datax.targets.length; i++) { 
+				summary=datax.targets[i].Summary;
+				if (datax.targets[i].PASS) {
+					passorfail='PASS'
+				}
+				else { 
+				    passorfail='FAIL'
+				}
+				sumdata.push([datax.targets[i].Name,summary['RC'],summary['MEDCOV'],summary['MINCOV'],summary['MEDQCOV'],summary['MINQCOV'],summary['MAXFLMQ'],summary['MAXFLBQ'],passorfail]);
+				
+  		    }	
+			
+			// Initialize table in the Summary view
+
+	        var t = $('#sumtable').dataTable({
+				  "data": sumdata,
+				  "compact": true,
+	  			  "paging":   false,
+	  			  "ordering": false,
+	  			  "info":     false,
+	  	          "scrollY":  "400px",
+				  "scrollX": true,
+	  	          "scrollCollapse": true,
+				  "bFilter": false,
+				  "order-column": true,
+				  "createdRow": function ( row, data, index ) {
+				       if ( data[8]==='FAIL') {
+				             $('td', row).eq(8).addClass('highlight');
+				       	     $('td', row).eq(0).addClass('highlight');
+				   		}
+
+				  }
+			});
+			
+			$("#showprofile").attr("disabled", true);
+			$("#showprofile").css("background","#98FB98");
+				
+			$('#sumtable tbody').on( 'click', 'tr', function () {
+				if ($(this).hasClass('selected')){ 
+					$(this).removeClass('selected');		
+					$("#showprofile").attr("disabled", true);
+					$("#showprofile").css("background","#98FB98");
+				}
+				else{
+					
+					$("#showprofile").attr("disabled", true);
+					$("#showprofile").css("background","#98FB98");
+					
+					t.$('tr.selected').removeClass('selected');
+					$(this).addClass('selected');
+					
+					var tname = t.$('tr.selected').find("td").first().text();
+						
+					var target={}
+					for (i = 0; i < datax.targets.length; i++) { 
+					    if (datax.targets[i].Name==tname) {
+					    	target=datax.targets[i];
+							break;
+					    }
+					}
+					
+					if  ((target.End-target.Start)>1){
+					
+						$("#showprofile").attr("disabled", false);
+						$("#showprofile").css("background","green");
+					
+					}	
+					
+				}
+			});
+
+			// Extract genome level data
+
+			var chroms=[];
+			var ons=[];
+			var offs=[];
+			var chromsdata=datax['chromdata']['Chroms'];
+			for (var i = 0; i < chromsdata.length; i++) {
+			   ons.push(chromsdata[i]['RCIN']);
+			   offs.push(chromsdata[i]['RCOUT']);
+			   chroms.push(chromsdata[i]['CHROM']);
+			}
+
+			// Initialize plots in Genome view
+									
+			var genomePlot = $.jqplot('gplot',[ons,offs], {
+		    title: 'Read counts in and outside of regions for the different chromosomes', 
+		    stackSeries: true,
+		    captureRightClick: true,
+		    seriesDefaults:{
+		      renderer:$.jqplot.BarRenderer,
+		      rendererOptions: {
+		          barMargin: 8,
+		          highlightMouseDown: false   
+		      },
+		      pointLabels: {show: true}
+		    },
+		    axes: {
+		      xaxis: {
+	  			  renderer: $.jqplot.CategoryAxisRenderer,
+	              rendererOptions: {  tickRenderer: $.jqplot.AxisTickRenderer, 
+	                                  tickOptions: {  mark: null,
+	                                                  fontSize: 15
+	                                               }
+	              },
+	              ticks: chroms
+			
+		      },
+		      yaxis: {
+		        padMin: 0
+		      }
+		    },
+			cursor: {
+			        show: false
+			      },
+		    legend: {
+		      show: true,
+		      location: 'e',
+		      placement: 'insideGrid'
+		    },
+			series:[
+				{label: 'On target'},
+				{label: 'Off target'}
+			],
+			highlighter: {
+				show: true,
+				sizeAdjust: 10,
+				tooltipAxes: "y",
+				formatString: "%d",
+			}
+			
+		  });
+		  
+		  
+		  $('#gplot').hide();
+		
+		
+		  var data = [
+		      ['Read count in regions', datax['chromdata']['Mapped']['RCIN']],['Read count outside of regions', datax['chromdata']['Mapped']['RCOUT']]
+		    ];
+		    var plot1 = jQuery.jqplot ('pie', [data], 
+		      { 
+				title : 'Read counts in and outside of regions for the whole genome',
+		        seriesDefaults: {
+					seriesColors :[
+					               '#7FFFD4','#87CEFA'
+					],
+					trendline:{ show: true },
+		          // Make this a pie chart.
+		          renderer: jQuery.jqplot.PieRenderer, 
+		          rendererOptions: {
+					  sliceMargin: 10, 
+		            // Put data labels on the pie slices.
+		            // By default, labels show the percentage of the slice.
+		            showDataLabels: true,
+					  dataLabels: 'value'
+		          }
+		        }, 
+		        legend: { show:true, location: 'e' }
+		      }
+		    );
+	
+			
+			target=nonSNPtargets[0];
+			var sequence = target.Ref;
+			var posarray = [];
+			for (var i = target.Start; i <= target.End; i++) {
+			    posarray.push(i);
+			}
+			var prof=target.Profiles.COV;
+			var prof2=target.Profiles.FLBQ;
+			var interval=Math.floor((posarray.length-1)/5);	
+
+
+			// Creating Profile plot with COV and FLBQ profiles
+
+			v = showPlot('COV','FLBQ',prof,prof2,posarray,interval,sequence,normtotal,normmax,cut1shown,cut2shown,cutoff1,cutoff2);
+			
+			profilePlot=v[0];
+			total_y_max=v[1];
+			total_y2_max=v[2];
+			
+			
+			if ('COV' in datax.passmets){
+
+
+			}
+			else {
+
+			}
+			
+			if ('FLBQ' in datax.passmets){
+
+			}
+			else {
+
+			}
+			  
+			// Initializing interval label
+
+			$('#interval').text(target.Chrom+":"+(profilePlot.axes.xaxis.min).toString()+"-"+(profilePlot.axes.xaxis.max-1).toString());
+			
+			$('#iv').hide();
+	        $('#sv').hide();
+  		    $('#gv').hide();
+			
+			
+			$("#goright").attr("disabled", true);
+			$("#goleft").attr("disabled", true);
+			$("#zoomoutbtn").attr("disabled", true);
+
+
+  		  	// ---------------
+  		  	// EVENT HANDLING
+  		  	// ---------------
+			
+  		  	// Upon zooming in the profile plot
+
+			profilePlot.target.bind('jqplotZoom', function(ev, gridpos, datapos, plot, cursor){
+				
+				$("#goright").attr("disabled", false);
+				$("#goleft").attr("disabled", false);
+				$("#zoomoutbtn").attr("disabled", false);
+				
+				// Creating array for dataset shown after zooming
+				var plotData =  plot.series[0].data;
+				var zoomDataset = [];
+				maxy=-1;
+				miny=9999999;
+				for (var i=0; i< plotData.length; i++){
+					if(plotData[i][0] >= profilePlot.axes.xaxis.min && plotData[i][0] <= profilePlot.axes.xaxis.max ){
+						zoomDataset.push(plotData[i][0]);
+						if (plotData[i][1]>maxy){
+							maxy=plotData[i][1];
+						}
+						if (plotData[i][1]<miny){
+							miny=plotData[i][1];
+						}
+					}
+				}
+				
+				if (maxy==miny){
+					var w=maxy;
+					miny=w*0.8;
+					maxy=w*1.2;
+				}
+				
+				maxy2=-1;
+				miny2=9999999;
+				
+				if (plot.series.length==2) {
+				
+				var plotData2 =  plot.series[1].data;
+				for (var i=0; i< plotData.length; i++){
+					if(plotData[i][0] >= profilePlot.axes.xaxis.min && plotData[i][0] <= profilePlot.axes.xaxis.max ){
+						if (plotData2[i][1]>maxy2){
+							maxy2=plotData2[i][1];
+						}
+						if (plotData2[i][1]<miny2){
+							miny2=plotData2[i][1];
+						}		
+					}
+				}
+				
+				}
+				
+				if (maxy2==miny2){
+					var w=maxy2;
+					miny2=w*0.8;
+					maxy2=w*1.1;
+				}
+				
+	  	  
+				// Updating interval label
+				$('#interval').text(target.Chrom+":"+Math.min.apply(Math, zoomDataset).toString()+"-"+Math.max.apply(Math,zoomDataset).toString() );
+	
+				// Handling the case when less than 2 points remain after zooming
+				if (zoomDataset.length<2){
+					profilePlot.resetZoom();
+					
+					$('#interval').text(target.Chrom+":"+(profilePlot.axes.xaxis.min).toString()+"-"+(profilePlot.axes.xaxis.max-1).toString());
+					
+					var plotData =  profilePlot.series[0].data;
+					var zoomDataset = [];
+					for (var i=0; i< plotData.length; i++){
+						if (plotData[i][0] >= profilePlot.axes.xaxis.min && plotData[i][0] <= profilePlot.axes.xaxis.max ){
+							zoomDataset.push(plotData[i][0]);
+						}
+					}
+  
+					var ctx = $('#canvas')[0].getContext("2d");
+					refBar(ctx,sequence,zoomDataset,profilePlot);
+					return;
+		  	  	}
+	    
+				// Rescaling x-axis after zooming
+				interval=Math.floor((zoomDataset[zoomDataset.length-1]-zoomDataset[0])/5)
+		   	 	if ((zoomDataset[zoomDataset.length-1]-zoomDataset[0])>=10){
+					profilePlot.axes.xaxis.tickInterval=interval;
+					profilePlot.axes.xaxis.numberTicks=Math.floor((zoomDataset[zoomDataset.length-1]-zoomDataset[0])/interval)+1;
+				}		
+				if ((zoomDataset[zoomDataset.length-1]-zoomDataset[0])<10){
+					plot.axes.xaxis.min=zoomDataset[0];
+					plot.axes.xaxis.max=zoomDataset[zoomDataset.length-1];
+					plot.axes.xaxis.tickInterval=1;
+					profilePlot.axes.xaxis.numberTicks=zoomDataset[zoomDataset.length-1]-zoomDataset[0]+1;
+				}
+			
+				profilePlot=scaleYAxes(profilePlot,miny,maxy,miny2,maxy2,normtotal,normmax,total_y_max,total_y2_max);
+				 
+				// Create reference sequence bar
+			 	var ctx = $('#canvas')[0].getContext("2d");
+			 	refBar(ctx,sequence,zoomDataset,profilePlot);
+				
+			});
+			
+
+			// Upon pressing the zoom out button
+
+			$('#zoomoutbtn').click(function(){ 
+				
+				$("#goright").attr("disabled", true);
+				$("#goleft").attr("disabled", true);
+				$('#zoomoutbtn').attr("disabled", true);
+				
+				profilePlot.resetZoom();
+				
+				profilePlot=scaleYAxes(profilePlot,0,total_y_max,0,total_y2_max,normtotal,normmax,total_y_max,total_y2_max);
+				
+				$('#interval').text(target.Chrom+":"+(profilePlot.axes.xaxis.min).toString()+"-"+(profilePlot.axes.xaxis.max-1).toString());
+ 
+				var plotData =  profilePlot.series[0].data;
+				var zoomDataset = [];
+				for (var i=0; i< plotData.length; i++){
+					if(plotData[i][0] >= profilePlot.axes.xaxis.min && plotData[i][0] <= profilePlot.axes.xaxis.max ) {
+						zoomDataset.push(plotData[i][0]);
+					}
+				}
+
+				var ctx = $('#canvas')[0].getContext("2d");
+				refBar(ctx,sequence,zoomDataset,profilePlot);
+				
+				maxy=total_y_max;
+				miny=0;
+				maxy2=total_y2_max;
+				miny2=0;
+			});
+  
+  
+			// Upon pressing the 'go right' button
+
+			$('#goright').click(function(){
+				
+				if (profilePlot.axes.xaxis.max+1>posarray[posarray.length-1]){
+					return;
+				}
+				
+				profilePlot.axes.xaxis.min=profilePlot.axes.xaxis.min+1;
+				profilePlot.axes.xaxis.max=profilePlot.axes.xaxis.max+1;
+				
+				
+				var plotData =  profilePlot.series[0].data;
+				var zoomDataset = [];
+				maxy=-1;
+				miny=9999999;
+				for (var i=0; i< plotData.length; i++){
+					if(plotData[i][0] >= profilePlot.axes.xaxis.min && plotData[i][0] <= profilePlot.axes.xaxis.max ){
+						zoomDataset.push(plotData[i][0]);
+						if (plotData[i][1]>maxy){
+							maxy=plotData[i][1];
+						}
+						if (plotData[i][1]<miny){
+							miny=plotData[i][1];
+						}
+					}
+				}
+				
+				if (maxy==miny){
+					var w=maxy;
+					miny=w*0.8;
+					maxy=w*1.2;
+				}
+				
+				
+				maxy2=-1;
+				miny2=9999999;
+				
+				if (profilePlot.series.length==2) {
+				
+				var plotData2 =  profilePlot.series[1].data;
+				for (var i=0; i< plotData.length; i++){
+					if(plotData[i][0] >= profilePlot.axes.xaxis.min && plotData[i][0] <= profilePlot.axes.xaxis.max ){
+						if (plotData2[i][1]>maxy2){
+							maxy2=plotData2[i][1];
+						}
+						if (plotData2[i][1]<miny2){
+							miny2=plotData2[i][1];
+						}		
+					}
+				}
+				
+				}
+				
+				
+				if (maxy2==miny2){
+					var w=maxy2;
+					miny2=w*0.8;
+					maxy2=w*1.1;
+				}
+				
+
+				// Updating interval label
+				$('#interval').text(target.Chrom+":"+Math.min.apply(Math, zoomDataset).toString()+"-"+Math.max.apply(Math,zoomDataset).toString() );
+								
+				// Handling the case when less than 2 points remain after zooming
+				if (zoomDataset.length<2){
+					profilePlot.resetZoom();
+					
+					$('#interval').text(target.Chrom+":"+(profilePlot.axes.xaxis.min).toString()+"-"+(profilePlot.axes.xaxis.max-1).toString());
+					
+					var plotData =  profilePlot.series[0].data;
+					var zoomDataset = [];
+					for (var i=0; i< plotData.length; i++) {
+						if (plotData[i][0] >= profilePlot.axes.xaxis.min && plotData[i][0] <= profilePlot.axes.xaxis.max ) {
+							zoomDataset.push(plotData[i][0]);
+						}
+					}
+  
+					var ctx = $('#canvas')[0].getContext("2d");
+					refBar(ctx,sequence,zoomDataset,profilePlot);
+					
+					return;
+		  	  	}
+	    
+				// Rescaling x-axis after zooming
+				interval=Math.floor((zoomDataset[zoomDataset.length-1]-zoomDataset[0])/5)
+		   	 	if ((zoomDataset[zoomDataset.length-1]-zoomDataset[0])>=10){
+					profilePlot.axes.xaxis.tickInterval=interval;
+					profilePlot.axes.xaxis.numberTicks=Math.floor((zoomDataset[zoomDataset.length-1]-zoomDataset[0])/interval)+1;
+				}		
+				if ((zoomDataset[zoomDataset.length-1]-zoomDataset[0])<10){
+					profilePlot.axes.xaxis.min=zoomDataset[0];
+					profilePlot.axes.xaxis.max=zoomDataset[zoomDataset.length-1];
+					profilePlot.axes.xaxis.tickInterval=1;
+					profilePlot.axes.xaxis.numberTicks=zoomDataset[zoomDataset.length-1]-zoomDataset[0]+1;
+				}
+				
+			 	profilePlot=scaleYAxes(profilePlot,miny,maxy,miny2,maxy2,normtotal,normmax,total_y_max,total_y2_max);
+			 
+				// Create reference sequence bar
+			 	var ctx = $('#canvas')[0].getContext("2d");
+				refBar(ctx,sequence,zoomDataset,profilePlot);
+		
+			});
+			
+			
+			// Upon pressing the 'go left' button
+
+			$('#goleft').click(function() {
+				
+				if (profilePlot.axes.xaxis.min-1<posarray[0]){
+					return;
+				}
+				
+				profilePlot.axes.xaxis.min=profilePlot.axes.xaxis.min-1;
+				profilePlot.axes.xaxis.max=profilePlot.axes.xaxis.max-1;
+
+				var plotData =  profilePlot.series[0].data;
+				var zoomDataset = [];
+				maxy=-1;
+				miny=9999999;
+				for (var i=0; i< plotData.length; i++){
+					if(plotData[i][0] >= profilePlot.axes.xaxis.min && plotData[i][0] <= profilePlot.axes.xaxis.max ){
+						zoomDataset.push(plotData[i][0]);
+						if (plotData[i][1]>maxy){
+							maxy=plotData[i][1];
+						}
+						if (plotData[i][1]<miny){
+							miny=plotData[i][1];
+						}
+					}
+				}
+				
+				if (maxy==miny){
+					var w=maxy;
+					miny=w*0.8;
+					maxy=w*1.2;
+				}
+				
+				maxy2=-1;
+				miny2=9999999;
+				
+				if (profilePlot.series.length==2) {
+				
+				var plotData2 =  profilePlot.series[1].data;
+				for (var i=0; i< plotData.length; i++){
+					if(plotData[i][0] >= profilePlot.axes.xaxis.min && plotData[i][0] <= profilePlot.axes.xaxis.max ){
+						if (plotData2[i][1]>maxy2){
+							maxy2=plotData2[i][1];
+						}
+						if (plotData2[i][1]<miny2){
+							miny2=plotData2[i][1];
+						}		
+					}
+				}
+				
+				}
+				
+				
+				if (maxy2==miny2){
+					var w=maxy2;
+					miny2=w*0.8;
+					maxy2=w*1.1;
+				}
+				
+	  
+				// Updating interval label
+				$('#interval').text(target.Chrom+":"+Math.min.apply(Math, zoomDataset).toString()+"-"+Math.max.apply(Math,zoomDataset).toString() );
+							
+				// Handling the case when less than 2 points remain after zooming
+				if (zoomDataset.length<2){
+					profilePlot.resetZoom();
+					
+					$('#interval').text(target.Chrom+":"+(profilePlot.axes.xaxis.min).toString()+"-"+(profilePlot.axes.xaxis.max-1).toString());
+					
+					var plotData =  profilePlot.series[0].data;
+					var zoomDataset = [];
+					for (var i=0; i< plotData.length; i++) {
+						if (plotData[i][0] >= profilePlot.axes.xaxis.min && plotData[i][0] <= profilePlot.axes.xaxis.max ) {
+							zoomDataset.push(plotData[i][0]);
+						}
+					}
+  
+					var ctx = $('#canvas')[0].getContext("2d");
+					refBar(ctx,sequence,zoomDataset,profilePlot);	
+			
+					return;
+		  	  	}
+				
+				// Rescaling x-axis after zooming
+				interval=Math.floor((zoomDataset[zoomDataset.length-1]-zoomDataset[0])/5)
+		   	 	if ((zoomDataset[zoomDataset.length-1]-zoomDataset[0])>=10){
+					profilePlot.axes.xaxis.tickInterval=interval;
+					profilePlot.axes.xaxis.numberTicks=Math.floor((zoomDataset[zoomDataset.length-1]-zoomDataset[0])/interval)+1;
+				}		
+				if ((zoomDataset[zoomDataset.length-1]-zoomDataset[0])<10){
+					profilePlot.axes.xaxis.min=zoomDataset[0];
+					profilePlot.axes.xaxis.max=zoomDataset[zoomDataset.length-1];
+					profilePlot.axes.xaxis.tickInterval=1;
+					profilePlot.axes.xaxis.numberTicks=zoomDataset[zoomDataset.length-1]-zoomDataset[0]+1;
+				}
+				
+				profilePlot=scaleYAxes(profilePlot,miny,maxy,miny2,maxy2,normtotal,normmax,total_y_max,total_y2_max);
+			 
+				// Create reference sequence bar
+			 	var ctx = $('#canvas')[0].getContext("2d");
+				
+				refBar(ctx,sequence,zoomDataset,profilePlot);
+				
+			});
+  
+ 
+  		  	// Upon pressing the profile selector buttons
+
+  		  	leftprof="COV";
+			rightprof="FLBQ";		    			
+			$('#covb').click( function() {
+				v=profileSelectorButtonPressed(leftprof,rightprof,"COV",datax);
+				leftprof=v[0];
+				rightprof=v[1];
+
+				if (leftprof in datax.passmets){
+					cut1shown=true;
+					cutoff1=datax.passmets[leftprof];
+				}
+				else {
+					cut1shown=false;
+				}
+				if (rightprof in datax.passmets){
+					cut2shown=true;
+					cutoff2=datax.passmets[rightprof];
+				}
+				else {
+					cut2shown=false;
+				}
+
+
+
+				v=switchToDifferentProfiles(target,leftprof,rightprof,normtotal,normmax,strand,datax,cut1shown,cut2shown,cutoff1,cutoff2);
+				profilePlot=v[0];
+				total_y_max=v[1];
+				total_y2_max=v[2];
+				maxy=total_y_max;
+				miny=0;
+				maxy2=total_y2_max;
+				miny2=0;
+			});
+			$('#qcovb').click( function() {
+				v=profileSelectorButtonPressed(leftprof,rightprof,"QCOV",datax);
+				leftprof=v[0];
+				rightprof=v[1];
+
+				if (leftprof in datax.passmets){
+					cut1shown=true;
+					cutoff1=datax.passmets[leftprof];
+				}
+				else {
+					cut1shown=false;
+				}
+				if (rightprof in datax.passmets){
+					cut2shown=true;
+					cutoff2=datax.passmets[rightprof];
+				}
+				else {
+					cut2shown=false;
+				}
+
+				v=switchToDifferentProfiles(target,leftprof,rightprof,normtotal,normmax,strand,datax,cut1shown,cut2shown,cutoff1,cutoff2);
+				profilePlot=v[0];
+				total_y_max=v[1];
+				total_y2_max=v[2];
+				maxy=total_y_max;
+				miny=0;
+				maxy2=total_y2_max;
+				miny2=0;
+			});
+			$('#medmqb').click( function() {
+				v=profileSelectorButtonPressed(leftprof,rightprof,"MEDMQ",datax);
+				leftprof=v[0];
+				rightprof=v[1];
+
+				if (leftprof in datax.passmets){
+					cut1shown=true;
+					cutoff1=datax.passmets[leftprof];
+				}
+				else {
+					cut1shown=false;
+				}
+				if (rightprof in datax.passmets){
+					cut2shown=true;
+					cutoff2=datax.passmets[rightprof];
+				}
+				else {
+					cut2shown=false;
+				}
+
+				v=switchToDifferentProfiles(target,leftprof,rightprof,normtotal,normmax,strand,datax,cut1shown,cut2shown,cutoff1,cutoff2);
+				profilePlot=v[0];
+				total_y_max=v[1];
+				total_y2_max=v[2];
+				maxy=total_y_max;
+				miny=0;
+				maxy2=total_y2_max;
+				miny2=0;
+			});
+			$('#flmqb').click( function() {
+				v=profileSelectorButtonPressed(leftprof,rightprof,"FLMQ",datax);
+				leftprof=v[0];
+				rightprof=v[1];
+
+				if (leftprof in datax.passmets){
+					cut1shown=true;
+					cutoff1=datax.passmets[leftprof];
+				}
+				else {
+					cut1shown=false;
+				}
+				if (rightprof in datax.passmets){
+					cut2shown=true;
+					cutoff2=datax.passmets[rightprof];
+				}
+				else {
+					cut2shown=false;
+				}
+
+				v=switchToDifferentProfiles(target,leftprof,rightprof,normtotal,normmax,strand,datax,cut1shown,cut2shown,cutoff1,cutoff2);
+				profilePlot=v[0];
+				total_y_max=v[1];
+				total_y2_max=v[2];
+				maxy=total_y_max;
+				miny=0;
+				maxy2=total_y2_max;
+				miny2=0;
+			}); 
+			$('#medbqb').click( function() {
+				v=profileSelectorButtonPressed(leftprof,rightprof,"MEDBQ",datax);
+				leftprof=v[0];
+				rightprof=v[1];
+
+				if (leftprof in datax.passmets){
+					cut1shown=true;
+					cutoff1=datax.passmets[leftprof];
+				}
+				else {
+					cut1shown=false;
+				}
+				if (rightprof in datax.passmets){
+					cut2shown=true;
+					cutoff2=datax.passmets[rightprof];
+				}
+				else {
+					cut2shown=false;
+				}
+
+				v=switchToDifferentProfiles(target,leftprof,rightprof,normtotal,normmax,strand,datax,cut1shown,cut2shown,cutoff1,cutoff2);
+				profilePlot=v[0];
+				total_y_max=v[1];
+				total_y2_max=v[2];
+				maxy=total_y_max;
+				miny=0;
+				maxy2=total_y2_max;
+				miny2=0;
+			});
+			$('#flbqb').click( function() {
+				v=profileSelectorButtonPressed(leftprof,rightprof,"FLBQ",datax);
+				leftprof=v[0];
+				rightprof=v[1];
+
+				if (leftprof in datax.passmets){
+					cut1shown=true;
+					cutoff1=datax.passmets[leftprof];
+				}
+				else {
+					cut1shown=false;
+				}
+				if (rightprof in datax.passmets){
+					cut2shown=true;
+					cutoff2=datax.passmets[rightprof];
+				}
+				else {
+					cut2shown=false;
+				}
+
+				v=switchToDifferentProfiles(target,leftprof,rightprof,normtotal,normmax,strand,datax,cut1shown,cut2shown,cutoff1,cutoff2);
+				profilePlot=v[0];
+				total_y_max=v[1];
+				total_y2_max=v[2];
+				maxy=total_y_max;
+				miny=0;
+				maxy2=total_y2_max;
+				miny2=0;
+			}); 		
+			
+			// Upon pressing the 'forward reads', 'reverse reads' or 'combined' buttons
+
+			$('#forwardb').click( function() {
+				
+				if (datax.direction){
+					
+					if (strand=="reverse" || strand=="combined"){
+						strand="forward";
+						$("#forwardb").css("color","yellow");
+						$("#forwardb").css("border-width","1px");
+						$("#reverseb").css("color","white");
+						$("#reverseb").css("border-width","0px");
+						$("#combinedb").css("color","white");
+						$("#combinedb").css("border-width","0px");
+					
+						$("#sumforwardb").css("color","yellow");
+						$("#sumforwardb").css("border-width","1px");
+						$("#sumreverseb").css("color","white");
+						$("#sumreverseb").css("border-width","0px");
+						$("#sumcombinedb").css("color","white");
+						$("#sumcombinedb").css("border-width","0px");
+					
+						v=switchToDifferentProfiles(target,leftprof,rightprof,normtotal,normmax,strand,datax,cut1shown,cut2shown,cutoff1,cutoff2);
+						profilePlot=v[0];
+						total_y_max=v[1];
+						total_y2_max=v[2];
+						maxy=total_y_max;
+						miny=0;
+						maxy2=total_y2_max;
+						miny2=0;
+					
+						showSumtable(datax,strand,allorfail);
+					
+						ttable=$('#targettable').DataTable();
+			
+						var seltarget = ttable.$('tr.selected').find("td").first().text();
+
+						var tableRow = $("#targettable td").filter(function() {
+						    return $(this).first().text() == seltarget;
+						}).closest("tr");
+			
+						var container = $('#targettable,div.dataTables_scrollBody');
+						container.scrollTop(0);
+						container.scrollTop( tableRow.offset().top - container.offset().top -160);
+					
+					}
+				}
+						
+			});
+			$('#reverseb').click( function() {
+				
+				if (datax.direction){
+				
+				if (strand=="forward" || strand=="combined"){
+					strand="reverse";
+					$("#reverseb").css("color","yellow");
+					$("#reverseb").css("border-width","1px");
+					$("#forwardb").css("color","white");
+					$("#forwardb").css("border-width","0px");
+					$("#combinedb").css("color","white");
+					$("#combinedb").css("border-width","0px");
+					
+					$("#sumreverseb").css("color","yellow");
+					$("#sumreverseb").css("border-width","1px");
+					$("#sumforwardb").css("color","white");
+					$("#sumforwardb").css("border-width","0px");
+					$("#sumcombinedb").css("color","white");
+					$("#sumcombinedb").css("border-width","0px");
+					
+					v=switchToDifferentProfiles(target,leftprof,rightprof,normtotal,normmax,strand,datax,cut1shown,cut2shown,cutoff1,cutoff2);
+					profilePlot=v[0];
+					total_y_max=v[1];
+					total_y2_max=v[2];
+					maxy=total_y_max;
+					miny=0;
+					maxy2=total_y2_max;
+					miny2=0;
+					
+					showSumtable(datax,strand,allorfail);
+					
+					ttable=$('#targettable').DataTable();
+		
+					var seltarget = ttable.$('tr.selected').find("td").first().text();
+		
+					var tableRow = $("#targettable td").filter(function() {
+					    return $(this).first().text() == seltarget;
+					}).closest("tr");
+		
+					var container = $('#targettable,div.dataTables_scrollBody');
+					container.scrollTop(0);
+					container.scrollTop( tableRow.offset().top - container.offset().top -160);
+					
+				}
+				
+				}
+			});
+			$('#combinedb').click( function() {
+				
+				if (datax.direction){
+				
+				if (strand=="forward" || strand=="reverse"){
+					strand="combined";
+					$("#combinedb").css("color","yellow");
+					$("#combinedb").css("border-width","1px");
+					$("#forwardb").css("color","white");
+					$("#forwardb").css("border-width","0px");
+					$("#reverseb").css("color","white");
+					$("#reverseb").css("border-width","0px");
+					
+					$("#sumcombinedb").css("color","yellow");
+					$("#sumcombinedb").css("border-width","1px");
+					$("#sumforwardb").css("color","white");
+					$("#sumforwardb").css("border-width","0px");
+					$("#sumreverseb").css("color","white");
+					$("#sumreverseb").css("border-width","0px");
+					
+					v=switchToDifferentProfiles(target,leftprof,rightprof,normtotal,normmax,strand,datax,cut1shown,cut2shown,cutoff1,cutoff2);
+					profilePlot=v[0];
+					total_y_max=v[1];
+					total_y2_max=v[2];
+					maxy=total_y_max;
+					miny=0;
+					maxy2=total_y2_max;
+					miny2=0;
+					
+					showSumtable(datax,strand,allorfail);
+					
+					ttable=$('#targettable').DataTable();
+		
+					var seltarget = ttable.$('tr.selected').find("td").first().text();
+		
+					var tableRow = $("#targettable td").filter(function() {
+					    return $(this).first().text() == seltarget;
+					}).closest("tr");
+		
+					var container = $('#targettable,div.dataTables_scrollBody');
+					container.scrollTop(0);
+					container.scrollTop( tableRow.offset().top - container.offset().top -160);
+				}
+				
+				}
+			});
+			
+			// Upon pressing the 'forward reads', 'reverse reads' or 'combined' buttons in the Summary view
+
+			$('#sumforwardb').click( function() {
+				
+				if (datax.direction){
+				
+				if (strand=="reverse" || strand=="combined"){
+					strand="forward";
+					$("#sumforwardb").css("color","yellow");
+					$("#sumforwardb").css("border-width","1px");
+					$("#sumreverseb").css("color","white");
+					$("#sumreverseb").css("border-width","0px");
+					$("#sumcombinedb").css("color","white");
+					$("#sumcombinedb").css("border-width","0px");
+					
+					$("#forwardb").css("color","yellow");
+					$("#forwardb").css("border-width","1px");
+					$("#reverseb").css("color","white");
+					$("#reverseb").css("border-width","0px");
+					$("#combinedb").css("color","white");
+					$("#combinedb").css("border-width","0px");
+					
+					
+					showSumtable(datax,strand,allorfail);
+					
+					v=switchToDifferentProfiles(target,leftprof,rightprof,normtotal,normmax,strand,datax,cut1shown,cut2shown,cutoff1,cutoff2);
+					profilePlot=v[0];
+					total_y_max=v[1];
+					total_y2_max=v[2];
+					maxy=total_y_max;
+					miny=0;
+					maxy2=total_y2_max;
+					miny2=0;
+				}
+				
+	
+			}
+			});
+			$('#sumreverseb').click( function() {
+				
+				if (datax.direction){
+				
+				if (strand=="forward" || strand=="combined"){
+					strand="reverse";
+					$("#sumreverseb").css("color","yellow");
+					$("#sumreverseb").css("border-width","1px");
+					$("#sumforwardb").css("color","white");
+					$("#sumforwardb").css("border-width","0px");
+					$("#sumcombinedb").css("color","white");
+					$("#sumcombinedb").css("border-width","0px");
+					
+					$("#reverseb").css("color","yellow");
+					$("#reverseb").css("border-width","1px");
+					$("#forwardb").css("color","white");
+					$("#forwardb").css("border-width","0px");
+					$("#combinedb").css("color","white");
+					$("#combinedb").css("border-width","0px");
+					
+					showSumtable(datax,strand,allorfail);
+					
+					v=switchToDifferentProfiles(target,leftprof,rightprof,normtotal,normmax,strand,datax,cut1shown,cut2shown,cutoff1,cutoff2);
+					profilePlot=v[0];
+					total_y_max=v[1];
+					total_y2_max=v[2];
+					maxy=total_y_max;
+					miny=0;
+					maxy2=total_y2_max;
+					miny2=0;
+				}
+				
+			}
+			});
+			$('#sumcombinedb').click( function() {
+				
+				if (datax.direction){
+				
+				if (strand=="forward" || strand=="reverse"){
+					strand="combined";
+					$("#sumcombinedb").css("color","yellow");
+					$("#sumcombinedb").css("border-width","1px");
+					$("#sumforwardb").css("color","white");
+					$("#sumforwardb").css("border-width","0px");
+					$("#sumreverseb").css("color","white");
+					$("#sumreverseb").css("border-width","0px");
+					
+					$("#combinedb").css("color","yellow");
+					$("#combinedb").css("border-width","1px");
+					$("#forwardb").css("color","white");
+					$("#forwardb").css("border-width","0px");
+					$("#reverseb").css("color","white");
+					$("#reverseb").css("border-width","0px");
+					
+					showSumtable(datax,strand,allorfail);
+					
+					v=switchToDifferentProfiles(target,leftprof,rightprof,normtotal,normmax,strand,datax,cut1shown,cut2shown,cutoff1,cutoff2);
+					profilePlot=v[0];
+					total_y_max=v[1];
+					total_y2_max=v[2];
+					maxy=total_y_max;
+					miny=0;
+					maxy2=total_y2_max;
+					miny2=0;
+				}
+				
+			}
+			});
+
+			// Upon pressing the "All" button
+
+			$('#sumall').click( function() {
+				
+				if (allorfail=="fail"){
+					allorfail="all";
+					
+					$("#sumall").css("color","yellow");
+					$("#sumall").css("border-width","1px");
+					$("#sumfail").css("color","white");
+					$("#sumfail").css("border-width","0px");
+					
+					showSumtable(datax,strand,allorfail);
+				}
+				
+			});
+
+			// Upon pressing the "Failed" button
+			
+			$('#sumfail').click( function() {
+				
+				if (allorfail=="all"){
+					allorfail="fail";
+					
+					$("#sumfail").css("color","yellow");
+					$("#sumfail").css("border-width","1px");
+					$("#sumall").css("color","white");
+					$("#sumall").css("border-width","0px");
+					
+					showSumtable(datax,strand,allorfail);
+				}
+				
+			});
+			
+
+			// Upon pressing the "Chromosomes" button
+
+			$('#showchrom').click(function(){
+				$('#pie').hide();
+				$('#gplot').show();
+				
+				$("#showchrom").css("color","yellow");
+				$("#showchrom").css("border-width","1px");
+				$("#showpie").css("color","white");
+				$("#showpie").css("border-width","0px");
+				
+				}
+			)
+			
+			// Upon pressing the "Full genome" button
+
+			$('#showpie').click(function(){
+				$('#gplot').hide();
+				$('#pie').show();
+					
+				$("#showpie").css("color","yellow");
+				$("#showpie").css("border-width","1px");
+				$("#showchrom").css("color","white");
+				$("#showchrom").css("border-width","0px");
+				
+				}
+			)
+			
+			// Upon pressing the "Find" button
+
+  		  	$('#searchb').click(function(){
+
+				t.$('tr.selected').removeClass('selected');
+
+				thistarget=$('#searchtarget').val();
+				var tableRow = $("#sumtable td").filter(function() {
+				    return $(this).first().text() == thistarget;
+				}).closest("tr");
+				tableRow.addClass('selected');
+
+				$("#showprofile").attr("disabled", false);
+				$("#showprofile").css("background","green");
+				
+				var container = $('#sumtable,div.dataTables_scrollBody');
+				container.scrollTop(0);
+				container.scrollTop( tableRow.offset().top - container.offset().top -230);
+  		  	});  
+			
+   		 	// Upon pressing the 'switch to summary' button
+
+  		  	$('#switchb').click(function(){
+				
+				$("#showprofile").attr("disabled", false);
+				$("#showprofile").css("background","green");
+				
+				$("#leftmenu").hide();
+				$("#pc").hide();
+				$("#sv").show();
+				
+				$("#summaryb").css("background","#800000");
+				$("#profilesb").css("background","#F08080");
+				
+				var thistarget = table.$('tr.selected').text();
+			
+				table.$('tr.selected').removeClass('selected');
+				
+				t.$('tr.selected').removeClass('selected');
+				
+				var tableRow = $("#sumtable td").filter(function() {
+				    return $(this).first().text() == thistarget;
+				}).closest("tr");
+				tableRow.addClass('selected');
+				
+				var container = $('#sumtable,div.dataTables_scrollBody');
+				container.scrollTop(0);
+				container.scrollTop( tableRow.offset().top - container.offset().top -230);
+				
+  		  	});  
+			
+   		 	// Upon pressing the 'switch to genome view' button
+
+  		  	$('#genomeb').click(function(){
+				$("#leftmenu").hide();
+				$("#pc").hide();
+				$("#sv").hide();
+				$("#iv").hide();
+				$("#gv").show();
+				$("#genomeb").css("background","#800000");
+				$("#summaryb").css("background","#F08080");
+				$("#profilesb").css("background","#F08080");	
+				$("#infob").css("background","#F08080");			
+  		  	}); 	
+			
+   		 	// Upon pressing the 'switch to info view' button
+
+  		  	$('#infob').click(function(){
+				$("#leftmenu").hide();
+				$("#pc").hide();
+				$("#sv").hide();
+				$("#gv").hide();
+				$("#iv").show();
+				$("#genomeb").css("background","#F08080");
+				$("#summaryb").css("background","#F08080");
+				$("#profilesb").css("background","#F08080");	
+				$("#infob").css("background","#800000");		
+  		  	}); 
+			
+			
+   		 	// Upon pressing the 'switch to summary' button
+
+  		  	$('#profilesb').click(function(){
+				$("#leftmenu").show();
+				$("#pc").show();
+				$("#gv").hide();
+				$("#sv").hide();
+				$("#iv").hide();
+				$("#genomeb").css("background","#F08080");
+				$("#summaryb").css("background","#F08080");
+				$("#profilesb").css("background","#800000");
+				$("#infob").css("background","#F08080");	
+				
+				var container = $('#targettable,div.dataTables_scrollBody');
+				container.scrollTop(0);
+				
+				table.$('tr.selected').removeClass('selected');
+				firstrow=$('#targettable tbody tr:eq(0)').addClass('selected');
+				
+				var v=switchToDifferentTarget(datax,firstrow.text(),leftprof,rightprof,normtotal,normmax,strand,cut1shown,cut2shown,cutoff1,cutoff2);
+			 	profilePlot=v[0];
+				posarray=v[1];
+				sequence=v[2];
+				total_y_max=v[3];
+				total_y2_max=v[4];
+				maxy=total_y_max;
+				miny=0;
+				maxy2=total_y2_max;
+				miny2=0;
+  		  	}); 
+				
+				
+   		 	// Upon pressing the 'switch to summary' button
+
+  		  	$('#summaryb').click(function(){
+				
+				$("#leftmenu").hide();
+				$("#pc").hide();
+				$("#gv").hide();
+				$("#iv").hide();
+				$("#sv").show();
+				
+				$('#searchtarget').val('')
+				
+				$("#genomeb").css("background","#F08080");
+				$("#summaryb").css("background","#800000");
+				$("#profilesb").css("background","#F08080");
+				$("#infob").css("background","#F08080");	
+				
+				//var container = $('#sumtable,div.dataTables_scrollBody');
+				//container.scrollTop(0);
+				//table.$('tr.selected').removeClass('selected');
+  		  	}); 	
+			
+
+   		 	// Upon pressing the 'show profile' button
+
+  		  	$('#showprofile').click(function(){
+					
+				var thistarget = t.$('tr.selected').find("td").first().text();
+				
+				$("#sv").hide();	
+				$("#leftmenu").show();
+				$("#pc").show();
+				$("#summaryb").css("background","#F08080");
+				$("#profilesb").css("background","#800000");
+				
+				table.$('#targettable tr.selected').removeClass('selected');
+				
+				var tableRow = $("#targettable td").filter(function() {
+				    return $(this).text() == thistarget;
+				}).closest("tr");
+				tableRow.addClass('selected');
+						
+				var container = $('#targettable,div.dataTables_scrollBody');
+				container.scrollTop(0);
+				container.scrollTop( tableRow.offset().top - container.offset().top -160);
+				
+				var v=switchToDifferentTarget(datax,thistarget,leftprof,rightprof,normtotal,normmax,strand,cut1shown,cut2shown,cutoff1,cutoff2);
+			 	profilePlot=v[0];
+				posarray=v[1];
+				sequence=v[2];
+				total_y_max=v[3];
+				total_y2_max=v[4];
+				maxy=total_y_max;
+				miny=0;
+				maxy2=total_y2_max;
+				miny2=0;
+  		  	}); 	
+			
+			// Upon pressing the "Total" button
+
+			$('#normtotalb').click( function() {
+				if (normtotal==true){
+					normtotal=false;
+					$("#normtotalb").css("color","black");
+				}
+				else { 
+					normtotal=true;
+					$("#normtotalb").css("color","red");
+				}
+				profilePlot=scaleYAxes(profilePlot,miny,maxy,miny2,maxy2,normtotal,normmax,total_y_max,total_y2_max);
+			});
+			
+			// Upon pressing the "Max" button
+
+			$('#normmaxb').click( function() {
+				if (normmax==true){
+					normmax=false;
+					$("#normmaxb").css("color","black");
+				}
+				else { 
+					normmax=true;
+					$("#normmaxb").css("color","red");
+				}
+
+				profilePlot=scaleYAxes(profilePlot,miny,maxy,miny2,maxy2,normtotal,normmax,total_y_max,total_y2_max);
+				
+			});
+
+			
+ 
+		});
+
+
+  		// ----------------
+  		// HELPER FUNCTIONS
+  		// ---------------=
+
+
+		// Action upon pressing a profile selector button
+
+		function profileSelectorButtonPressed(leftprof,rightprof,button,datax) {
+			if (leftprof==button){
+				if (rightprof=="") {
+					return [leftprof,rightprof]; 
+				}
+				leftprof=rightprof;
+				rightprof="";
+			}
+			else if (rightprof==button){
+				rightprof="";
+			}
+			else if (leftprof==""){
+				leftprof=button;
+			}
+			else if (rightprof==""){
+				rightprof=button;
+			}
+			else {
+				leftprof=rightprof;
+				rightprof=button;
+			}
+			
+			if (leftprof=="COV" || rightprof=="COV") {
+				$("#covb").css("color","yellow");
+				$("#covb").css("border-width","1px");
+
+				if (leftprof=="COV") {
+					var c=document.getElementById("covbcutoff");
+					var ctx=c.getContext("2d");
+					ctx.clearRect(0, 0, c.width, c.height);
+					ctx.setLineDash([8,3]);
+					ctx.lineWidth = 4;
+					ctx.beginPath();
+					ctx.moveTo(0,2);
+					ctx.lineTo(52,2);
+					ctx.strokeStyle = "rgb(0, 0, 153)";
+					ctx.stroke();
+				}
+				else {
+					var c=document.getElementById("covbcutoff");
+					var ctx=c.getContext("2d");
+					ctx.clearRect(0, 0, c.width, c.height);
+					ctx.setLineDash([8,3]);
+					ctx.lineWidth = 4;
+					ctx.beginPath();
+					ctx.moveTo(0,2);
+					ctx.lineTo(52,2);
+					ctx.strokeStyle = "rgb(220,20,60)";
+					ctx.stroke();
+				}
+
+				if ('COV' in datax.passmets){
+					$("#covbcutoff").show();
+				}
+
+
+			}
+			else {
+				$("#covb").css("color","white");
+				$("#covb").css("border-width","0px");
+				$("#covbcutoff").hide();
+			}
+			
+			if (leftprof=="QCOV" || rightprof=="QCOV") {
+				$("#qcovb").css("color","yellow");
+				$("#qcovb").css("border-width","1px");
+
+				if (leftprof=="QCOV") {
+					var c=document.getElementById("qcovbcutoff");
+					var ctx=c.getContext("2d");
+					ctx.clearRect(0, 0, c.width, c.height);
+					ctx.setLineDash([8,3]);
+					ctx.lineWidth = 4;
+					ctx.beginPath();
+					ctx.moveTo(0,2);
+					ctx.lineTo(52,2);
+					ctx.strokeStyle = "rgb(0, 0, 153)";
+					ctx.stroke();
+				}
+				else {
+					var c=document.getElementById("qcovbcutoff");
+					var ctx=c.getContext("2d");
+					ctx.clearRect(0, 0, c.width, c.height);
+					ctx.setLineDash([8,3]);
+					ctx.lineWidth = 4;
+					ctx.beginPath();
+					ctx.moveTo(0,2);
+					ctx.lineTo(52,2);
+					ctx.strokeStyle = "rgb(220,20,60)";
+					ctx.stroke();
+				}
+				if ('QCOV' in datax.passmets) {
+					$("#qcovbcutoff").show();
+				}
+			}
+			else {
+				$("#qcovb").css("color","white");
+				$("#qcovb").css("border-width","0px");
+				$("#qcovbcutoff").hide();
+			}
+			
+			if (leftprof=="MEDMQ" || rightprof=="MEDMQ") {
+				$("#medmqb").css("color","yellow");
+				$("#medmqb").css("border-width","1px");
+
+				if (leftprof=="MEDMQ") {
+					var c=document.getElementById("medmqbcutoff");
+					var ctx=c.getContext("2d");
+					ctx.clearRect(0, 0, c.width, c.height);
+					ctx.setLineDash([8,3]);
+					ctx.lineWidth = 4;
+					ctx.beginPath();
+					ctx.moveTo(0,2);
+					ctx.lineTo(52,2);
+					ctx.strokeStyle = "rgb(0, 0, 153)";
+					ctx.stroke();
+				}
+				else {
+					var c=document.getElementById("medmqbcutoff");
+					var ctx=c.getContext("2d");
+					ctx.clearRect(0, 0, c.width, c.height);
+					ctx.setLineDash([8,3]);
+					ctx.lineWidth = 4;
+					ctx.beginPath();
+					ctx.moveTo(0,2);
+					ctx.lineTo(52,2);
+					ctx.strokeStyle = "rgb(220,20,60)";
+					ctx.stroke();
+				}
+
+				if ('MEDMQ' in datax.passmets){
+					$("#medmqbcutoff").show();
+				}
+			}
+			else {
+				$("#medmqb").css("color","white");
+				$("#medmqb").css("border-width","0px");
+				$("#medmqbcutoff").hide();
+			}
+			
+			if (leftprof=="FLMQ" || rightprof=="FLMQ") {
+				$("#flmqb").css("color","yellow");
+				$("#flmqb").css("border-width","1px");
+
+				if (leftprof=="FLMQ") {
+					var c=document.getElementById("flmqbcutoff");
+					var ctx=c.getContext("2d");
+					ctx.clearRect(0, 0, c.width, c.height);
+					ctx.setLineDash([8,3]);
+					ctx.lineWidth = 4;
+					ctx.beginPath();
+					ctx.moveTo(0,2);
+					ctx.lineTo(52,2);
+					ctx.strokeStyle = "rgb(0, 0, 153)";
+					ctx.stroke();
+				}
+				else {
+					var c=document.getElementById("flmqbcutoff");
+					var ctx=c.getContext("2d");
+					ctx.clearRect(0, 0, c.width, c.height);
+					ctx.setLineDash([8,3]);
+					ctx.lineWidth = 4;
+					ctx.beginPath();
+					ctx.moveTo(0,2);
+					ctx.lineTo(52,2);
+					ctx.strokeStyle = "rgb(220,20,60)";
+					ctx.stroke();
+
+				}
+				if ('FLMQ' in datax.passmets){
+					$("#flmqbcutoff").show();
+				}
+
+			}
+			else {
+				$("#flmqb").css("color","white");
+				$("#flmqb").css("border-width","0px");
+				$("#flmqbcutoff").hide();
+			}
+			
+			if (leftprof=="MEDBQ" || rightprof=="MEDBQ") {
+				$("#medbqb").css("color","yellow");
+				$("#medbqb").css("border-width","1px");
+
+				if (leftprof=="MEDBQ") {
+					var c=document.getElementById("medbqbcutoff");
+					var ctx=c.getContext("2d");
+					ctx.clearRect(0, 0, c.width, c.height);
+					ctx.setLineDash([8,3]);
+					ctx.lineWidth = 4;
+					ctx.beginPath();
+					ctx.moveTo(0,2);
+					ctx.lineTo(52,2);
+					ctx.strokeStyle = "rgb(0, 0, 153)";
+					ctx.stroke();
+				}
+				else {
+					var c=document.getElementById("medbqbcutoff");
+					var ctx=c.getContext("2d");
+					ctx.clearRect(0, 0, c.width, c.height);
+					ctx.setLineDash([8,3]);
+					ctx.lineWidth = 4;
+					ctx.beginPath();
+					ctx.moveTo(0,2);
+					ctx.lineTo(52,2);
+					ctx.strokeStyle = "rgb(220,20,60)";
+					ctx.stroke();
+				}
+				if ('MEDBQ' in datax.passmets){
+					$("#medbqbcutoff").show();
+				}
+
+			}
+			else {
+				$("#medbqb").css("color","white");
+				$("#medbqb").css("border-width","0px");
+				$("#medbqbcutoff").hide();
+			}
+			
+			if (leftprof=="FLBQ" || rightprof=="FLBQ") {
+				$("#flbqb").css("color","yellow");
+				$("#flbqb").css("border-width","1px");
+
+				if (leftprof=="FLBQ") {
+					var c=document.getElementById("flbqbcutoff");
+					var ctx=c.getContext("2d");
+					ctx.clearRect(0, 0, c.width, c.height);
+					ctx.setLineDash([8,3]);
+					ctx.lineWidth = 4;
+					ctx.beginPath();
+					ctx.moveTo(0,2);
+					ctx.lineTo(52,2);
+					ctx.strokeStyle = "rgb(0, 0, 153)";
+					ctx.stroke();
+
+				}
+				else {
+					var c=document.getElementById("flbqbcutoff");
+					var ctx=c.getContext("2d");
+					ctx.clearRect(0, 0, c.width, c.height);
+					ctx.setLineDash([8,3]);
+					ctx.lineWidth = 4;
+					ctx.beginPath();
+					ctx.moveTo(0,2);
+					ctx.lineTo(52,2);
+					ctx.strokeStyle = "rgb(220,20,60)";
+					ctx.stroke();
+
+				}
+				if ('FLBQ' in datax.passmets) {
+					$("#flbqbcutoff").show();
+				}
+			}
+			else {
+				$("#flbqb").css("color","white");
+				$("#flbqb").css("border-width","0px");
+				$("#flbqbcutoff").hide();
+			}
+			
+			return [leftprof,rightprof];
+			
+		};
+		
+		
+		// Switch to a different target
+
+		function switchToDifferentTarget(datax,targetname,leftprof,rightprof,normtotal,normmax,strand,cut1shown,cut2shown,cutoff1,cutoff2){
+			
+			$("#goright").attr("disabled", true);
+			$("#goleft").attr("disabled", true);
+			$("#zoomoutbtn").attr("disabled", true);
+			
+			target={}
+			for (i = 0; i < datax.targets.length; i++) { 
+			    if (datax.targets[i].Name==targetname) {
+			    	target=datax.targets[i];
+					break;
+			    }
+			}
+			
+			var sequence = target.Ref;
+			
+			var posarray = [];
+			for (var i = target.Start; i <= target.End; i++) {
+			   posarray.push(i);
+			}
+			
+			
+			var prof='';
+			
+			if (strand=='combined'){
+				if (leftprof=='COV'){
+					prof=target.Profiles.COV;
+				}
+				if (leftprof=='QCOV'){
+					prof=target.Profiles.QCOV;
+				}
+				if (leftprof=='FLMQ'){
+					prof=target.Profiles.FLMQ;
+				}
+				if (leftprof=='MEDMQ'){
+					prof=target.Profiles.MEDMQ;
+				}
+				if (leftprof=='FLBQ'){
+					prof=target.Profiles.FLBQ;
+				}
+				if (leftprof=='MEDBQ'){
+					prof=target.Profiles.MEDBQ;
+				}
+			}
+			
+			if (strand=='forward'){
+				if (leftprof=='COV'){
+					prof=target.Profiles.COV_f;
+				}
+				if (leftprof=='QCOV'){
+					prof=target.Profiles.QCOV_f;
+				}
+				if (leftprof=='FLMQ'){
+					prof=target.Profiles.FLMQ_f;
+				}
+				if (leftprof=='MEDMQ'){
+					prof=target.Profiles.MEDMQ_f;
+				}
+				if (leftprof=='FLBQ'){
+					prof=target.Profiles.FLBQ_f;
+				}
+				if (leftprof=='MEDBQ'){
+					prof=target.Profiles.MEDBQ_f;
+				}
+			}
+			
+			if (strand=='reverse'){
+				if (leftprof=='COV'){
+					prof=target.Profiles.COV_r;
+				}
+				if (leftprof=='QCOV'){
+					prof=target.Profiles.QCOV_r;
+				}
+				if (leftprof=='FLMQ'){
+					prof=target.Profiles.FLMQ_r;
+				}
+				if (leftprof=='MEDMQ'){
+					prof=target.Profiles.MEDMQ_r;
+				}
+				if (leftprof=='FLBQ'){
+					prof=target.Profiles.FLBQ_r;
+				}
+				if (leftprof=='MEDBQ'){
+					prof=target.Profiles.MEDBQ_r;
+				}
+			}
+				
+			
+			var prof2='';
+			
+			if (strand=='combined'){
+				
+				if (rightprof=='COV'){
+					prof2=target.Profiles.COV;
+				}
+				if (rightprof=='QCOV'){
+					prof2=target.Profiles.QCOV;
+				}
+				if (rightprof=='FLMQ'){
+					prof2=target.Profiles.FLMQ;
+				}
+				if (rightprof=='MEDMQ'){
+					prof2=target.Profiles.MEDMQ;
+				}
+				if (rightprof=='FLBQ'){
+					prof2=target.Profiles.FLBQ;
+				}
+				if (rightprof=='MEDBQ'){
+					prof2=target.Profiles.MEDBQ;
+				}	
+			
+			}
+			
+			
+			if (strand=='forward'){
+				
+				if (rightprof=='COV'){
+					prof2=target.Profiles.COV_f;
+				}
+				if (rightprof=='QCOV'){
+					prof2=target.Profiles.QCOV_f;
+				}
+				if (rightprof=='FLMQ'){
+					prof2=target.Profiles.FLMQ_f;
+				}
+				if (rightprof=='MEDMQ'){
+					prof2=target.Profiles.MEDMQ_f;
+				}
+				if (rightprof=='FLBQ'){
+					prof2=target.Profiles.FLBQ_f;
+				}
+				if (rightprof=='MEDBQ'){
+					prof2=target.Profiles.MEDBQ_f;
+				}	
+			
+			}
+			
+			if (strand=='reverse'){
+				
+				if (rightprof=='COV'){
+					prof2=target.Profiles.COV_r;
+				}
+				if (rightprof=='QCOV'){
+					prof2=target.Profiles.QCOV_r;
+				}
+				if (rightprof=='FLMQ'){
+					prof2=target.Profiles.FLMQ_r;
+				}
+				if (rightprof=='MEDMQ'){
+					prof2=target.Profiles.MEDMQ_r;
+				}
+				if (rightprof=='FLBQ'){
+					prof2=target.Profiles.FLBQ_r;
+				}
+				if (rightprof=='MEDBQ'){
+					prof2=target.Profiles.MEDBQ_r;
+				}	
+			
+			}
+			
+			var interval=Math.floor((posarray.length-1)/5);	
+			
+			v=showPlot(leftprof,rightprof,prof,prof2,posarray,interval,sequence,normtotal,normmax,cut1shown,cut2shown,cutoff1,cutoff2);
+			profilePlot=v[0];
+			total_y_max=v[1];
+			total_y2_max=v[2];
+			
+			$('#interval').text(target.Chrom+":"+(profilePlot.axes.xaxis.min).toString()+"-"+(profilePlot.axes.xaxis.max-1).toString());
+			
+			return [profilePlot,posarray,sequence,total_y_max,total_y2_max];
+		}
+		
+		
+		// Switch between different profile types
+
+		function switchToDifferentProfiles(target,leftprof,rightprof,normtotal,normmax,strand,datax,cut1shown,cut2shown,cutoff1,cutoff2){
+			
+			$("#goright").attr("disabled", true);
+			$("#goleft").attr("disabled", true);
+			$("#zoomoutbtn").attr("disabled", true);
+			
+			var sequence = target.Ref;
+			
+			var posarray = [];
+			for (var i = target.Start; i <= target.End; i++) {
+			   posarray.push(i);
+			}
+			
+			var interval=Math.floor((posarray.length-1)/5);
+			
+			var prof='';
+			
+			if (strand=='combined'){
+				if (leftprof=='COV'){
+					prof=target.Profiles.COV;
+				}
+				if (leftprof=='QCOV'){
+					prof=target.Profiles.QCOV;
+				}
+				if (leftprof=='FLMQ'){
+					prof=target.Profiles.FLMQ;
+				}
+				if (leftprof=='MEDMQ'){
+					prof=target.Profiles.MEDMQ;
+				}
+				if (leftprof=='FLBQ'){
+					prof=target.Profiles.FLBQ;
+				}
+				if (leftprof=='MEDBQ'){
+					prof=target.Profiles.MEDBQ;
+				}
+			}
+			
+			if (strand=='forward'){
+				if (leftprof=='COV'){
+					prof=target.Profiles.COV_f;
+				}
+				if (leftprof=='QCOV'){
+					prof=target.Profiles.QCOV_f;
+				}
+				if (leftprof=='FLMQ'){
+					prof=target.Profiles.FLMQ_f;
+				}
+				if (leftprof=='MEDMQ'){
+					prof=target.Profiles.MEDMQ_f;
+				}
+				if (leftprof=='FLBQ'){
+					prof=target.Profiles.FLBQ_f;
+				}
+				if (leftprof=='MEDBQ'){
+					prof=target.Profiles.MEDBQ_f;
+				}
+			}
+			
+			if (strand=='reverse'){
+				if (leftprof=='COV'){
+					prof=target.Profiles.COV_r;
+				}
+				if (leftprof=='QCOV'){
+					prof=target.Profiles.QCOV_r;
+				}
+				if (leftprof=='FLMQ'){
+					prof=target.Profiles.FLMQ_r;
+				}
+				if (leftprof=='MEDMQ'){
+					prof=target.Profiles.MEDMQ_r;
+				}
+				if (leftprof=='FLBQ'){
+					prof=target.Profiles.FLBQ_r;
+				}
+				if (leftprof=='MEDBQ'){
+					prof=target.Profiles.MEDBQ_r;
+				}
+			}
+				
+			
+			var prof2='';
+			
+			if (strand=='combined'){
+				
+				if (rightprof=='COV'){
+					prof2=target.Profiles.COV;
+				}
+				if (rightprof=='QCOV'){
+					prof2=target.Profiles.QCOV;
+				}
+				if (rightprof=='FLMQ'){
+					prof2=target.Profiles.FLMQ;
+				}
+				if (rightprof=='MEDMQ'){
+					prof2=target.Profiles.MEDMQ;
+				}
+				if (rightprof=='FLBQ'){
+					prof2=target.Profiles.FLBQ;
+				}
+				if (rightprof=='MEDBQ'){
+					prof2=target.Profiles.MEDBQ;
+				}	
+			
+			}
+			
+			
+			if (strand=='forward'){
+				
+				if (rightprof=='COV'){
+					prof2=target.Profiles.COV_f;
+				}
+				if (rightprof=='QCOV'){
+					prof2=target.Profiles.QCOV_f;
+				}
+				if (rightprof=='FLMQ'){
+					prof2=target.Profiles.FLMQ_f;
+				}
+				if (rightprof=='MEDMQ'){
+					prof2=target.Profiles.MEDMQ_f;
+				}
+				if (rightprof=='FLBQ'){
+					prof2=target.Profiles.FLBQ_f;
+				}
+				if (rightprof=='MEDBQ'){
+					prof2=target.Profiles.MEDBQ_f;
+				}	
+			
+			}
+			
+			if (strand=='reverse'){
+				
+				if (rightprof=='COV'){
+					prof2=target.Profiles.COV_r;
+				}
+				if (rightprof=='QCOV'){
+					prof2=target.Profiles.QCOV_r;
+				}
+				if (rightprof=='FLMQ'){
+					prof2=target.Profiles.FLMQ_r;
+				}
+				if (rightprof=='MEDMQ'){
+					prof2=target.Profiles.MEDMQ_r;
+				}
+				if (rightprof=='FLBQ'){
+					prof2=target.Profiles.FLBQ_r;
+				}
+				if (rightprof=='MEDBQ'){
+					prof2=target.Profiles.MEDBQ_r;
+				}	
+			
+			}
+
+			v=showPlot(leftprof,rightprof,prof,prof2,posarray,interval,sequence,normtotal,normmax,cut1shown,cut2shown,cutoff1,cutoff2);
+			profilePlot=v[0];
+			total_y_max=v[1];
+			total_y2_max=v[2];
+
+			$('#interval').text(target.Chrom+":"+(profilePlot.axes.xaxis.min).toString()+"-"+(profilePlot.axes.xaxis.max-1).toString());
+
+
+			return [profilePlot,total_y_max,total_y2_max]
+		}
+
+
+		// Show summary table
+
+		function showSumtable(datax,strand,allorfail){	
+			
+			
+			sumdata=[];
+  		    for (i = 0; i < datax.targets.length; i++) { 
+				summary=datax.targets[i].Summary;
+				if (datax.targets[i].PASS) {
+					passorfail='PASS'
+				}
+				else { 
+				    passorfail='FAIL'
+				}
+				
+				
+				if (allorfail=='all' || passorfail=='FAIL' ){
+				
+				if (strand=='combined'){
+				
+					sumdata.push([datax.targets[i].Name,summary['RC'],summary['MEDCOV'],summary['MINCOV'],summary['MEDQCOV'],summary['MINQCOV'],summary['MAXFLMQ'],summary['MAXFLBQ'],passorfail]);
+					
+				}
+				
+				if (strand=='forward'){
+				
+					sumdata.push([datax.targets[i].Name,summary['RC_f'],summary['MEDCOV_f'],summary['MINCOV_f'],summary['MEDQCOV_f'],summary['MINQCOV_f'],summary['MAXFLMQ_f'],summary['MAXFLBQ_f'],passorfail]);
+					
+				}
+				
+				if (strand=='reverse'){
+				
+					sumdata.push([datax.targets[i].Name,summary['RC_r'],summary['MEDCOV_r'],summary['MINCOV_r'],summary['MEDQCOV_r'],summary['MINQCOV_r'],summary['MAXFLMQ_r'],summary['MAXFLBQ_r'],passorfail]);
+					
+				}
+				
+			}
+				
+  		    }	
+			
+			stable=$('#sumtable').DataTable();
+			
+			scrollPosition = $('#sumtable').scrollTop();
+			
+			var seltarget = stable.$('tr.selected').find("td").first().text();
+			
+			stable.clear().draw();
+			stable.rows.add(sumdata).draw();
+			
+			if (seltarget=="") return;
+			
+			
+			var tableRow = $("#sumtable td").filter(function() {
+			    return $(this).first().text() == seltarget;
+			}).closest("tr");
+			tableRow.addClass('selected');
+			
+			var container = $('#sumtable,div.dataTables_scrollBody');
+			container.scrollTop(0);
+			container.scrollTop( tableRow.offset().top - container.offset().top -230);
+		}
+		
+		
+		
+		// Create profile plot
+
+		function showPlot(leftprof,rightprof,prof,prof2,posarray,interval,sequence,normtotal,normmax,cut1shown,cut2shown,cutoff1,cutoff2){
+
+			var data = [];
+			
+			for (var i = 0; i <= posarray.length; i++) {
+			   data.push([posarray[i],prof[i]]);
+			}
+			
+			var data2 = [];
+			for (var i = 0; i <= posarray.length; i++) {
+			   data2.push([posarray[i],prof2[i]]);
+			}
+			
+			v=getTotalMaxY(data,data2);
+			total_y_max=v[0];
+			total_y2_max=v[1];
+
+
+			// Definition of the profile plot
+			var profilePlot = $.jqplot('chart1', [data,data2], { 
+				title: target.Name+" ("+target.Chrom+":"+target.Start.toString()+"-"+(target.End-1).toString()+")", 
+				//	series: [{ 
+				//				label: '...', 
+				//				neighborThreshold: -1 
+				//			}], 
+				axes: {
+					xaxis: {
+						min: posarray[0],
+				 		max: posarray[posarray.length-1],
+						numberTicks: 6,
+						tickInterval: interval,
+						tickOptions: { showLabel:true }
+					},
+					yaxis: {
+						min: 0
+					},
+					y2axis: {
+						min: 0
+					}
+				},
+				cursor: {
+					show: true,
+					zoom:true,
+					looseZoom: true,
+					showTooltip:false,
+					showTooltipUnitPosition:true,
+					constrainZoomTo:'x',
+					constrainOutsideZoom:true,
+					showVerticalLine:true,
+					dblClickReset:false,
+					tooltipLocation:'sw'
+				},
+				highlighter: {
+					show: true,
+					sizeAdjust: 10,
+					tooltipAxes: "xy",
+					tooltipLocation: 'n',
+					formatString: "Pos: %d; Val: %g",
+					bringSeriesToFront:true
+				},
+				canvasOverlay: {
+						show: true,
+						objects: [
+							 {
+								 dashedHorizontalLine: {
+									 show: cut1shown,
+                    				name: 'cut1line',
+									 y: cutoff1,
+								 	lineWidth: 2,
+								 	color: 'rgb(0, 0, 153)',
+								 	shadow: false,
+									 xOffset: 0,
+									 showTooltip: cut1shown,
+									 tooltipFormatString: leftprof+" cutoff: "+cutoff1.toString()
+								 }
+							 },
+
+							 {
+								 dashedHorizontalLine: {
+									 show: cut2shown,
+									 y: cutoff2,
+                    				name: 'cut2line',
+									 yaxis: 'y2axis',
+								 	lineWidth: 2,
+								 	color: "rgb(220,20,60)",
+								 	shadow: false,
+									 xOffset: 0,
+									 showTooltip: cut2shown,
+									 tooltipFormatString: rightprof+" cutoff: "+cutoff2.toString()
+								 }
+							 }
+						]
+					},
+					
+				
+				legend: {
+					show: true,
+					placement: 'insideGrid'
+				},
+				yaxis: {
+					label: leftprof,		                                     
+				},
+				y2axis: {
+					label: rightprof,		                                     
+				},
+				series:[
+					{yaxis:'yaxis', label: leftprof},
+					{yaxis:'y2axis', label: rightprof}
+				]
+			});
+			
+			if (rightprof!=""){
+				var profilePlot = $.jqplot('chart1', [data,data2], { 
+					title: target.Name+" ("+target.Chrom+":"+target.Start.toString()+"-"+(target.End-1).toString()+")", 
+					axes: {
+						xaxis: {
+							min: posarray[0],
+					 		max: posarray[posarray.length-1],
+							numberTicks: 6,
+							tickInterval: interval,
+							tickOptions: { showLabel:true }
+						},
+						yaxis: {
+							min: 0
+						},
+						y2axis: {
+							min: 0
+						}
+					},
+					cursor: {
+						show: true,
+						zoom:true,
+						looseZoom: true,
+						showTooltip:false,
+						showTooltipUnitPosition:true,
+						constrainZoomTo:'x',
+						constrainOutsideZoom:true,
+						showVerticalLine:true,
+						dblClickReset:false,
+						tooltipLocation:'sw'
+					},
+					highlighter: {
+						show: true,
+						sizeAdjust: 10,
+						tooltipAxes: "xy",
+						tooltipLocation: 'n',
+						formatString: "Pos: %d; Val: %g",
+						bringSeriesToFront:true
+					},
+					canvasOverlay: {
+						show: true,
+						objects: [
+							 {
+								 dashedHorizontalLine: {
+									 show: cut1shown,
+									 y: cutoff1,
+                    				name: 'cut1line',
+								 	lineWidth: 2,
+								 	color: 'rgb(0, 0, 153)',
+								 	shadow: false,
+									 xOffset: 0,
+									 showTooltip: cut1shown,
+									 tooltipFormatString: leftprof+" cutoff: "+cutoff1.toString()
+								 }
+							 },
+
+							{
+								 dashedHorizontalLine: {
+									 show: cut2shown,
+									 y: cutoff2,
+                    				name: 'cut2line',
+									 yaxis: 'y2axis',
+								 	lineWidth: 2,
+								 	color: " rgb(220,20,60)",
+								 	shadow: false,
+									 xOffset: 0,
+									 showTooltip: cut2shown,
+									 tooltipFormatString: rightprof+" cutoff: "+cutoff2.toString()
+								 }
+							 }
+						]
+					},
+
+					
+					legend: {
+						show: true,
+						placement: 'insideGrid'
+					},
+					yaxis: {
+						label: leftprof,		                                     
+					},
+					y2axis: {
+						label: rightprof,		                                     
+					},
+					series:[
+						{yaxis:'yaxis', label: leftprof},
+						{yaxis:'y2axis', label: rightprof}
+					]
+				});
+			}
+			else {
+				var profilePlot = $.jqplot('chart1', [data], {
+					title: target.Name+" ("+target.Chrom+":"+target.Start.toString()+"-"+(target.End-1).toString()+")",
+					//	series: [{ 
+					//				label: '...', 
+					//				neighborThreshold: -1 
+					//			}], 
+					axes: {
+						xaxis: {
+							min: posarray[0],
+					 		max: posarray[posarray.length-1],
+							numberTicks: 6,
+							tickInterval: interval,
+							tickOptions: { showLabel:true }
+						},
+						yaxis: {
+							min: 0
+						}
+					},
+					cursor: {
+						show: true,
+						zoom:true,
+						looseZoom: true,
+						showTooltip:false,
+						showTooltipUnitPosition:true,
+						constrainZoomTo:'x',
+						constrainOutsideZoom:true,
+						showVerticalLine:true,
+						dblClickReset:false,
+						tooltipLocation:'sw'
+					},
+					highlighter: {
+						show: true,
+						sizeAdjust: 10,
+						tooltipAxes: "xy",
+						tooltipLocation: 'n',
+						formatString: "Pos: %d; Val: %g",
+						bringSeriesToFront:true
+					},
+					canvasOverlay: {
+						show: true,
+						objects: [
+							 {
+								 dashedHorizontalLine: {
+									 show: cut1shown,
+									 y: cutoff1,
+                    				name: 'cut1line',
+								 	lineWidth: 2,
+								 	color: 'rgb(0, 0, 153)',
+								 	shadow: false,
+									 xOffset: 0,
+									 showTooltip: cut1shown,
+									 tooltipFormatString: leftprof+" cutoff: "+cutoff1.toString()
+								 }
+							 },
+
+							{
+								 dashedHorizontalLine: {
+									 show: cut2shown,
+                    				name: 'cut2line',
+									 yaxis: 'y2axis',
+								 	y: cutoff2,
+								 	lineWidth: 2,
+								 	color: "rgb(220,20,60)",
+								 	shadow: false,
+									 xOffset: 0,
+									 showTooltip: cut2shown,
+									 tooltipFormatString: rightprof+" cutoff: "+cutoff2.toString()
+								 }
+							 }
+						]
+					},
+					legend: {
+						show: true,
+						placement: 'insideGrid'
+					},
+					yaxis: {
+						label: leftprof,		                                     
+					},
+					series:[
+						{yaxis:'yaxis', label: leftprof},
+					]
+				});
+				
+			}
+
+
+			// Initializing and scaling y-axes
+			
+			if (total_y_max==0){
+				total_y_max=1;
+			}
+			
+			if (total_y2_max==0){
+				total_y2_max=1;
+			}
+			
+			profilePlot=scaleYAxes(profilePlot,0,total_y_max,0,total_y2_max,normtotal,normmax,total_y_max,total_y2_max);
+				
+		    var plotData =  profilePlot.series[0].data;
+		    var zoomDataset = [];
+		    for (var i=0; i< plotData.length; i++) {
+		         if(plotData[i][0] >= profilePlot.axes.xaxis.min && plotData[i][0] <= profilePlot.axes.xaxis.max ) {
+			 	   zoomDataset.push(plotData[i][0]);
+		         }
+		    }	
+			
+			// Aligning reference sequence bar with plot
+			var x=$("#chart1").offset().left;
+			var y=$("#chart1").offset().top; 
+			$('#canvas').offset({top:y+400,left:x});
+  
+  		  	// Drawing reference sequence bar
+			var ctx = $('#canvas')[0].getContext("2d");
+			
+			refBar(ctx,sequence,zoomDataset,profilePlot);
+
+			
+			return [profilePlot,total_y_max,total_y2_max];
+		}
+
+		// Scale Y-axes
+
+		function scaleYAxes(profilePlot,min1,max1,min2,max2,normtotal,normmax,total_y_max,total_y2_max){
+			
+			if (max1==0){
+				max1=1;
+			}
+			
+			if (max2==0){
+				max2=1;
+			}
+					
+			if (normtotal){
+				profilePlot.axes.yaxis.max=total_y_max;
+				profilePlot.axes.yaxis.min=0;
+				profilePlot.axes.y2axis.max=total_y2_max;
+				profilePlot.axes.y2axis.min=0;
+			}
+			else {
+				profilePlot.axes.yaxis.max=max1;
+				profilePlot.axes.yaxis.min=min1;
+				profilePlot.axes.y2axis.max=max2;
+				profilePlot.axes.y2axis.min=min2;
+			}
+			
+			if (normmax){
+				profilePlot.axes.yaxis.max=Math.max(profilePlot.axes.yaxis.max,profilePlot.axes.y2axis.max)
+				profilePlot.axes.y2axis.max=profilePlot.axes.yaxis.max
+				profilePlot.axes.yaxis.min=Math.min(profilePlot.axes.yaxis.min,profilePlot.axes.y2axis.min)
+				profilePlot.axes.y2axis.min=profilePlot.axes.yaxis.min
+			}
+				
+			var delta=(profilePlot.axes.yaxis.max-profilePlot.axes.yaxis.min)*0.1;
+			profilePlot.axes.yaxis.min=Math.max(profilePlot.axes.yaxis.min-delta,0);
+			profilePlot.axes.yaxis.max=profilePlot.axes.yaxis.max+delta;	
+			profilePlot.axes.yaxis.tickInterval=(profilePlot.axes.yaxis.max-profilePlot.axes.yaxis.min)/5;
+			profilePlot.axes.yaxis.numberTicks=6;
+			
+			var delta=(profilePlot.axes.y2axis.max-profilePlot.axes.y2axis.min)*0.1;
+			profilePlot.axes.y2axis.min=Math.max(profilePlot.axes.y2axis.min-delta,0);
+			profilePlot.axes.y2axis.max=profilePlot.axes.y2axis.max+delta;	
+			profilePlot.axes.y2axis.tickInterval=(profilePlot.axes.y2axis.max-profilePlot.axes.y2axis.min)/5;
+			profilePlot.axes.y2axis.numberTicks=6;
+			
+			profilePlot.replot();
+			
+			return profilePlot;
+			
+		}
+
+		// Get maximum values of Y-axes
+
+		function getTotalMaxY(data,data2){
+			var maxy=-1;
+			var maxy2=-1;
+			for (var i = 0; i < data.length; i++) {
+				var v=data[i];
+				var y=v[1];
+				var v=data2[i];
+				var y2=v[1];
+				if (y>maxy){
+					maxy=y;
+				}
+				if (y2>maxy2){
+					maxy2=y2;
+				}
+			}
+			return [maxy,maxy2];
+		}
+
+
+		// Create reference sequence bar
+
+		function refBar(ctx,sequence,zoomDataset,profilePlot) {
+			ctx.clearRect(0,0,750,20);
+		 	ctx.fillStyle='#E0E0E0';
+		 	ctx.fillRect(0,0,750,20);
+		 	
+			for (var i=0; i< zoomDataset.length; i++) {
+				
+  			   base=sequence[zoomDataset[i]-target.Start];
+	  
+  			   ctx.fillStyle='#C0C0C0';
+  			   if (base=="A"){
+				   ctx.fillStyle='green';
+  			   }
+			   if (base=="C"){
+				   ctx.fillStyle='blue';
+			   }
+			   if (base=="G"){
+				   ctx.fillStyle='black';
+			   }
+			   if (base=="T"){
+				   ctx.fillStyle='red';
+			   }
+				
+				var dx=profilePlot.axes.xaxis.u2p(zoomDataset[i]);
+				
+				if (zoomDataset.length==1) {
+					w=1000;
+				}
+			
+				if (i>0) {
+					var dxprev=profilePlot.axes.xaxis.u2p(zoomDataset[i-1]);
+					w=(dx-dxprev)/2;
+				}
+			
+				if (i<zoomDataset.length-1) {
+					var dxnext=profilePlot.axes.xaxis.u2p(zoomDataset[i+1]);
+					w=(dxnext-dx)/2
+				}  
+			
+				ctx.fillRect(dx-w,0,2*w,20);
+				
+				if (zoomDataset.length<=40){
+					ctx.lineWidth = 0.5;
+					ctx.strokeStyle = 'white';
+					ctx.strokeRect(dx-w,0,2*w,20);
+					
+					ctx.fillStyle='white';	
+					ctx.font = "16px Arial";  
+					if (base=="A"){
+						ctx.fillText("A",dx-6,17);
+					}
+					if (base=="C"){
+						ctx.fillText("C",dx-6,17);
+					}
+					if (base=="G"){
+						ctx.fillText("G",dx-6,17);
+					}
+					if (base=="T"){
+						ctx.fillText("T",dx-6,17);
+					}		
+				}
+			}
+			
+		}
+
+</script>
+
+<!-- Don't touch this! -->
+	<script class="include" language="javascript" type="text/javascript" src="lib/jqplot.cursor.min.js"></script>
+    <script class="include" type="text/javascript" src="lib/jquery.jqplot.min.js"></script>
+	<script type="text/javascript" src="lib/jquery.jqplot.min.js"></script>
+	<script type="text/javascript" src="lib/jqplot.cursor.min.js"></script>
+	<script type="text/javascript" src="lib/jqplot.highlighter.min.js"></script>
+	<script type="text/javascript" src="lib/jqplot.barRenderer.min.js"></script>
+	<script type="text/javascript" src="lib/jqplot.categoryAxisRenderer.min.js"></script>
+	<script type="text/javascript" src="lib/jqplot.pieRenderer.min.js"></script>
+	<script language="javascript" type="text/javascript" src="lib/jqplot/plugins/jqplot.canvasOverlay.min.js"></script>
+	<link rel="stylesheet" type="text/css" hrf="lib/jquery.jqplot.min.css" />
+<!-- End Don't touch this! -->
+
+</body>
+</html>

@@ -1,0 +1,86 @@
+
+*{
+	 padding : 0;
+	 margin : 0;
+}
+body{
+	 background-attachment : fixed;
+	 background-size : 100% auto;
+	height: 550px;
+}
+.blended_grid{
+	box-shadow: 10px 10px 5px #888888;
+	 display : block;
+	 height : 100%;
+	 width : 980px;
+	 overflow : auto;
+}
+.pageHeader{
+	 background-color : #F5F5DC;
+	 float : left;
+	 clear : none;
+	 height : 28px;
+	 width : 980px;
+	 z-index: 5;
+}
+.pageLeftMenu{
+	 position: relative;
+	 background-color : white;
+	 float : left;
+	 clear : none;
+	 height : 520px;
+	 width : 18%;
+	 z-index: 4;
+}
+.pageContent{
+	 position: relative;
+	 background-color : #FFFFFF;
+	 float : left;
+	 clear : none;
+	 height : 520px;
+	 width : 82%;
+	 z-index: 4;
+}
+.summaryview{
+	box-shadow: 10px 10px 5px #888888;
+	 position: relative;
+	 background-color : white;
+	 clear : none;
+	  float : left;
+	 left: 0px;
+	 top: 0px;
+	 width: 980px;
+	 height: 520px;
+	 z-index: 3;
+	
+}
+.genomeview{
+	box-shadow: 10px 10px 5px #888888;
+	 position: relative;
+	 background-color : white;
+	 float : left;
+	 clear : none;
+	 left: 0px;
+	 top: 0px;
+	 width: 980px;
+	 height: 520px;
+	 z-index: 2;
+	
+}
+.infoview{
+	box-shadow: 10px 10px 5px #888888;
+	 position: relative;
+	 background-color : #8FBC8F;
+	 float : left;
+	 clear : none;
+	 left: 120px;
+	 top: 65px;
+	 width: 750px;
+	 height: 380px;
+	 z-index: 1;
+	 overflow: scroll;
+	
+}
+
+
+
