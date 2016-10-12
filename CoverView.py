@@ -129,10 +129,8 @@ class SingleJob(multiprocessing.Process):
         if not goodchrom in self.samfile.references: return None
 
         # Getting pileup for the given region
-        if config['duplicates']:
-            x = self.samfile.pileup(goodchrom, begin, end + 1, mask=0)
-        else:
-            x = self.samfile.pileup(goodchrom, begin, end + 1)
+        if config['duplicates']: x = self.samfile.pileup(goodchrom, begin, end + 1, mask=0)
+        else: x = self.samfile.pileup(goodchrom, begin, end + 1)
 
         i = 0
         # Iterating through columns of the pileup
@@ -160,10 +158,8 @@ class SingleJob(multiprocessing.Process):
                 for pileupread in pileupcolumn.pileups:
 
                     if self.config['direction']:
-                        if pileupread.alignment.is_reverse:
-                            cov_r += 1
-                        else:
-                            cov_f += 1
+                        if pileupread.alignment.is_reverse: cov_r += 1
+                        else: cov_f += 1
 
                     # Checking if it is a deletion
                     if pileupread.is_del:
@@ -180,41 +176,32 @@ class SingleJob(multiprocessing.Process):
                     # Getting base quality
                     c = pileupread.alignment.qual[pileupread.qpos]
                     bq = ord(c) - 33
-                    #bq = pileupread.alignment.query_qualities[pileupread.query_position]
                     bqs.append(bq)
 
                     if self.config['direction']:
-                        if pileupread.alignment.is_reverse:
-                            bqs_r.append(bq)
-                        else:
-                            bqs_f.append(bq)
+                        if pileupread.alignment.is_reverse: bqs_r.append(bq)
+                        else: bqs_f.append(bq)
 
                     # Getting mapping quality
                     mqs.append(pileupread.alignment.mapq)
 
                     if self.config['direction']:
-                        if pileupread.alignment.is_reverse:
-                            mqs_r.append(pileupread.alignment.mapq)
-                        else:
-                            mqs_f.append(pileupread.alignment.mapq)
+                        if pileupread.alignment.is_reverse: mqs_r.append(pileupread.alignment.mapq)
+                        else: mqs_f.append(pileupread.alignment.mapq)
 
                     # Calculating QCOV
                     if pileupread.alignment.mapq >= mq_cutoff and bq >= bq_cutoff:
                         qcov += 1
                         if self.config['direction']:
-                            if pileupread.alignment.is_reverse:
-                                qcov_r += 1
-                            else:
-                                qcov_f += 1
+                            if pileupread.alignment.is_reverse: qcov_r += 1
+                            else: qcov_f += 1
 
                 # Summary stats of QCOV, MEDBQ, FLBQ, MEDMQ and FLMQ
                 ret_QCOV[i] = qcov
                 ret_MEDBQ[i] = numpy.median(bqs)
                 ret_MEDMQ[i] = numpy.median(mqs)
-                if len(bqs) > 0:
-                    ret_FLBQ[i] = round(len([x for x in bqs if x < bq_cutoff]) / len(bqs), 3)
-                if len(mqs) > 0:
-                    ret_FLMQ[i] = round(len([x for x in mqs if x < mq_cutoff]) / len(mqs), 3)
+                if len(bqs) > 0: ret_FLBQ[i] = round(len([x for x in bqs if x < bq_cutoff]) / len(bqs), 3)
+                if len(mqs) > 0: ret_FLMQ[i] = round(len([x for x in mqs if x < mq_cutoff]) / len(mqs), 3)
 
                 # Directionality
                 if self.config['direction']:
@@ -234,10 +221,8 @@ class SingleJob(multiprocessing.Process):
 
                 i += 1
 
-        if self.config['direction']:
-            return ret_COV, ret_QCOV, ret_MEDBQ, ret_FLBQ, ret_MEDMQ, ret_FLMQ, ret_COV_f, ret_QCOV_f, ret_MEDBQ_f, ret_FLBQ_f, ret_MEDMQ_f, ret_FLMQ_f, ret_COV_r, ret_QCOV_r, ret_MEDBQ_r, ret_FLBQ_r, ret_MEDMQ_r, ret_FLMQ_r
-        else:
-            return ret_COV, ret_QCOV, ret_MEDBQ, ret_FLBQ, ret_MEDMQ, ret_FLMQ
+        if self.config['direction']: return ret_COV, ret_QCOV, ret_MEDBQ, ret_FLBQ, ret_MEDMQ, ret_FLMQ, ret_COV_f, ret_QCOV_f, ret_MEDBQ_f, ret_FLBQ_f, ret_MEDMQ_f, ret_FLMQ_f, ret_COV_r, ret_QCOV_r, ret_MEDBQ_r, ret_FLBQ_r, ret_MEDMQ_r, ret_FLMQ_r
+        else: return ret_COV, ret_QCOV, ret_MEDBQ, ret_FLBQ, ret_MEDMQ, ret_FLMQ
 
     # Calculating read counts for a region
     def readcountsForRegion(self, region):
@@ -262,17 +247,13 @@ class SingleJob(multiprocessing.Process):
         for x in self.samfile.fetch(goodchrom, begin, end):
             if self.config['duplicates']:
                 count += 1
-                if x.is_reverse:
-                    count_r += 1
-                else:
-                    count_f += 1
+                if x.is_reverse: count_r += 1
+                else: count_f += 1
             else:
                 if not x.is_duplicate:
                     count += 1
-                    if x.is_reverse:
-                        count_r += 1
-                    else:
-                        count_f += 1
+                    if x.is_reverse: count_r += 1
+                    else: count_f += 1
             self.reads[chrom].add((x.qname, x.pos))
 
         return count, count_f, count_r
@@ -396,10 +377,8 @@ class SingleJob(multiprocessing.Process):
                 profiles = dict()
 
                 # Calculate directional and/or non-directional profiles
-                if self.config['direction']:
-                    COV, QCOV, MEDBQ, FLBQ, MEDMQ, FLMQ, COV_f, QCOV_f, MEDBQ_f, FLBQ_f, MEDMQ_f, FLMQ_f, COV_r, QCOV_r, MEDBQ_r, FLBQ_r, MEDMQ_r, FLMQ_r = self.getProfiles(region)
-                else:
-                    COV, QCOV, MEDBQ, FLBQ, MEDMQ, FLMQ = self.getProfiles(region)
+                if self.config['direction']: COV, QCOV, MEDBQ, FLBQ, MEDMQ, FLMQ, COV_f, QCOV_f, MEDBQ_f, FLBQ_f, MEDMQ_f, FLMQ_f, COV_r, QCOV_r, MEDBQ_r, FLBQ_r, MEDMQ_r, FLMQ_r = self.getProfiles(region)
+                else: COV, QCOV, MEDBQ, FLBQ, MEDMQ, FLMQ = self.getProfiles(region)
 
                 # Make profiles dictionary
                 profiles['COV'] = COV
@@ -442,79 +421,51 @@ class SingleJob(multiprocessing.Process):
 
                 # Caclulate MEDCOV, MINCOV, MEDQCOV, MINQCOV, MAXFLBQ, MAXFLMQ
                 summary['MEDCOV'] = numpy.median(COV)
-                if len(COV) > 0:
-                    summary['MINCOV'] = min(COV)
-                else:
-                    summary['MINCOV'] = float('NaN')
+                if len(COV) > 0: summary['MINCOV'] = min(COV)
+                else: summary['MINCOV'] = float('NaN')
                 summary['MEDQCOV'] = numpy.median(QCOV)
-                if len(QCOV) > 0:
-                    summary['MINQCOV'] = min(QCOV)
-                else:
-                    summary['MINQCOV'] = float('NaN')
-                if len(FLBQ) > 0:
-                    summary['MAXFLBQ'] = max(FLBQ)
-                else:
-                    summary['MAXFLBQ'] = float('NaN')
-                if len(FLMQ) > 0:
-                    summary['MAXFLMQ'] = max(FLMQ)
-                else:
-                    summary['MAXFLMQ'] = float('NaN')
+                if len(QCOV) > 0: summary['MINQCOV'] = min(QCOV)
+                else: summary['MINQCOV'] = float('NaN')
+                if len(FLBQ) > 0: summary['MAXFLBQ'] = max(FLBQ)
+                else: summary['MAXFLBQ'] = float('NaN')
+                if len(FLMQ) > 0: summary['MAXFLMQ'] = max(FLMQ)
+                else: summary['MAXFLMQ'] = float('NaN')
 
                 # Caclulate directional MEDCOV, MINCOV, MEDQCOV, MINQCOV, MAXFLBQ, MAXFLMQ
                 if self.config['direction']:
 
                     summary['MEDCOV_f'] = numpy.median(COV_f)
-                    if len(COV_f) > 0:
-                        summary['MINCOV_f'] = min(COV_f)
-                    else:
-                        summary['MINCOV_f'] = float('NaN')
+                    if len(COV_f) > 0: summary['MINCOV_f'] = min(COV_f)
+                    else: summary['MINCOV_f'] = float('NaN')
                     summary['MEDQCOV_f'] = numpy.median(QCOV_f)
-                    if len(QCOV_f) > 0:
-                        summary['MINQCOV_f'] = min(QCOV_f)
-                    else:
-                        summary['MINQCOV_f'] = float('NaN')
-                    if len(FLBQ_f) > 0:
-                        summary['MAXFLBQ_f'] = max(FLBQ_f)
-                    else:
-                        summary['MAXFLBQ_f'] = float('NaN')
-                    if len(FLMQ_f) > 0:
-                        summary['MAXFLMQ_f'] = max(FLMQ_f)
-                    else:
-                        summary['MAXFLMQ_f'] = float('NaN')
+                    if len(QCOV_f) > 0: summary['MINQCOV_f'] = min(QCOV_f)
+                    else: summary['MINQCOV_f'] = float('NaN')
+                    if len(FLBQ_f) > 0: summary['MAXFLBQ_f'] = max(FLBQ_f)
+                    else: summary['MAXFLBQ_f'] = float('NaN')
+                    if len(FLMQ_f) > 0: summary['MAXFLMQ_f'] = max(FLMQ_f)
+                    else: summary['MAXFLMQ_f'] = float('NaN')
 
                     summary['MEDCOV_r'] = numpy.median(COV_r)
-                    if len(COV_r) > 0:
-                        summary['MINCOV_r'] = min(COV_r)
-                    else:
-                        summary['MINCOV_r'] = float('NaN')
+                    if len(COV_r) > 0: summary['MINCOV_r'] = min(COV_r)
+                    else: summary['MINCOV_r'] = float('NaN')
                     summary['MEDQCOV_r'] = numpy.median(QCOV_r)
-                    if len(QCOV_r) > 0:
-                        summary['MINQCOV_r'] = min(QCOV_r)
-                    else:
-                        summary['MINQCOV_r'] = float('NaN')
-                    if len(FLBQ_r) > 0:
-                        summary['MAXFLBQ_r'] = max(FLBQ_r)
-                    else:
-                        summary['MAXFLBQ_r'] = float('NaN')
-                    if len(FLMQ_r) > 0:
-                        summary['MAXFLMQ_r'] = max(FLMQ_r)
-                    else:
-                        summary['MAXFLMQ_r'] = float('NaN')
+                    if len(QCOV_r) > 0: summary['MINQCOV_r'] = min(QCOV_r)
+                    else: summary['MINQCOV_r'] = float('NaN')
+                    if len(FLBQ_r) > 0: summary['MAXFLBQ_r'] = max(FLBQ_r)
+                    else: summary['MAXFLBQ_r'] = float('NaN')
+                    if len(FLMQ_r) > 0: summary['MAXFLMQ_r'] = max(FLMQ_r)
+                    else: summary['MAXFLMQ_r'] = float('NaN')
 
                 # Add summary metrics to target dict
                 target['Summary'] = summary
 
                 # Calculate if target is PASS or FAIL
-                if not config['pass'] is None:
-                    target['PASS'] = self.targetPASS(target)
-                else:
-                    target['PASS'] = True
+                if not config['pass'] is None: target['PASS'] = self.targetPASS(target)
+                else: target['PASS'] = True
 
                 # Retrieve reference sequence if GUI output is created
-                if self.config['outputs']['gui']:
-                    target['Ref'] = self.getReferenceSequence(chrom, begin, end)
-                else:
-                    target['Ref'] = ''
+                if self.config['outputs']['gui']: target['Ref'] = self.getReferenceSequence(chrom, begin, end)
+                else: target['Ref'] = ''
 
             else:
                 target['PASS'] = True
@@ -525,10 +476,8 @@ class SingleJob(multiprocessing.Process):
             # Count failed targets
             if not target['PASS']:
                 numOfFails += 1
-                if '_' in target['Name']:
-                    ids = target['Name'][:target['Name'].find('_')]
-                else:
-                    ids = target['Name']
+                if '_' in target['Name']: ids = target['Name'][:target['Name'].find('_')]
+                else: ids = target['Name']
                 fails.append(ids)
 
             # Update progress info
@@ -625,16 +574,12 @@ class SingleJob(multiprocessing.Process):
         record = [target['Name'], target['Chrom'], str(target['Start']), str(target['End'])]
 
         if self.config['transcript']['regions'] and not self.config['transcript_db'] is None:
-            if not transcoordstr_start == '':
-                record.extend([transcoordstr_start, transcoordstr_end])
-            else:
-                record.extend(['.', '.'])
+            if not transcoordstr_start == '': record.extend([transcoordstr_start, transcoordstr_end])
+            else: record.extend(['.', '.'])
 
         if not self.config['pass'] is None:
-            if target['PASS']:
-                record.append('PASS')
-            else:
-                record.append('FAIL')
+            if target['PASS']: record.append('PASS')
+            else: record.append('FAIL')
 
         if str(summary['MAXFLMQ']) == 'nan': summary['MAXFLMQ'] = '.'
         if str(summary['MAXFLBQ']) == 'nan': summary['MAXFLBQ'] = '.'
@@ -1127,6 +1072,76 @@ def output_summary_minimal(options, chromdata):
     out_summary.close()
 
 
+def finalizeJSONOutput(options):
+
+    out_json = open(options.output + '_gui/data/results.js', 'a')
+
+    newchromsres = []
+    others = {'CHROM': '...', 'RC': 0, 'RCIN': 0, 'RCOUT': 0}
+    chrnames = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19',
+                '20', '21', '22', 'X', 'Y', 'chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8', 'chr9',
+                'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 'chr18', 'chr19', 'chr20',
+                'chr21', 'chr22', 'chrX', 'chrY']
+    chromsres = chromdata['Chroms']
+    for x in chromsres:
+        if x['CHROM'] in chrnames:
+            newchromsres.append(x)
+        else:
+            others['RC'] += x['RC']
+            others['RCIN'] += x['RCIN']
+            others['RCOUT'] += x['RCOUT']
+    newchromsres.append(others)
+    chromdata['Chroms'] = newchromsres
+
+    out_json.write(',\"chromdata\":' + json.dumps(chromdata, separators=(',', ':')))
+
+    infn = options.input
+    if '/' in infn:
+        infn = infn[infn.rfind('/') + 1:]
+    if len(infn) > 27: infn = infn[:27] + '...bam'
+    out_json.write(',\"input\":\"' + infn + '\"')
+
+    out_json.write(',\"direction\":' + str(config['direction']).lower())
+    out_json.write(',\"duplicates\":' + str(config['duplicates']).lower())
+    out_json.write(',\"ntargets\":' + str(numOfTargets))
+    out_json.write(',\"unique\":' + str(uniqueIDs))
+    out_json.write(',\"nfailed\":' + str(failedtargets))
+    out_json.write(',\"uniquefailed\":' + str(len(uniqueids)))
+
+    bedfn = options.bedfile
+    if '/' in bedfn:
+        bedfn = bedfn[bedfn.rfind('/') + 1:]
+    if len(bedfn) > 20: bedfn = bedfn[:20] + '...bed'
+    out_json.write(',\"bedfile\":\"' + bedfn + '\"')
+
+    now = datetime.datetime.now()
+    out_json.write(',\"date\":\"' + now.strftime("%d-%m-%Y, %H:%M") + "\"")
+
+    passdef = []
+    for k, v in config['pass'].iteritems():
+        [met,minmax] = k.split('_')
+        if minmax == 'MIN':
+            passdef.append(met + '>' + str(v))
+        else:
+            passdef.append(met + '<' + str(v))
+    passdefstr = ', '.join(passdef)
+    out_json.write(',\"passdef\":\"' + passdefstr + '\"')
+
+    passmets = dict()
+    for k, v in config['pass'].iteritems():
+        [met, minmax] = k.split('_')
+        if met.endswith('QCOV'):  passmets['QCOV'] = v
+        elif met.endswith('COV'):  passmets['COV'] = v
+        elif met.endswith('FLMQ'):  passmets['FLMQ'] = v
+        elif met.endswith('FLBQ'): passmets['FLBQ'] = v
+        passmets[met] = v
+    out_json.write(',\"passmets\":' + json.dumps(passmets, separators=(',', ':')))
+
+    out_json.write('}\n')
+    out_json.write('\treturn data\n')
+    out_json.write('}\n')
+    out_json.close()
+
 #########################################################################################################################################
 
 
@@ -1205,18 +1220,15 @@ for process in processes: process.start()
 for process in processes: process.join()
 
 # Merging tmp files
-if int(options.threads) > 1:
-    mergeTmpFiles(options, config)
+if int(options.threads) > 1: mergeTmpFiles(options, config)
 
 # Reading on-target read counts from tmp file
 ontarget = dict()
 for threadidx in range(1, int(options.threads) + 1):
     for line in open(options.output + '_reads_on_target_' + str(threadidx) + '.txt'):
         [key, value] = line.split(':')
-        if key in ontarget.keys():
-            ontarget[key] += int(value.strip())
-        else:
-            ontarget[key] = int(value.strip())
+        if key in ontarget.keys(): ontarget[key] += int(value.strip())
+        else: ontarget[key] = int(value.strip())
     os.remove(options.output + '_reads_on_target_' + str(threadidx) + '.txt')
 
 # Reading number of failed targets from tmp file
@@ -1233,10 +1245,8 @@ for threadidx in range(1, int(options.threads) + 1):
     os.remove(options.output + '_failedtargets_' + str(threadidx) + '.txt')
 
 # Closing progress info
-if failedtargets > 0:
-    print ' - Done. (' + str(failedtargets) + ' failed regions)'
-else:
-    print ' - Done.'
+if failedtargets > 0: print ' - Done. (' + str(failedtargets) + ' failed regions)'
+else: print ' - Done.'
 
 # Calculate and output chromosome summary data
 samfile = pysam.Samfile(options.input, "rb")
@@ -1244,75 +1254,9 @@ chromdata = calculateChromdata(samfile, ontarget)
 output_summary(options, chromdata)
 
 # Finalizing JSON output file
-if config['outputs']['gui']:
-    out_json = open(options.output + '_gui/data/results.js', 'a')
+if config['outputs']['gui']: finalizeJSONOutput(options)
 
-    newchromsres = []
-    others = {'CHROM': '...', 'RC': 0, 'RCIN': 0, 'RCOUT': 0}
-    chrnames = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19',
-                '20', '21', '22', 'X', 'Y', 'chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8', 'chr9',
-                'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 'chr18', 'chr19', 'chr20',
-                'chr21', 'chr22', 'chrX', 'chrY']
-    chromsres = chromdata['Chroms']
-    for x in chromsres:
-        if x['CHROM'] in chrnames:
-            newchromsres.append(x)
-        else:
-            others['RC'] += x['RC']
-            others['RCIN'] += x['RCIN']
-            others['RCOUT'] += x['RCOUT']
-    newchromsres.append(others)
-    chromdata['Chroms'] = newchromsres
-
-    out_json.write(',\"chromdata\":' + json.dumps(chromdata, separators=(',', ':')))
-
-    infn = options.input
-    if '/' in infn:
-        infn = infn[infn.rfind('/') + 1:]
-    if len(infn) > 27: infn = infn[:27] + '...bam'
-    out_json.write(',\"input\":\"' + infn + '\"')
-
-    out_json.write(',\"direction\":' + str(config['direction']).lower())
-    out_json.write(',\"duplicates\":' + str(config['duplicates']).lower())
-    out_json.write(',\"ntargets\":' + str(numOfTargets))
-    out_json.write(',\"unique\":' + str(uniqueIDs))
-    out_json.write(',\"nfailed\":' + str(failedtargets))
-    out_json.write(',\"uniquefailed\":' + str(len(uniqueids)))
-
-    bedfn = options.bedfile
-    if '/' in bedfn:
-        bedfn = bedfn[bedfn.rfind('/') + 1:]
-    if len(bedfn) > 20: bedfn = bedfn[:20] + '...bed'
-    out_json.write(',\"bedfile\":\"' + bedfn + '\"')
-
-    now = datetime.datetime.now()
-    out_json.write(',\"date\":\"' + now.strftime("%d-%m-%Y, %H:%M") + "\"")
-
-    passdef = []
-    for k, v in config['pass'].iteritems():
-        [met,minmax] = k.split('_')
-        if minmax == 'MIN':
-            passdef.append(met + '>' + str(v))
-        else:
-            passdef.append(met + '<' + str(v))
-    passdefstr = ', '.join(passdef)
-    out_json.write(',\"passdef\":\"' + passdefstr + '\"')
-
-    passmets = dict()
-    for k, v in config['pass'].iteritems():
-        [met, minmax] = k.split('_')
-        if met.endswith('QCOV'):  passmets['QCOV'] = v
-        elif met.endswith('COV'):  passmets['COV'] = v
-        elif met.endswith('FLMQ'):  passmets['FLMQ'] = v
-        elif met.endswith('FLBQ'): passmets['FLBQ'] = v
-        passmets[met] = v
-    out_json.write(',\"passmets\":' + json.dumps(passmets, separators=(',', ':')))
-
-    out_json.write('}\n')
-    out_json.write('\treturn data\n')
-    out_json.write('}\n')
-    out_json.close()
-
+# Goodbye message
 print ""
 print 'CoverView v1.2.0 succesfully finished: ', datetime.datetime.now()
 print "======================================================================================"
