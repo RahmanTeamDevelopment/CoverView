@@ -854,6 +854,8 @@ def findFileBreaks(inputf, threads):
 
 # Merging tmp files to final output files
 def mergeTmpFiles(options, config):
+
+    # Merging _region output tmp files
     if config['outputs']['regions']:
 
         filenames = []
@@ -881,6 +883,7 @@ def mergeTmpFiles(options, config):
         for fn in filenames:
             os.remove(fn)
 
+    # Merging _profiles output tmp files
     if config['outputs']['profiles']:
 
         filenames = []
@@ -906,6 +909,7 @@ def mergeTmpFiles(options, config):
 
         for fn in filenames: os.remove(fn)
 
+    # Merging gui data json tmp files
     if config['outputs']['gui']:
 
         filenames = []
@@ -925,7 +929,7 @@ def mergeTmpFiles(options, config):
 
             outfile.write(']')
 
-
+    # Merging _poor output tmp files
     if config['transcript']['poor'] and not config['transcript_db'] is None and config['outputs']['profiles']:
 
         filenames = []
@@ -964,6 +968,7 @@ def output_summary(options, chromdata):
 
 # Calculating chromosome data
 def calculateChromdata(samfile, ontarget):
+    # Initializing progress info
     sys.stdout.write('\rFinalizing analysis ... 0.0%')
     sys.stdout.flush()
 
@@ -974,6 +979,7 @@ def calculateChromdata(samfile, ontarget):
     allon = 0
     alloff = 0
 
+    # Iterate through chromosomes
     i = 0
     for chrom in chroms:
 
@@ -992,6 +998,7 @@ def calculateChromdata(samfile, ontarget):
 
         i += 1
 
+        # Updating progress info
         x = round(100 * i / len(chroms), 1)
         x = min(x, 100.0)
         sys.stdout.write('\rFinalizing analysis ... ' + str(x) + '%')
@@ -1007,6 +1014,7 @@ def calculateChromdata(samfile, ontarget):
     chromdata['Total'] = allreads
     chromdata['Unmapped'] = allreads - alltotal
 
+    # Finalizing progress info
     sys.stdout.write('\rFinalizing analysis ... 100.0% - Done')
     sys.stdout.flush()
     print ''
@@ -1016,6 +1024,7 @@ def calculateChromdata(samfile, ontarget):
 # Calculating chromosome data (minimal mode)
 def calculateChromdata_minimal(samfile):
     print ''
+    # Initializing progress info
     sys.stdout.write('\rRunning analysis ... 0.0%')
     sys.stdout.flush()
 
@@ -1025,6 +1034,7 @@ def calculateChromdata_minimal(samfile):
     alltotal = 0
 
     i = 0
+    # Iterate through chromosomes
     for chrom in chroms:
         total = sum(1 for _ in samfile.fetch(chrom))
         chromsres.append({'CHROM': chrom, 'RC': total})
@@ -1032,6 +1042,7 @@ def calculateChromdata_minimal(samfile):
 
         i += 1
 
+        # Updating progress info
         x = round(100 * i / len(chroms), 1)
         x = min(x, 100.0)
         sys.stdout.write('\rRunning analysis ... ' + str(x) + '%')
@@ -1047,6 +1058,7 @@ def calculateChromdata_minimal(samfile):
     chromdata['Total'] = allreads
     chromdata['Unmapped'] = allreads - alltotal
 
+    # Finalizing progress info
     sys.stdout.write('\rRunning analysis ... 100.0% - Done')
     sys.stdout.flush()
     print ''
