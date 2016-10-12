@@ -216,6 +216,7 @@ class SingleJob(multiprocessing.Process):
                 if len(mqs) > 0:
                     ret_FLMQ[i] = round(len([x for x in mqs if x < mq_cutoff]) / len(mqs), 3)
 
+                # Directionality
                 if self.config['direction']:
                     ret_COV_f[i] = cov_f
                     ret_COV_r[i] = cov_r
@@ -306,8 +307,10 @@ class SingleJob(multiprocessing.Process):
     # Running process
     def run(self):
 
+        # If there is only one thread
         if int(options.threads) == 1:
 
+            # Outputting _target file header
             if self.config['outputs']['regions']:
                 targetheader = ['Region', 'Chromosome', 'Start_position', 'End_position']
                 if config['transcript']['regions'] and not config['transcript_db'] is None: targetheader.extend(
@@ -321,6 +324,7 @@ class SingleJob(multiprocessing.Process):
 
                 self.out_targets.write('#' + '\t'.join(targetheader) + '\n')
 
+            # Outputting _profiles file header
             if self.config['outputs']['profiles']:
                 profheader = ['Chromosome', 'Position']
                 if config['transcript']['profiles'] and not config['transcript_db'] is None: profheader.append(
@@ -333,30 +337,36 @@ class SingleJob(multiprocessing.Process):
 
                 self.out_profiles.write('#' + '\t'.join(profheader) + '\n')
 
+            # Outputting _poor file header
             if not config['transcript_db'] is None and config['outputs']['profiles']:
                 poorheader = ['Region', 'Chromosome', 'Start_position', 'End_position', 'Start_transcript',
                               'End_transcript']
                 self.out_poor.write('#' + '\t'.join(poorheader) + '\n')
 
+            # Initializing gui data json file
             if self.config['outputs']['gui']:
                 self.out_json.write('function readData() {\n')
                 self.out_json.write('\tdata={\"targets\":[')
 
+        # Initializing progress info
         if self.threadidx == 1:
             print ''
             sys.stdout.write('\rRunning analysis ... 0.0%')
             sys.stdout.flush()
 
+        # Iteriate through the bed file
         fails = []
         numOfFails = 0
         counter = 0
         for line in open(self.options.bedfile):
             counter += 1
 
+            # Check which part of the bed file should be process by this thread
             if counter < int(self.startline): continue
             if not self.endline == '':
                 if counter > int(self.endline): break
 
+            # Retrieve target as a dictionary
             target = dict()
 
             line = line.rstrip()
@@ -381,15 +391,17 @@ class SingleJob(multiprocessing.Process):
             target['Start'] = begin + 1
             target['End'] = end
 
+            # Calculate profiles if either _profiles or _regions files are to be outputted
             if self.config['outputs']['profiles'] or self.config['outputs']['regions']:
                 profiles = dict()
 
+                # Calculate directional and/or non-directional profiles
                 if self.config['direction']:
-                    COV, QCOV, MEDBQ, FLBQ, MEDMQ, FLMQ, COV_f, QCOV_f, MEDBQ_f, FLBQ_f, MEDMQ_f, FLMQ_f, COV_r, QCOV_r, MEDBQ_r, FLBQ_r, MEDMQ_r, FLMQ_r = self.getProfiles(
-                        region)
+                    COV, QCOV, MEDBQ, FLBQ, MEDMQ, FLMQ, COV_f, QCOV_f, MEDBQ_f, FLBQ_f, MEDMQ_f, FLMQ_f, COV_r, QCOV_r, MEDBQ_r, FLBQ_r, MEDMQ_r, FLMQ_r = self.getProfiles(region)
                 else:
                     COV, QCOV, MEDBQ, FLBQ, MEDMQ, FLMQ = self.getProfiles(region)
 
+                # Make profiles dictionary
                 profiles['COV'] = COV
                 profiles['QCOV'] = QCOV
                 profiles['MEDBQ'] = MEDBQ
@@ -412,15 +424,23 @@ class SingleJob(multiprocessing.Process):
                     profiles['MEDMQ_r'] = MEDMQ_r
                     profiles['FLMQ_r'] = FLMQ_r
 
+                # Add profiles to target dict
                 target['Profiles'] = profiles
 
+
+            # Calculate summary metrics for the target
+
+            # Read counts
             summary = dict()
             summary['RC'], count_f, count_r = self.readcountsForRegion(region)
             if self.config['direction']:
                 summary['RC_f'] = count_f
                 summary['RC_r'] = count_r
 
+            # Calculate additional summary metrics if _regions file is to be outputted
             if self.config['outputs']['regions']:
+
+                # Caclulate MEDCOV, MINCOV, MEDQCOV, MINQCOV, MAXFLBQ, MAXFLMQ
                 summary['MEDCOV'] = numpy.median(COV)
                 if len(COV) > 0:
                     summary['MINCOV'] = min(COV)
@@ -440,6 +460,7 @@ class SingleJob(multiprocessing.Process):
                 else:
                     summary['MAXFLMQ'] = float('NaN')
 
+                # Caclulate directional MEDCOV, MINCOV, MEDQCOV, MINQCOV, MAXFLBQ, MAXFLMQ
                 if self.config['direction']:
 
                     summary['MEDCOV_f'] = numpy.median(COV_f)
@@ -480,13 +501,16 @@ class SingleJob(multiprocessing.Process):
                     else:
                         summary['MAXFLMQ_r'] = float('NaN')
 
+                # Add summary metrics to target dict
                 target['Summary'] = summary
 
+                # Calculate if target is PASS or FAIL
                 if not config['pass'] is None:
                     target['PASS'] = self.targetPASS(target)
                 else:
                     target['PASS'] = True
 
+                # Retrieve reference sequence if GUI output is created
                 if self.config['outputs']['gui']:
                     target['Ref'] = self.getReferenceSequence(chrom, begin, end)
                 else:
@@ -495,8 +519,10 @@ class SingleJob(multiprocessing.Process):
             else:
                 target['PASS'] = True
 
+            # Output target data
             self.output(target)
 
+            # Count failed targets
             if not target['PASS']:
                 numOfFails += 1
                 if '_' in target['Name']:
@@ -505,6 +531,7 @@ class SingleJob(multiprocessing.Process):
                     ids = target['Name']
                 fails.append(ids)
 
+            # Update progress info
             if self.threadidx == 1:
                 if counter % 100 == 0:
                     x = round(100 * counter / (numOfTargets / int(self.options.threads)), 1)
@@ -512,6 +539,7 @@ class SingleJob(multiprocessing.Process):
                     sys.stdout.write('\rRunning analysis ... ' + str(x) + '%')
                     sys.stdout.flush()
 
+        # Close output files
         if self.config['outputs']['regions']: self.out_targets.close()
         if self.config['outputs']['profiles']:
             self.out_profiles.close()
@@ -522,6 +550,7 @@ class SingleJob(multiprocessing.Process):
             if int(options.threads) == 1: self.out_json.write(']')
             self.out_json.close()
 
+        # Write failed targets and reads on target to tmp files
         with open(options.output + '_failedtargets_' + str(self.threadidx) + '.txt', 'w') as failedtargetsfile:
             failedtargetsfile.write(str(fails) + '\n')
 
@@ -529,10 +558,12 @@ class SingleJob(multiprocessing.Process):
             for k, v in self.reads.iteritems():
                 ontargetfile.write(k + ':' + str(len(v)) + '\n')
 
+        # Finalize progress info
         if self.threadidx == 1:
             sys.stdout.write('\rRunning analysis ... 100.0%')
             sys.stdout.flush()
 
+    # Return reference sequence
     def getReferenceSequence(self, chrom, start, end):
         goodchrom = chrom
         if not goodchrom in self.reffile.references:
@@ -577,6 +608,7 @@ class SingleJob(multiprocessing.Process):
     def output_target(self, target):
         summary = target['Summary']
 
+        # Calculate transcript coordinates for the _regions output file
         if self.config['transcript']['regions'] and not self.config['transcript_db'] is None:
             transcoords_start = transcript.getTranscriptCoordinates(self.enstdb, target['Chrom'], target['Start'])
             transcoords_end = transcript.getTranscriptCoordinates(self.enstdb, target['Chrom'], target['End'])
@@ -589,6 +621,7 @@ class SingleJob(multiprocessing.Process):
                 v.append(key.geneSymbol + ':' + key.ENST + ':' + value)
             transcoordstr_end = ','.join(v)
 
+        # Create output record
         record = [target['Name'], target['Chrom'], str(target['Start']), str(target['End'])]
 
         if self.config['transcript']['regions'] and not self.config['transcript_db'] is None:
@@ -620,21 +653,25 @@ class SingleJob(multiprocessing.Process):
             record.extend([str(summary['MEDCOV_r']), str(summary['MINCOV_r']), str(summary['MEDQCOV_r']),
                            str(summary['MINQCOV_r']), str(summary['MAXFLMQ_r']), str(summary['MAXFLBQ_r'])])
 
+        # Write record to output file
         self.out_targets.write('\t'.join(record) + '\n')
 
     # Writing _profiles output file
     def output_profiles(self, target):
         profiles = target['Profiles']
 
+        # Write target name to output file
         self.out_profiles.write('\n')
         self.out_profiles.write('[' + target['Name'] + ']\n')
 
         if not self.config['transcript_db'] is None:
             window_qcov = {"targetname": None, "chrom": None, "start": None, "transcriptstart": None}
 
+        # Iterate through all bases of the targeted region
         for i in range(len(profiles['COV'])):
             transcoordstr = ''
 
+            # Calculate transcript coordinates if required
             if self.config['transcript']['profiles'] and not self.config['transcript_db'] is None:
                 transcoords = transcript.getTranscriptCoordinates(self.enstdb, target['Chrom'], target['Start'] + i)
                 v = []
@@ -642,6 +679,7 @@ class SingleJob(multiprocessing.Process):
                     v.append(key.geneSymbol + ':' + key.ENST + ':' + value)
                 transcoordstr = ','.join(v)
 
+            # Create output record
             record = [target['Chrom'], str(target['Start'] + i)]
             if self.config['transcript']['profiles'] and not self.config['transcript_db'] is None:
                 record.append(transcoordstr)
@@ -661,8 +699,10 @@ class SingleJob(multiprocessing.Process):
             if record[-3] == 'nan': record[-3] = '.'
             if record[-4] == 'nan': record[-4] = '.'
 
+            # Write record to output file
             self.out_profiles.write('\t'.join(record) + '\n')
 
+            # Calculate poor quality windows and transcript coordinates for _poor output file
             if self.config['transcript']['poor'] and not self.config['transcript_db'] is None:
                 if profiles['QCOV'][i] < 15:
                     if window_qcov['transcriptstart'] is None:
@@ -697,6 +737,7 @@ class SingleJob(multiprocessing.Process):
 
                         window_qcov = {"targetname": None, "chrom": None, "start": None, "transcriptstart": None}
 
+        # Finalize calculation of poor quality windows and transcript coordinates for _poor output file
         if self.config['transcript']['poor'] and not self.config['transcript_db'] is None:
             if not window_qcov['transcriptstart'] is None:
 
@@ -715,7 +756,7 @@ class SingleJob(multiprocessing.Process):
                 if not (record[4] == 'None' and record[5] == 'None'):
                     self.out_poor.write('\t'.join(record) + '\n')
 
-                window_qcov = {"targetname": None, "chrom": None, "start": None, "transcriptstart": None}
+               # window_qcov = {"targetname": None, "chrom": None, "start": None, "transcriptstart": None}
 
 
 #########################################################################################################################################
@@ -730,9 +771,7 @@ def printInfo(options, config, numOfTargets):
         print "Configuration file:     " + options.config
     else:
         print "Configuration file:     using default settings"
-    
-    
-    
+
     print "Input file name:        " + options.input
     print "BED file name:          " + options.bedfile + targetstxt
     print ''
@@ -776,7 +815,6 @@ def printInfo(options, config, numOfTargets):
         print 'Multithreading:         ' + str(options.threads) + ' processes'
     print "--------------------------------------------------------------------------------------"
 
-
 # Printing out info (no BED file)
 def printInfo_minimal(options):
     print 'Input, output and settings:'
@@ -786,7 +824,6 @@ def printInfo_minimal(options):
     print "Output formats:         _summary"
     print "Output files prefix:    " + options.output
     print "--------------------------------------------------------------------------------------"
-
 
 # Setting default values for unspecified configuration options
 def defaultConfigs(config):
@@ -805,7 +842,6 @@ def defaultConfigs(config):
     if not 'profiles' in config['transcript'].keys(): config['transcript']['profiles'] = True
     if not 'poor' in config['transcript'].keys(): config['transcript']['poor'] = True
     if not 'direction' in config.keys(): config['direction'] = False
-
 
 # Creating target name list
 def makeNames(inputf):
@@ -831,7 +867,6 @@ def makeNames(inputf):
                 ret[i] = x[:-2]
 
     return ret, len(latest.keys())
-
 
 # Finding break points in the input file
 def findFileBreaks(inputf, threads):
@@ -871,7 +906,6 @@ def findFileBreaks(inputf, threads):
     ret.append((start, ''))
 
     return ret
-
 
 # Merging tmp files to final output files
 def mergeTmpFiles(options, config):
@@ -965,7 +999,6 @@ def mergeTmpFiles(options, config):
 
         for fn in filenames: os.remove(fn)
 
-
 # Writing _summary output file
 def output_summary(options, chromdata):
     out_summary = open(options.output + '_summary.txt', 'w')
@@ -983,7 +1016,6 @@ def output_summary(options, chromdata):
         record = chrom + '\t' + str(chromres['RC']) + '\t' + str(chromres['RCIN']) + '\t' + str(chromres['RCOUT'])
         out_summary.write(record + '\n')
     out_summary.close()
-
 
 # Calculating chromosome data
 def calculateChromdata(samfile, ontarget):
@@ -1036,7 +1068,6 @@ def calculateChromdata(samfile, ontarget):
 
     return chromdata
 
-
 # Calculating chromosome data (minimal mode)
 def calculateChromdata_minimal(samfile):
     print ''
@@ -1047,8 +1078,6 @@ def calculateChromdata_minimal(samfile):
     chroms = samfile.references
     chromsres = []
     alltotal = 0
-    allon = 0
-    alloff = 0
 
     i = 0
     for chrom in chroms:
@@ -1079,7 +1108,6 @@ def calculateChromdata_minimal(samfile):
 
     return chromdata
 
-
 # Writing _summary output file (minimal mode)
 def output_summary_minimal(options, chromdata):
     out_summary = open(options.output + '_summary.txt', 'w')
@@ -1101,6 +1129,7 @@ def output_summary_minimal(options, chromdata):
 
 #########################################################################################################################################
 
+
 numpy.seterr(all='ignore')
 warnings.simplefilter("ignore", RuntimeWarning)
 
@@ -1111,16 +1140,11 @@ print ""
 
 # Command line argument parsing
 parser = OptionParser(usage='usage: python %prog [options]')
-parser.add_option("-i", "--input", default='input.bam', dest='input', action='store',
-                  help="Input (BAM) filename [default value: %default]")
-parser.add_option("-o", "--output", default='output', dest='output', action='store',
-                  help="Output filename [default value: %default]")
-parser.add_option("-b", "--bed", default=None, dest='bedfile', action='store',
-                  help="Input BED filename [default value: %default]")
-parser.add_option("-c", "--config", default=None, dest='config', action='store',
-                  help="Configuration file [default value: %default]")
-parser.add_option("-t", "--threads", default=1, dest='threads', action='store',
-                  help="Number of processes used [default value: %default]")
+parser.add_option("-i", "--input", default='input.bam', dest='input', action='store', help="Input (BAM) filename [default value: %default]")
+parser.add_option("-o", "--output", default='output', dest='output', action='store', help="Output filename [default value: %default]")
+parser.add_option("-b", "--bed", default=None, dest='bedfile', action='store', help="Input BED filename [default value: %default]")
+parser.add_option("-c", "--config", default=None, dest='config', action='store', help="Configuration file [default value: %default]")
+parser.add_option("-t", "--threads", default=1, dest='threads', action='store', help="Number of processes used [default value: %default]")
 (options, args) = parser.parse_args()
 
 # Loading configuration file
@@ -1158,7 +1182,6 @@ if config['outputs']['gui']:
 # Creating target name list
 names, uniqueIDs = makeNames(options.bedfile)
 numOfTargets = len(names)
-
 
 # Setting sample name
 samplename = options.input[:options.input.rfind('.bam')]
