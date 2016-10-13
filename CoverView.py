@@ -929,6 +929,8 @@ def mergeTmpFiles(options, config):
 
             outfile.write(']')
 
+        for fn in filenames: os.remove(fn)
+
     # Merging _poor output tmp files
     if config['transcript']['poor'] and not config['transcript_db'] is None and config['outputs']['profiles']:
 
