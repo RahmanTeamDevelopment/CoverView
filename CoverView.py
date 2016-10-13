@@ -258,33 +258,6 @@ class SingleJob(multiprocessing.Process):
 
         return count, count_f, count_r
 
-    # Calculating read counts for a region
-    def readcountsForRegionOLD(self, region):
-
-        # Splitting region to chrom:begin-end
-        chrom = region[:region.find(':')]
-        begin = int(region[region.find(':') + 1:region.find('-')])
-        end = int(region[region.find('-') + 1:])
-
-        if not chrom in self.reads.keys(): self.reads[chrom] = set()
-
-        goodchrom = chrom
-        chrprefix = self.samfile.references[0].startswith('chr')
-        if chrprefix and not chrom.startswith('chr'): goodchrom = 'chr' + chrom
-        if not chrprefix and chrom.startswith('chr'): goodchrom = chrom[3:]
-
-        if not goodchrom in self.samfile.references: return None
-
-        count = 0
-        for x in self.samfile.fetch(goodchrom, begin, end):
-            if self.config['duplicates']:
-                count += 1
-            else:
-                if not x.is_duplicate: count += 1
-            self.reads[chrom].add((x.qname, x.pos))
-
-        return count
-
     # Running process
     def run(self):
 
