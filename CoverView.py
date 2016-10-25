@@ -621,7 +621,7 @@ class SingleJob(multiprocessing.Process):
             self.out_profiles.write('\t'.join(record) + '\n')
 
             # Calculate poor quality windows and transcript coordinates for _poor output file
-            if self.config['transcript']['poor'] and not self.config['transcript_db'] is None:
+            if self.config['transcript_db'] is not None:
                 if profiles['QCOV'][i] < 15:
                     if window_qcov['transcriptstart'] is None:
                         window_qcov['targetname'] = target['Name']
@@ -656,7 +656,7 @@ class SingleJob(multiprocessing.Process):
                         window_qcov = {"targetname": None, "chrom": None, "start": None, "transcriptstart": None}
 
         # Finalize calculation of poor quality windows and transcript coordinates for _poor output file
-        if self.config['transcript']['poor'] and not self.config['transcript_db'] is None:
+        if self.config['transcript_db'] is not None:
             if not window_qcov['transcriptstart'] is None:
 
                 if transcoordstr == '':
@@ -693,10 +693,11 @@ def printInfo(options, config, numOfTargets):
     print "Input file name:        " + options.input
     print "BED file name:          " + options.bedfile + targetstxt
     print ''
-    if not config['transcript_db'] is None and (config['outputs']['regions'] or config['outputs']['profiles']) and (
-            config['transcript']['regions'] or config['transcript']['profiles'] or config['transcript']['poor']):
-        print "Transcript db file:     " + config['transcript_db']
-        print ''
+
+    if config['transcript_db'] is not None:
+        if  (config['outputs']['regions'] and config['transcript']['regions']) or (config['outputs']['profiles'] and config['transcript']['profiles']):
+            print "Transcript db file:     " + config['transcript_db']
+            print ''
 
     formats = 'summary'
     if config['outputs']['regions']: formats += ', regions'
@@ -705,7 +706,7 @@ def printInfo(options, config, numOfTargets):
             formats += ', profiles (failed regions)'
         else:
             formats += ', profiles (all regions)'
-    if not config['transcript_db'] is None and config['outputs']['profiles'] and config['transcript']['poor']:
+    if config['transcript_db'] is not None and config['outputs']['profiles']:
         formats += ', poor'
     if config['outputs']['gui']: formats += ', GUI'
     print "Output formats:         " + formats
@@ -755,10 +756,9 @@ def defaultConfigs(config):
     if not 'only_fail_profiles' in config.keys(): config['only_fail_profiles'] = False
     if not 'transcript_db' in config.keys(): config['transcript_db'] = None
     if not 'pass' in config.keys() or len(config['pass']) == 0: config['pass'] = None
-    if not 'transcript' in config.keys(): config['transcript'] = {'regions': True, 'profiles': True, 'poor': True}
+    if not 'transcript' in config.keys(): config['transcript'] = {'regions': True, 'profiles': True}
     if not 'regions' in config['transcript'].keys(): config['transcript']['regions'] = True
     if not 'profiles' in config['transcript'].keys(): config['transcript']['profiles'] = True
-    if not 'poor' in config['transcript'].keys(): config['transcript']['poor'] = True
     if not 'direction' in config.keys(): config['direction'] = False
 
 # Creating target name list
@@ -905,7 +905,7 @@ def mergeTmpFiles(options, config):
         for fn in filenames: os.remove(fn)
 
     # Merging _poor output tmp files
-    if config['transcript']['poor'] and not config['transcript_db'] is None and config['outputs']['profiles']:
+    if config['transcript_db'] is not None and config['outputs']['profiles']:
 
         filenames = []
         for i in range(1, int(options.threads) + 1):
