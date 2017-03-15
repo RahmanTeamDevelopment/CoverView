@@ -9,7 +9,7 @@ class TestSimpleBamFileGeneration(unittest.TestCase):
     def tearDown(self):
         os.remove("test1.bam")
         os.remove("test1.bam.bai")
-        
+
     def test_can_generate_bam_file_with_single_read(self):
         config = {
             "bam_files":

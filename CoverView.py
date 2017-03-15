@@ -164,7 +164,7 @@ class SingleJob(multiprocessing.Process):
 
 
                     # Getting base quality
-                    c = pileupread.alignment.qual[pileupread.qpos]
+                    c = pileupread.alignment.qual[pileupread.query_position]
                     bq = ord(c) - 33
                     bqs.append(bq)
 
@@ -972,7 +972,8 @@ def calculateChromdata(samfile, ontarget):
     chromdata['Chroms'] = chromsres
     chromdata['Mapped'] = {'RC': alltotal, 'RCIN': allon, 'RCOUT': alloff}
 
-    allreads = pysam.flagstat(options.input)[0]
+
+    allreads = pysam.flagstat(options.input)
     allreads = allreads[:allreads.find('+')]
     allreads = int(allreads.strip())
 
@@ -1016,7 +1017,7 @@ def calculateChromdata_minimal(samfile):
     chromdata['Chroms'] = chromsres
     chromdata['Mapped'] = {'RC': alltotal}
 
-    allreads = pysam.flagstat(options.input)[0]
+    allreads = pysam.flagstat(options.input)
     allreads = allreads[:allreads.find('+')]
     allreads = int(allreads.strip())
 
