@@ -1,0 +1,7 @@
+/env
+/.cache
+/.idea
+/bamgen/.cache
+/bamgen/.idea
+*.pyc
+*/*.pyc

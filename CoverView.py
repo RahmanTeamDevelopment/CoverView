@@ -5,17 +5,7 @@ from optparse import OptionParser
 import os
 import sys
 import datetime
-
-# Checking if installation is complete
-if not os.path.isfile(os.path.dirname(os.path.realpath(__file__))+"/pysamdir/pysam/Pileup.py"):
-    print '\nCoverView installation not complete.'
-    print 'Please run install.sh in the CoverView directory.\n'
-    quit()
-
-# Pysam import
-sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + '/pysamdir')
 import pysam
-
 import numpy
 import multiprocessing
 import json

@@ -79,6 +79,8 @@ def generate_bam_files(config):
                 ):
                     bam_file.write(read)
 
+        pysam.index(bam_file_name)
+
 
 if __name__ == "__main__":
     config_file_name = sys.argv[1]

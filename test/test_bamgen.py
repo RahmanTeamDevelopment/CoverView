@@ -26,5 +26,9 @@ class TestBamGen(unittest.TestCase):
 
         bamgen.generate_bam_files(config)
 
-        with pysam.AlignmentFile(config['file_name'], 'rb') as bam_file:
+        with pysam.AlignmentFile("test1.bam", 'rb') as bam_file:
             assert bam_file.count("1", 0, 100) == 1
+
+
+if __name__ == "__main__":
+    unittest.main()
