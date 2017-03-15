@@ -2,3 +2,4 @@
 *.bam
 *.bai
 *.swp
+/__pycache__

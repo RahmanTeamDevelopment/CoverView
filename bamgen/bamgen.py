@@ -1,70 +1,88 @@
 import array
+import json
 import pysam
 import sys
 
 
-HIGH_QUAL = 100
-
-
-def write_perfect_unpaired_read_to_bam(bam, chrom, pos, seq, read_id):
+class PerfectReadGenerator(object):
     """
-    Write a single perfect (i.e. no mis-matches or alignment gaps, is not a
-    duplicate, all bases are high quality, and the mapping quality is high)
-    un-paired read to the specified BAM file.
+    Instances of this class can be used to generate 'perfect' reads. These
+    reads will all have sequences matching the reference exactly, and will have
+    no alignment gaps. All bases will be high quality, mapping quality will be
+    high, and the reads will not be marked as duplicates.
     """
-    read = pysam.AlignedRead()
+    HIGH_QUAL = 60  # Used for all base and mapping qualities
 
-    read.query_name = "simulated_read_{}".format(read_id)
-    read.query_sequence = seq
-    read.query_qualities = array.array('b', [HIGH_QUAL]*len(seq))
-    read.reference_id = bam.get_tid(chrom)
-    read.reference_start = pos
-    read.mapping_quality = HIGH_QUAL
-    read.cigar = ((0, len(seq)),)  # Perfect match
-    read.next_reference_id = -1
-    read.next_reference_start = -1
-    read.is_unmapped = 0
-    read.is_duplicate = 0
-    read.is_paired = 0
+    def __init__(self, ref_file):
+        """
+        """
+        self.ref = ref_file
 
-    bam.write(read)
+    def generate_unpaired_reads(self, chrom, chrom_id, pos, length, n,
+                                read_id=0):
+        """
+        Generate n perfect (i.e. no mis-matches or alignment gaps, not
+        duplicates, all bases are high quality, and the mapping quality
+        is high) un-paired reads.
+        """
+        seq = self.ref.fetch(chrom, pos, pos+length)
+        qual = array.array('b', [self.HIGH_QUAL]*len(seq))
+        cigar = ((0, len(seq)),)  # Perfect match
+
+        for i in xrange(n):
+            read = pysam.AlignedRead()
+            read.query_name = "simulated_read_{}".format(read_id + i)
+            read.query_sequence = seq
+            read.query_qualities = qual
+            read.reference_id = chrom_id
+            read.reference_start = pos
+            read.mapping_quality = self.HIGH_QUAL
+            read.cigar = cigar
+            read.next_reference_id = -1
+            read.next_reference_start = -1
+            read.is_unmapped = 0
+            read.is_duplicate = 0
+            read.is_paired = 0
+            yield read
 
 
-def write_n_perfect_unpaired_reads_to_bam(bam, ref, chrom, pos, length,
-                                          read_id, n):
-    """
-    Write a number of identical, perfect (i.e. no mis-matches or alignment
-    gaps, is not a duplicate, all bases are high quality, and the mapping
-    quality is high) un-paired reads to the specified BAM file.
-    """
-    seq = ref.fetch(chrom, pos, pos+length)
+def generate_bam_files(config):
+    for bam_file_config in config['bam_files']:
+        ref_file_name = bam_file_config['reference']
+        ref_file = pysam.FastaFile(ref_file_name)
+        bam_file_name = bam_file_config['file_name']
+        read_gen = PerfectReadGenerator(ref_file)
 
-    for i in xrange(n):
-        write_perfect_unpaired_read_to_bam(bam, chrom, pos, seq, read_id + i)
+        with pysam.AlignmentFile(
+            bam_file_name,
+            'wb',
+            reference_names=ref_file.references,
+            reference_lengths=ref_file.lengths
+        ) as bam_file:
+
+            regions = bam_file_config['reads']
+
+            for region in regions:
+                chrom = region['chrom']
+                start_pos = region['start_pos']
+                read_length = region['read_length']
+                num_reads = region['num_reads']
+                chrom_id = bam_file.get_tid(chrom)
+
+                for read in read_gen.generate_unpaired_reads(
+                        chrom,
+                        chrom_id,
+                        start_pos,
+                        read_length,
+                        num_reads,
+                        read_id=0
+                ):
+                    bam_file.write(read)
 
 
 if __name__ == "__main__":
-    ref_file = pysam.FastaFile(sys.argv[1])
+    config_file_name = sys.argv[1]
 
-    bam_file = pysam.AlignmentFile(
-        "test.bam",
-        'wb',
-        reference_names=ref_file.references,
-        reference_lengths=ref_file.lengths
-    )
-
-    seq = "AGCTTAGCTAGCTACCTATATCTTGGTCTTGGCCG"
-    chrom = "1"
-    start_pos = 32
-    read_length = 100
-
-    write_n_perfect_unpaired_reads_to_bam(
-        bam_file,
-        ref_file,
-        chrom,
-        start_pos,
-        read_length,
-        0,
-        10000)
-
-    bam_file.close()
+    with open(config_file_name, 'r') as config_file:
+        config = json.load(config_file)
+        generate_bam_files(config)
