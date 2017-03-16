@@ -2,7 +2,7 @@
 Utilities for calculating coverage summaries from a BAM file
 """
 
-
+from __future__ import division
 import numpy
 
 
@@ -21,6 +21,10 @@ class SimpleCoverageCalculator(object):
         self.ret_MEDMQ = [float('NaN')] * (end - begin)
         self.ret_FLMQ = [float('NaN')] * (end - begin)
 
+    def add_read(self, read):
+        """
+
+        """
     def add_pileup(self, pileup_column, i):
         self.ret_COV[i] = pileup_column.n
         bqs = []
@@ -210,7 +214,7 @@ def get_valid_chromosome_name(chrom, bam_file):
     return chrom
 
 
-def get_profiles(self, bam_file, region, config):
+def get_profiles(bam_file, region, config):
     """
     Calculate and return coverage metrics for a specified region. Metrics include total
     coverage, coverage above the required base-quality and mapping quality threshold, fractions of
