@@ -79,19 +79,23 @@ class SingleJob(multiprocessing.Process):
             if minmax == 'MAX' and summary[str(metrics)] > float(value): return False
         return True
 
-    # Calculating COV, QCOV, MEDBQ, FLBQ, MEDMQ and FLMQ profiles for a region
-    def getProfiles(self, region):
+    def get_profiles(self, region):
+        """
+        Calculate and return coverage metrics for a specified region. Metrics include total
+        coverage, coverage above the required base-quality and mapping quality threshold, fractions of
+        low base qualities at a given position, fractions of low mapping quality reads covering a given
+        position, median mapping qualities and median base qualities.
 
-        # Base quality and mapping quality cutoff parameters
+        This is by far the most computationally expensive part of CoverView. > 90% of the run-time is
+        currently spent in this function.
+        """
         bq_cutoff = float(self.config['low_bq'])
         mq_cutoff = float(self.config['low_mq'])
 
-        # Splitting region to chrom:begin-end
-        chrom = region[:region.find(':')]
-        begin = int(region[region.find(':') + 1:region.find('-')]) - 1
-        end = int(region[region.find('-') + 1:]) - 1
+        chrom, beg_end = region.split(":")
+        begin = int(beg_end.split("-")[0]) - 1
+        end = int(beg_end.split("-")[1]) - 1
 
-        # Initializing profiles
         ret_COV = [0] * (end - begin)
         ret_QCOV = [0] * (end - begin)
         ret_MEDBQ = [float('NaN')] * (end - begin)
@@ -114,107 +118,143 @@ class SingleJob(multiprocessing.Process):
             ret_MEDMQ_r = [float('NaN')] * (end - begin)
             ret_FLMQ_r = [float('NaN')] * (end - begin)
 
-        goodchrom = chrom
-        chrprefix = self.samfile.references[0].startswith('chr')
-        if chrprefix and not chrom.startswith('chr'): goodchrom = 'chr' + chrom
-        if not chrprefix and chrom.startswith('chr'): goodchrom = chrom[3:]
+        good_chrom = chrom
+        chr_prefix = self.samfile.references[0].startswith('chr')
 
-        if not goodchrom in self.samfile.references: return None
+        if chr_prefix and not chrom.startswith('chr'):
+            good_chrom = 'chr' + chrom
 
-        # Getting pileup for the given region
-        if config['duplicates']: x = self.samfile.pileup(goodchrom, begin, end + 1, mask=0)
-        else: x = self.samfile.pileup(goodchrom, begin, end + 1)
+        if not chr_prefix and chrom.startswith('chr'):
+            good_chrom = chrom[3:]
 
-        i = 0
-        # Iterating through columns of the pileup
-        for pileupcolumn in x:
+        if not good_chrom in self.samfile.references:
+            return None
 
-            if pileupcolumn.pos > begin and pileupcolumn.pos <= end:
+        if config['duplicates']:
+            x = self.samfile.pileup(good_chrom, begin + 1, end + 1, mask=0, truncate=True)
+        else:
+            x = self.samfile.pileup(good_chrom, begin + 1, end + 1, truncate=True)
 
-                # Getting coverage
-                ret_COV[i] = pileupcolumn.n
+        for i, pileup_column in enumerate(x):
+            ret_COV[i] = pileup_column.n
+
+            if self.config['direction']:
+                cov_f = 0
+                cov_r = 0
+                bqs_f = []
+                bqs_r = []
+                mqs_f = []
+                mqs_r = []
+                qcov_f = 0
+                qcov_r = 0
+
+            bqs = []
+            mqs = []
+            qcov = 0
+
+            for pileupread in pileup_column.pileups:
 
                 if self.config['direction']:
-                    cov_f = 0
-                    cov_r = 0
-                    bqs_f = []
-                    bqs_r = []
-                    mqs_f = []
-                    mqs_r = []
-                    qcov_f = 0
-                    qcov_r = 0
+                    if pileupread.alignment.is_reverse:
+                        cov_r += 1
+                    else:
+                        cov_f += 1
 
-                bqs = []
-                mqs = []
-                qcov = 0
-                # Iterating through reads mapping to the pileup column
-                for pileupread in pileupcolumn.pileups:
-
-                    if self.config['direction']:
-                        if pileupread.alignment.is_reverse: cov_r += 1
-                        else: cov_f += 1
-
-                    # Checking if it is a deletion
-                    if pileupread.is_del:
-                        if pileupread.alignment.mapq >= mq_cutoff:
-                            qcov += 1
-                            if self.config['direction']:
-                                if pileupread.alignment.is_reverse:
-                                    qcov_r += 1
-                                else:
-                                    qcov_f += 1
-                        continue
-
-
-                    # Getting base quality
-                    bq = pileupread.alignment.query_qualities[pileupread.query_position]
-                    bqs.append(bq)
-
-                    if self.config['direction']:
-                        if pileupread.alignment.is_reverse: bqs_r.append(bq)
-                        else: bqs_f.append(bq)
-
-                    # Getting mapping quality
-                    mqs.append(pileupread.alignment.mapq)
-
-                    if self.config['direction']:
-                        if pileupread.alignment.is_reverse: mqs_r.append(pileupread.alignment.mapq)
-                        else: mqs_f.append(pileupread.alignment.mapq)
-
-                    # Calculating QCOV
-                    if pileupread.alignment.mapq >= mq_cutoff and bq >= bq_cutoff:
+                if pileupread.is_del:
+                    if pileupread.alignment.mapq >= mq_cutoff:
                         qcov += 1
                         if self.config['direction']:
-                            if pileupread.alignment.is_reverse: qcov_r += 1
-                            else: qcov_f += 1
+                            if pileupread.alignment.is_reverse:
+                                qcov_r += 1
+                            else:
+                                qcov_f += 1
+                    continue
 
-                # Summary stats of QCOV, MEDBQ, FLBQ, MEDMQ and FLMQ
-                ret_QCOV[i] = qcov
-                ret_MEDBQ[i] = numpy.median(bqs)
-                ret_MEDMQ[i] = numpy.median(mqs)
-                if len(bqs) > 0: ret_FLBQ[i] = round(len([x for x in bqs if x < bq_cutoff]) / len(bqs), 3)
-                if len(mqs) > 0: ret_FLMQ[i] = round(len([x for x in mqs if x < mq_cutoff]) / len(mqs), 3)
+                bq = pileupread.alignment.query_qualities[pileupread.query_position]
+                bqs.append(bq)
 
-                # Directionality
                 if self.config['direction']:
-                    ret_COV_f[i] = cov_f
-                    ret_COV_r[i] = cov_r
-                    ret_QCOV_f[i] = qcov_f
-                    ret_QCOV_r[i] = qcov_r
-                    ret_MEDBQ_f[i] = numpy.median(bqs_f)
-                    ret_MEDBQ_r[i] = numpy.median(bqs_r)
-                    ret_MEDMQ_f[i] = numpy.median(mqs_f)
-                    ret_MEDMQ_r[i] = numpy.median(mqs_r)
+                    if pileupread.alignment.is_reverse:
+                        bqs_r.append(bq)
+                    else:
+                        bqs_f.append(bq)
 
-                    if len(bqs_f) > 0: ret_FLBQ_f[i] = round(len([x for x in bqs_f if x < bq_cutoff]) / len(bqs_f), 3)
-                    if len(bqs_r) > 0: ret_FLBQ_r[i] = round(len([x for x in bqs_r if x < bq_cutoff]) / len(bqs_r), 3)
-                    if len(mqs_f) > 0: ret_FLMQ_f[i] = round(len([x for x in mqs_f if x < mq_cutoff]) / len(mqs_f), 3)
-                    if len(mqs_r) > 0: ret_FLMQ_r[i] = round(len([x for x in mqs_r if x < mq_cutoff]) / len(mqs_r), 3)
+                mqs.append(pileupread.alignment.mapq)
 
-                i += 1
+                if self.config['direction']:
+                    if pileupread.alignment.is_reverse:
+                        mqs_r.append(pileupread.alignment.mapq)
+                    else:
+                        mqs_f.append(pileupread.alignment.mapq)
 
-        if self.config['direction']: return ret_COV, ret_QCOV, ret_MEDBQ, ret_FLBQ, ret_MEDMQ, ret_FLMQ, ret_COV_f, ret_QCOV_f, ret_MEDBQ_f, ret_FLBQ_f, ret_MEDMQ_f, ret_FLMQ_f, ret_COV_r, ret_QCOV_r, ret_MEDBQ_r, ret_FLBQ_r, ret_MEDMQ_r, ret_FLMQ_r
-        else: return ret_COV, ret_QCOV, ret_MEDBQ, ret_FLBQ, ret_MEDMQ, ret_FLMQ
+                if pileupread.alignment.mapq >= mq_cutoff and bq >= bq_cutoff:
+                    qcov += 1
+                    if self.config['direction']:
+                        if pileupread.alignment.is_reverse: qcov_r += 1
+                        else: qcov_f += 1
+
+            ret_QCOV[i] = qcov
+            ret_MEDBQ[i] = numpy.median(bqs)
+            ret_MEDMQ[i] = numpy.median(mqs)
+
+            if len(bqs) > 0:
+                ret_FLBQ[i] = round(len([x for x in bqs if x < bq_cutoff]) / len(bqs), 3)
+
+            if len(mqs) > 0:
+                ret_FLMQ[i] = round(len([x for x in mqs if x < mq_cutoff]) / len(mqs), 3)
+
+            if self.config['direction']:
+                ret_COV_f[i] = cov_f
+                ret_COV_r[i] = cov_r
+                ret_QCOV_f[i] = qcov_f
+                ret_QCOV_r[i] = qcov_r
+                ret_MEDBQ_f[i] = numpy.median(bqs_f)
+                ret_MEDBQ_r[i] = numpy.median(bqs_r)
+                ret_MEDMQ_f[i] = numpy.median(mqs_f)
+                ret_MEDMQ_r[i] = numpy.median(mqs_r)
+
+                if len(bqs_f) > 0:
+                    ret_FLBQ_f[i] = round(len([x for x in bqs_f if x < bq_cutoff]) / len(bqs_f), 3)
+
+                if len(bqs_r) > 0:
+                    ret_FLBQ_r[i] = round(len([x for x in bqs_r if x < bq_cutoff]) / len(bqs_r), 3)
+
+                if len(mqs_f) > 0:
+                    ret_FLMQ_f[i] = round(len([x for x in mqs_f if x < mq_cutoff]) / len(mqs_f), 3)
+
+                if len(mqs_r) > 0:
+                    ret_FLMQ_r[i] = round(len([x for x in mqs_r if x < mq_cutoff]) / len(mqs_r), 3)
+
+        if self.config['direction']:
+            return (
+                ret_COV,
+                ret_QCOV,
+                ret_MEDBQ,
+                ret_FLBQ,
+                ret_MEDMQ,
+                ret_FLMQ,
+                ret_COV_f,
+                ret_QCOV_f,
+                ret_MEDBQ_f,
+                ret_FLBQ_f,
+                ret_MEDMQ_f,
+                ret_FLMQ_f,
+                ret_COV_r,
+                ret_QCOV_r,
+                ret_MEDBQ_r,
+                ret_FLBQ_r,
+                ret_MEDMQ_r,
+                ret_FLMQ_r
+            )
+        else:
+            return (
+                ret_COV,
+                ret_QCOV,
+                ret_MEDBQ,
+                ret_FLBQ,
+                ret_MEDMQ,
+                ret_FLMQ
+            )
 
     # Calculating read counts for a region
     def readcountsForRegion(self, region):
@@ -347,8 +387,8 @@ class SingleJob(multiprocessing.Process):
                 profiles = dict()
 
                 # Calculate directional and/or non-directional profiles
-                if self.config['direction']: COV, QCOV, MEDBQ, FLBQ, MEDMQ, FLMQ, COV_f, QCOV_f, MEDBQ_f, FLBQ_f, MEDMQ_f, FLMQ_f, COV_r, QCOV_r, MEDBQ_r, FLBQ_r, MEDMQ_r, FLMQ_r = self.getProfiles(region)
-                else: COV, QCOV, MEDBQ, FLBQ, MEDMQ, FLMQ = self.getProfiles(region)
+                if self.config['direction']: COV, QCOV, MEDBQ, FLBQ, MEDMQ, FLMQ, COV_f, QCOV_f, MEDBQ_f, FLBQ_f, MEDMQ_f, FLMQ_f, COV_r, QCOV_r, MEDBQ_r, FLBQ_r, MEDMQ_r, FLMQ_r = self.get_profiles(region)
+                else: COV, QCOV, MEDBQ, FLBQ, MEDMQ, FLMQ = self.get_profiles(region)
 
                 # Make profiles dictionary
                 profiles['COV'] = COV
