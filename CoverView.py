@@ -2,16 +2,19 @@
 
 from __future__ import division
 from optparse import OptionParser
-import os
-import sys
+
+import cProfile
 import datetime
-import pysam
-import numpy
-import multiprocessing
 import json
+import multiprocessing
+import numpy
+import os
+import pstats
+import pysam
+import shutil
+import sys
 import transcript
 import warnings
-import shutil
 
 
 #########################################################################################################################################
@@ -164,8 +167,7 @@ class SingleJob(multiprocessing.Process):
 
 
                     # Getting base quality
-                    c = pileupread.alignment.qual[pileupread.query_position]
-                    bq = ord(c) - 33
+                    bq = pileupread.alignment.query_qualities[pileupread.query_position]
                     bqs.append(bq)
 
                     if self.config['direction']:
@@ -250,7 +252,12 @@ class SingleJob(multiprocessing.Process):
 
     # Running process
     def run(self):
+        p = cProfile.Profile()
+        p.runctx('self.run_process()', globals(), locals())
+        s = pstats.Stats(p)
+        s.sort_stats("cumulative").print_stats()
 
+    def run_process(self):
         # If there is only one thread
         if int(options.threads) == 1:
 
