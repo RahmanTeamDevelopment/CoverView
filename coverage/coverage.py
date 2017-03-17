@@ -3,6 +3,8 @@ Utilities for calculating coverage summaries from a BAM file
 """
 
 from __future__ import division
+from collections import defaultdict
+
 import numpy
 
 
@@ -12,6 +14,8 @@ class SimpleCoverageCalculator(object):
     not care about direction.
     """
     def __init__(self, chrom, begin, end, bq_cutoff, mq_cutoff):
+        self.begin = begin
+        self.end = end
         self.bq_cutoff = bq_cutoff
         self.mq_cutoff = mq_cutoff
         self.ret_COV = [0] * (end - begin)
@@ -21,10 +25,46 @@ class SimpleCoverageCalculator(object):
         self.ret_MEDMQ = [float('NaN')] * (end - begin)
         self.ret_FLMQ = [float('NaN')] * (end - begin)
 
-    def add_read(self, read):
+    def add_reads(self, reads):
         """
+        """
+        base_qualities = defaultdict(list)
+        mapping_qualities = defaultdict(list)
 
-        """
+        for read in reads:
+            for index,ref_pos in enumerate(read.get_reference_positions(full_length=True)):
+
+                if ref_pos is None:
+                    continue
+                    
+                offset = ref_pos - self.begin
+
+                # TODO: add 1 to cov for deletions and 1 to qco for high map qual deletions
+                if offset >= 0 and offset < len(self.ret_QCOV):
+                    base_quality = read.query_qualities[index]
+                    mapping_quality = read.mapping_quality
+
+                    base_qualities[offset].append(base_quality)
+                    mapping_qualities[offset].append(mapping_quality)
+
+                    self.ret_COV[offset] += 1
+
+                    if mapping_quality >= self.mq_cutoff and base_quality >= self.bq_cutoff:
+                        self.ret_QCOV[offset] += 1
+
+        for offset,bqs in base_qualities.iteritems():
+            self.ret_MEDBQ[offset] = numpy.median(bqs)
+
+            if len(bqs) > 0:
+                self.ret_FLBQ[offset] = round(len([x for x in bqs if x < self.bq_cutoff]) / len(bqs), 3)
+
+        for offset,mqs in mapping_qualities.iteritems():
+            self.ret_MEDMQ[offset] = numpy.median(mqs)
+
+            if len(mqs) > 0:
+                self.ret_FLMQ[offset] = round(len([x for x in mqs if x < self.mq_cutoff]) / len(mqs), 3)
+
+
     def add_pileup(self, pileup_column, i):
         self.ret_COV[i] = pileup_column.n
         bqs = []
@@ -236,17 +276,20 @@ def get_profiles(bam_file, region, config):
     if not good_chrom in bam_file.references:
         return None
 
-    if config['direction']:
-        coverage_calc = DirectionalCoverageCalculator(chrom, begin, end, bq_cutoff, mq_cutoff)
-    else:
-        coverage_calc = SimpleCoverageCalculator(chrom, begin, end, bq_cutoff, mq_cutoff)
-
-    if config['duplicates']:
-        x = bam_file.pileup(good_chrom, begin + 1, end + 1, mask=0, truncate=True)
-    else:
-        x = bam_file.pileup(good_chrom, begin + 1, end + 1, truncate=True)
-
-    for i, pileup_column in enumerate(x):
-        coverage_calc.add_pileup(pileup_column, i)
+    coverage_calc = SimpleCoverageCalculator(good_chrom, begin, end, bq_cutoff, mq_cutoff)
+    reads = bam_file.fetch(good_chrom, begin, end)
+    coverage_calc.add_reads(reads)
+    # if config['direction']:
+    #     coverage_calc = DirectionalCoverageCalculator(chrom, begin, end, bq_cutoff, mq_cutoff)
+    # else:
+    #     coverage_calc = SimpleCoverageCalculator(chrom, begin, end, bq_cutoff, mq_cutoff)
+    #
+    # if config['duplicates']:
+    #     x = bam_file.pileup(good_chrom, begin + 1, end + 1, mask=0, truncate=True)
+    # else:
+    #     x = bam_file.pileup(good_chrom, begin + 1, end + 1, truncate=True)
+    #
+    # for i, pileup_column in enumerate(x):
+    #     coverage_calc.add_pileup(pileup_column, i)
 
     return coverage_calc.get_coverage_summary()
