@@ -48,7 +48,10 @@ class QualityHistogram(object):
                 total += self.data[current_bin]
 
                 if total > self.n_data_points // 2:
-                    return (current_bin + last_non_empty_bin) / 2.0
+                    if last_non_empty_bin is None:
+                        return current_bin
+                    else:
+                        return (current_bin + last_non_empty_bin) / 2.0
 
                 if self.data[current_bin] > 0:
                     last_non_empty_bin = current_bin

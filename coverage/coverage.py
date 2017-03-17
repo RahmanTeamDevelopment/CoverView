@@ -6,6 +6,7 @@ from __future__ import division
 from collections import defaultdict
 
 import numpy
+import statistics
 
 
 class SimpleCoverageCalculator(object):
@@ -25,45 +26,53 @@ class SimpleCoverageCalculator(object):
         self.ret_MEDMQ = [float('NaN')] * (end - begin)
         self.ret_FLMQ = [float('NaN')] * (end - begin)
 
+        self.bq_hists = []
+        self.mq_hists = []
+
+        for x in self.ret_COV:
+            self.bq_hists.append(statistics.QualityHistogram())
+            self.mq_hists.append(statistics.QualityHistogram())
+
     def add_reads(self, reads):
         """
         """
-        base_qualities = defaultdict(list)
-        mapping_qualities = defaultdict(list)
+        # Caching object variables to local variables here, as these are used
+        # very frequently in this function.
+        region_size = self.end - self.begin
+        begin = self.begin
+        bq_hists = self.bq_hists
+        mq_hists = self.mq_hists
+        bq_cutoff = self.bq_cutoff
+        mq_cutoff = self.mq_cutoff
+        ret_COV = self.ret_COV
+        ret_QCOV = self.ret_QCOV
 
         for read in reads:
-            for index,ref_pos in enumerate(read.get_reference_positions(full_length=True)):
+            mapping_quality = read.mapping_quality
+            base_qualities = read.query_qualities
+
+            for index, ref_pos in enumerate(read.get_reference_positions(full_length=True)):
 
                 if ref_pos is None:
                     continue
-                    
-                offset = ref_pos - self.begin
+
+                offset = ref_pos - begin
 
                 # TODO: add 1 to cov for deletions and 1 to qco for high map qual deletions
-                if offset >= 0 and offset < len(self.ret_QCOV):
-                    base_quality = read.query_qualities[index]
-                    mapping_quality = read.mapping_quality
+                if 0 <= offset < region_size:
+                    base_quality = base_qualities[index]
+                    bq_hists[offset].add_data(base_quality)
+                    mq_hists[offset].add_data(mapping_quality)
+                    ret_COV[offset] += 1
 
-                    base_qualities[offset].append(base_quality)
-                    mapping_qualities[offset].append(mapping_quality)
+                    if mapping_quality >= mq_cutoff and base_quality >= bq_cutoff:
+                        ret_QCOV[offset] += 1
 
-                    self.ret_COV[offset] += 1
-
-                    if mapping_quality >= self.mq_cutoff and base_quality >= self.bq_cutoff:
-                        self.ret_QCOV[offset] += 1
-
-        for offset,bqs in base_qualities.iteritems():
-            self.ret_MEDBQ[offset] = numpy.median(bqs)
-
-            if len(bqs) > 0:
-                self.ret_FLBQ[offset] = round(len([x for x in bqs if x < self.bq_cutoff]) / len(bqs), 3)
-
-        for offset,mqs in mapping_qualities.iteritems():
-            self.ret_MEDMQ[offset] = numpy.median(mqs)
-
-            if len(mqs) > 0:
-                self.ret_FLMQ[offset] = round(len([x for x in mqs if x < self.mq_cutoff]) / len(mqs), 3)
-
+        for i in xrange(len(self.bq_hists)):
+            self.ret_MEDBQ[i] = self.bq_hists[i].compute_median()
+            self.ret_MEDMQ[i] = self.mq_hists[i].compute_median()
+            self.ret_FLBQ[i] = round(self.bq_hists[i].compute_fraction_below_threshold(int(self.bq_cutoff)), 3)
+            self.ret_FLMQ[i] = round(self.mq_hists[i].compute_fraction_below_threshold(int(self.mq_cutoff)), 3)
 
     def add_pileup(self, pileup_column, i):
         self.ret_COV[i] = pileup_column.n

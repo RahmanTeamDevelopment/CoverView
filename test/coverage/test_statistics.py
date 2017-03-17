@@ -20,6 +20,12 @@ class TestMedianCalculation(unittest.TestCase):
         hist.add_data(20)
         assert hist.compute_median() == 15
 
+    def test_median_of_two_identical_values_is_the_value(self):
+        hist = coverage.statistics.QualityHistogram()
+        hist.add_data(10)
+        hist.add_data(10)
+        assert hist.compute_median() == 10
+
     def test_median_of_three_values_is_the_middle_value(self):
         hist = coverage.statistics.QualityHistogram()
         hist.add_data(10)
