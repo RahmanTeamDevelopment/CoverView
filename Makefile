@@ -6,6 +6,8 @@ clean:
 	rm -f *.bam
 	rm -f *.bai
 	rm -f coverage/*.c
+	rm -f coverage/*.so
+	rm -rf coverage/build
 
 libs:
 	cd coverage; python setup.py build_ext --inplace
