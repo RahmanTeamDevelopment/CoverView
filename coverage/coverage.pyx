@@ -3,11 +3,9 @@ Utilities for calculating coverage summaries from a BAM file
 """
 
 from __future__ import division
-from collections import defaultdict
 
 import numpy
-import statistics
-
+from statistics cimport QualityHistogram
 
 class SimpleCoverageCalculator(object):
     """
@@ -30,16 +28,20 @@ class SimpleCoverageCalculator(object):
         self.mq_hists = []
 
         for x in self.ret_COV:
-            self.bq_hists.append(statistics.QualityHistogram())
-            self.mq_hists.append(statistics.QualityHistogram())
+            self.bq_hists.append(QualityHistogram())
+            self.mq_hists.append(QualityHistogram())
 
     def add_reads(self, reads):
         """
         """
         # Caching object variables to local variables here, as these are used
         # very frequently in this function.
+        cdef QualityHistogram bq_hist
+        cdef QualityHistogram mq_hist
+
         region_size = self.end - self.begin
         begin = self.begin
+        end = self.end
         bq_hists = self.bq_hists
         mq_hists = self.mq_hists
         bq_cutoff = self.bq_cutoff
@@ -56,10 +58,9 @@ class SimpleCoverageCalculator(object):
                 if ref_pos is None:
                     continue
 
-                offset = ref_pos - begin
-
                 # TODO: add 1 to cov for deletions and 1 to qco for high map qual deletions
-                if 0 <= offset < region_size:
+                if begin <= ref_pos < end:
+                    offset = ref_pos - begin
                     base_quality = base_qualities[index]
                     bq_hists[offset].add_data(base_quality)
                     mq_hists[offset].add_data(mapping_quality)
@@ -69,10 +70,14 @@ class SimpleCoverageCalculator(object):
                         ret_QCOV[offset] += 1
 
         for i in xrange(len(self.bq_hists)):
-            self.ret_MEDBQ[i] = self.bq_hists[i].compute_median()
-            self.ret_MEDMQ[i] = self.mq_hists[i].compute_median()
-            self.ret_FLBQ[i] = round(self.bq_hists[i].compute_fraction_below_threshold(int(self.bq_cutoff)), 3)
-            self.ret_FLMQ[i] = round(self.mq_hists[i].compute_fraction_below_threshold(int(self.mq_cutoff)), 3)
+
+            bq_hist = self.bq_hists[i]
+            mq_hist = self.mq_hists[i]
+
+            self.ret_MEDBQ[i] = bq_hist.compute_median()
+            self.ret_MEDMQ[i] = mq_hist.compute_median()
+            self.ret_FLBQ[i] = round(bq_hist.compute_fraction_below_threshold(int(self.bq_cutoff)), 3)
+            self.ret_FLMQ[i] = round(mq_hist.compute_fraction_below_threshold(int(self.mq_cutoff)), 3)
 
     def add_pileup(self, pileup_column, i):
         self.ret_COV[i] = pileup_column.n

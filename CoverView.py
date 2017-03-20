@@ -128,10 +128,7 @@ class SingleJob(multiprocessing.Process):
 
     # Running process
     def run(self):
-        p = cProfile.Profile()
-        p.runctx('self.run_process()', globals(), locals())
-        s = pstats.Stats(p)
-        s.sort_stats("cumulative").print_stats()
+        self.run_process()
 
     def run_process(self):
         # If there is only one thread
