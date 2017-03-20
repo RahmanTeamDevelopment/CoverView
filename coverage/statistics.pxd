@@ -5,3 +5,4 @@ cdef class QualityHistogram:
     cdef int* data
     cdef float compute_fraction_below_threshold(self, int threshold)
     cdef float compute_median(self)
+    cdef add_data(self, int quality_score)

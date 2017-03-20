@@ -1,24 +1,22 @@
-#!/usr/bin/python
+#!/env/bin/python
 
 from __future__ import division
+
+from collections import defaultdict
 from optparse import OptionParser
 
 import coverage
-import cProfile
 import datetime
 import json
 import multiprocessing
 import numpy
 import os
-import pstats
 import pysam
 import shutil
 import sys
 import transcript
 import warnings
 
-
-#########################################################################################################################################
 
 class SingleJob(multiprocessing.Process):
     # Process constructor
@@ -793,7 +791,7 @@ def mergeTmpFiles(options, config):
 
         for fn in filenames: os.remove(fn)
 
-# Writing _summary output file
+
 def output_summary(options, chromdata):
     out_summary = open(options.output + '_summary.txt', 'w')
     out_summary.write('#CHROM\tRC\tRCIN\tRCOUT\n')
@@ -811,63 +809,59 @@ def output_summary(options, chromdata):
         out_summary.write(record + '\n')
     out_summary.close()
 
-# Calculating chromosome data
+
 def calculateChromdata(samfile, ontarget):
-    # Initializing progress info
     sys.stdout.write('\rFinalizing analysis ... 0.0%')
     sys.stdout.flush()
 
-    chromdata = dict()
+    chrom_lengths = samfile.lengths
+    total_reference_length = sum(chrom_lengths)
     chroms = samfile.references
+
+    chromdata = dict()
+    read_counts_by_chrom = defaultdict(int)
     chromsres = []
-    alltotal = 0
+    total_mapped_reads_in_bam = 0
     allon = 0
     alloff = 0
 
-    # Iterate through chromosomes
-    i = 0
-    for chrom in chroms:
+    chrom_lengths_processed_so_far = 0
 
-        total = sum(1 for _ in samfile.fetch(chrom))
+    for chrom,length in zip(chroms,chrom_lengths):
 
-        if 'chr' + chrom in ontarget.keys():
+        total = coverage.get_num_mapped_reads_covering_chromosome(samfile, chrom)
+        chrom_lengths_processed_so_far += length
+
+        if 'chr' + chrom in ontarget:
             on = int(ontarget['chr' + chrom])
             off = total - on
         else:
             on = 0
             off = 0
+
         chromsres.append({'CHROM': chrom, 'RC': total, 'RCIN': on, 'RCOUT': off})
-        alltotal += total
+        total_mapped_reads_in_bam += total
         allon += on
         alloff += off
 
-        i += 1
-
-        # Updating progress info
-        x = round(100 * i / len(chroms), 1)
-        x = min(x, 100.0)
+        x = round(100 * chrom_lengths_processed_so_far / total_reference_length, 1)
         sys.stdout.write('\rFinalizing analysis ... ' + str(x) + '%')
         sys.stdout.flush()
 
     chromdata['Chroms'] = chromsres
-    chromdata['Mapped'] = {'RC': alltotal, 'RCIN': allon, 'RCOUT': alloff}
+    chromdata['Mapped'] = {'RC': total_mapped_reads_in_bam, 'RCIN': allon, 'RCOUT': alloff}
 
+    total_reads_in_bam = samfile.mapped + samfile.unmapped
+    chromdata['Total'] = total_reads_in_bam
+    chromdata['Unmapped'] = total_reads_in_bam - total_mapped_reads_in_bam
 
-    allreads = pysam.flagstat(options.input)
-    allreads = allreads[:allreads.find('+')]
-    allreads = int(allreads.strip())
-
-    chromdata['Total'] = allreads
-    chromdata['Unmapped'] = allreads - alltotal
-
-    # Finalizing progress info
     sys.stdout.write('\rFinalizing analysis ... 100.0% - Done')
     sys.stdout.flush()
     print ''
 
     return chromdata
 
-# Calculating chromosome data (minimal mode)
+
 def calculateChromdata_minimal(samfile):
     print ''
     # Initializing progress info
@@ -911,7 +905,7 @@ def calculateChromdata_minimal(samfile):
 
     return chromdata
 
-# Writing _summary output file (minimal mode)
+
 def output_summary_minimal(options, chromdata):
     out_summary = open(options.output + '_summary.txt', 'w')
     out_summary.write('#CHROM\tRC\n')

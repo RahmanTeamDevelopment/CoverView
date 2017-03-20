@@ -5,7 +5,15 @@ Utilities for calculating coverage summaries from a BAM file
 from __future__ import division
 
 import numpy
-from statistics cimport QualityHistogram
+cimport coverage.statistics
+from pysam.libchtslib cimport hts_idx_t, uint64_t
+from pysam.libcalignmentfile cimport AlignmentFile,AlignedSegment
+from cpython cimport array
+
+
+cdef extern from "hts.h":
+    int hts_idx_get_stat(const hts_idx_t* idx, int tid, uint64_t* mapped, uint64_t* unmapped)
+
 
 class SimpleCoverageCalculator(object):
     """
@@ -28,30 +36,38 @@ class SimpleCoverageCalculator(object):
         self.mq_hists = []
 
         for x in self.ret_COV:
-            self.bq_hists.append(QualityHistogram())
-            self.mq_hists.append(QualityHistogram())
+            self.bq_hists.append(statistics.QualityHistogram())
+            self.mq_hists.append(statistics.QualityHistogram())
 
     def add_reads(self, reads):
         """
         """
         # Caching object variables to local variables here, as these are used
         # very frequently in this function.
-        cdef QualityHistogram bq_hist
-        cdef QualityHistogram mq_hist
+        cdef statistics.QualityHistogram bq_hist
+        cdef statistics.QualityHistogram mq_hist
 
-        region_size = self.end - self.begin
-        begin = self.begin
-        end = self.end
-        bq_hists = self.bq_hists
-        mq_hists = self.mq_hists
-        bq_cutoff = self.bq_cutoff
-        mq_cutoff = self.mq_cutoff
-        ret_COV = self.ret_COV
-        ret_QCOV = self.ret_QCOV
+        cdef int region_size = self.end - self.begin
+        cdef int begin = self.begin
+        cdef int end = self.end
+        cdef list bq_hists = self.bq_hists
+        cdef list mq_hists = self.mq_hists
+        cdef int bq_cutoff = self.bq_cutoff
+        cdef int mq_cutoff = self.mq_cutoff
+        cdef list ret_COV = self.ret_COV
+        cdef list ret_QCOV = self.ret_QCOV
+        cdef AlignedSegment read
+        cdef int index
+        #cdef int ref_pos
+        cdef int base_quality
+        cdef int mapping_quality
+        cdef array.array base_qualities_array
+        cdef unsigned char* base_qualities
 
         for read in reads:
             mapping_quality = read.mapping_quality
-            base_qualities = read.query_qualities
+            base_qualities_array = read.query_qualities
+            base_qualities = base_qualities_array.data.as_uchars
 
             for index, ref_pos in enumerate(read.get_reference_positions(full_length=True)):
 
@@ -59,11 +75,13 @@ class SimpleCoverageCalculator(object):
                     continue
 
                 # TODO: add 1 to cov for deletions and 1 to qco for high map qual deletions
-                if begin <= ref_pos < end:
-                    offset = ref_pos - begin
+                if begin < ref_pos <= end:
+                    offset = ref_pos - (begin + 1)
                     base_quality = base_qualities[index]
-                    bq_hists[offset].add_data(base_quality)
-                    mq_hists[offset].add_data(mapping_quality)
+                    bq_hist = bq_hists[offset]
+                    mq_hist = mq_hists[offset]
+                    bq_hist.add_data(base_quality)
+                    mq_hist.add_data(mapping_quality)
                     ret_COV[offset] += 1
 
                     if mapping_quality >= mq_cutoff and base_quality >= bq_cutoff:
@@ -250,6 +268,24 @@ class DirectionalCoverageCalculator(object):
             self.ret_MEDMQ_r,
             self.ret_FLMQ_r
         )
+
+
+def get_num_mapped_reads_covering_chromosome(bam_file, chrom):
+    """
+    Return the total number of reads covering the specified chromsome
+    in the specified BAM file. This is an optimisation, which makes use of the
+    index statistics in the BAM index, which record the nunmber of alignments. This is
+    an O(1) operation rather than the O(N) operation of looping through all reads in the
+    file with read.tid == chromID.
+    """
+    cdef AlignmentFile the_file = bam_file
+    cdef hts_idx_t* index = the_file.index
+    cdef uint64_t n_mapped = 0
+    cdef uint64_t n_unmapped = 0
+    cdef int tid = the_file.get_tid(chrom)
+
+    hts_idx_get_stat(index, tid, &n_mapped, &n_unmapped)
+    return n_mapped
 
 
 def get_valid_chromosome_name(chrom, bam_file):

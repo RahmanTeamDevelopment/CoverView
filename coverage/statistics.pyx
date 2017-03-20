@@ -32,7 +32,7 @@ cdef class QualityHistogram:
     def __dealloc__(self):
         free(self.data)
 
-    def add_data(self, quality_score):
+    cdef add_data(self, int quality_score):
         self.n_data_points += 1
         self.data[quality_score] += 1
 
