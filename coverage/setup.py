@@ -35,7 +35,7 @@ modules = [
     ),
     Extension(
         "coverage",
-        ["coverage.pyx"],
+        ["calculators.pyx"],
         include_dirs=include_dirs,
         libraries=libraries,
         library_dirs=library_dirs,

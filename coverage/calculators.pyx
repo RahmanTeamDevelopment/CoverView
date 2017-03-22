@@ -5,48 +5,58 @@ Utilities for calculating coverage summaries from a BAM file
 from __future__ import division
 
 import numpy
-cimport coverage.statistics
-from pysam.libchtslib cimport hts_idx_t, uint64_t
-from pysam.libcalignmentfile cimport AlignmentFile,AlignedSegment
+from coverage.statistics cimport QualityHistogram
+
+from libc.stdint cimport uint32_t, uint64_t
+from pysam.libcalignmentfile cimport AlignmentFile, AlignedSegment, bam1_t, BAM_CIGAR_MASK,\
+    BAM_CIGAR_SHIFT, BAM_CINS, BAM_CSOFT_CLIP, BAM_CREF_SKIP, BAM_CMATCH, BAM_CDEL
+
 from cpython cimport array
 
-
 cdef extern from "hts.h":
+    ctypedef struct hts_idx_t
     int hts_idx_get_stat(const hts_idx_t* idx, int tid, uint64_t* mapped, uint64_t* unmapped)
 
 
-class SimpleCoverageCalculator(object):
+cdef class SimpleCoverageCalculator(object):
     """
     Utility class for computing coverage summaries for the simple case when we do
     not care about direction.
     """
+    cdef int begin
+    cdef int end
+    cdef int bq_cutoff
+    cdef int mq_cutoff
+    cdef array.array COV,QCOV,MEDBQ,FLBQ,MEDMQ,FLMQ
+    cdef list bq_hists
+    cdef list mq_hists
+
     def __init__(self, chrom, begin, end, bq_cutoff, mq_cutoff):
         self.begin = begin
         self.end = end
         self.bq_cutoff = bq_cutoff
         self.mq_cutoff = mq_cutoff
-        self.ret_COV = [0] * (end - begin)
-        self.ret_QCOV = [0] * (end - begin)
-        self.ret_MEDBQ = [float('NaN')] * (end - begin)
-        self.ret_FLBQ = [float('NaN')] * (end - begin)
-        self.ret_MEDMQ = [float('NaN')] * (end - begin)
-        self.ret_FLMQ = [float('NaN')] * (end - begin)
+        self.COV = array.array('l', [0] * (end - begin))
+        self.QCOV = array.array('l', [0] * (end - begin))
+        self.MEDBQ = array.array('f', [float('NaN')] * (end - begin))
+        self.FLBQ = array.array('f', [float('NaN')] * (end - begin))
+        self.MEDMQ = array.array('f', [float('NaN')] * (end - begin))
+        self.FLMQ = array.array('f', [float('NaN')] * (end - begin))
 
         self.bq_hists = []
         self.mq_hists = []
 
-        for x in self.ret_COV:
-            self.bq_hists.append(statistics.QualityHistogram())
-            self.mq_hists.append(statistics.QualityHistogram())
+        for x in self.COV:
+            self.bq_hists.append(QualityHistogram())
+            self.mq_hists.append(QualityHistogram())
 
     def add_reads(self, reads):
         """
         """
         # Caching object variables to local variables here, as these are used
         # very frequently in this function.
-        cdef statistics.QualityHistogram bq_hist
-        cdef statistics.QualityHistogram mq_hist
-
+        cdef QualityHistogram bq_hist
+        cdef QualityHistogram mq_hist
         cdef int region_size = self.end - self.begin
         cdef int begin = self.begin
         cdef int end = self.end
@@ -54,51 +64,69 @@ class SimpleCoverageCalculator(object):
         cdef list mq_hists = self.mq_hists
         cdef int bq_cutoff = self.bq_cutoff
         cdef int mq_cutoff = self.mq_cutoff
-        cdef list ret_COV = self.ret_COV
-        cdef list ret_QCOV = self.ret_QCOV
+        cdef long* COV = self.COV.data.as_longs
+        cdef long* QCOV = self.QCOV.data.as_longs
         cdef AlignedSegment read
         cdef int index
-        #cdef int ref_pos
         cdef int base_quality
         cdef int mapping_quality
         cdef array.array base_qualities_array
         cdef unsigned char* base_qualities
+        cdef uint32_t k, i, pos, n_cigar
+        cdef int op,l
+        cdef uint32_t* cigar_p
+        cdef bam1_t* src
 
         for read in reads:
             mapping_quality = read.mapping_quality
             base_qualities_array = read.query_qualities
             base_qualities = base_qualities_array.data.as_uchars
+            src = read._delegate
+            n_cigar = src.core.n_cigar
 
-            for index, ref_pos in enumerate(read.get_reference_positions(full_length=True)):
+            if n_cigar == 0:
+                break
 
-                if ref_pos is None:
-                    continue
+            pos = src.core.pos
+            cigar_p = <uint32_t*> (src.data + src.core.l_qname)
+            index = 0
 
-                # TODO: add 1 to cov for deletions and 1 to qco for high map qual deletions
-                if begin < ref_pos <= end:
-                    offset = ref_pos - (begin + 1)
-                    base_quality = base_qualities[index]
-                    bq_hist = bq_hists[offset]
-                    mq_hist = mq_hists[offset]
-                    bq_hist.add_data(base_quality)
-                    mq_hist.add_data(mapping_quality)
-                    ret_COV[offset] += 1
+            for k from 0 <= k < n_cigar:
+                op = cigar_p[k] & BAM_CIGAR_MASK
+                l = cigar_p[k] >> BAM_CIGAR_SHIFT
 
-                    if mapping_quality >= mq_cutoff and base_quality >= bq_cutoff:
-                        ret_QCOV[offset] += 1
+                if op == BAM_CSOFT_CLIP or op == BAM_CINS:
+                    index += l
+                elif op == BAM_CMATCH:
+                    for i from pos <= i < pos + l:
+                        # TODO: add 1 to cov for deletions and 1 to qco for high map qual deletions
+                        if begin < i <= end:
+                            offset = i - (begin + 1)
+                            base_quality = base_qualities[index + (i-pos)]
+                            bq_hist = bq_hists[offset]
+                            mq_hist = mq_hists[offset]
+                            bq_hist.add_data(base_quality)
+                            mq_hist.add_data(mapping_quality)
+                            COV[offset] += 1
+
+                            if mapping_quality >= mq_cutoff and base_quality >= bq_cutoff:
+                                QCOV[offset] += 1
+
+                    pos += l
+                    index += l
+                elif op == BAM_CDEL or op == BAM_CREF_SKIP:
+                    pos += l
 
         for i in xrange(len(self.bq_hists)):
-
             bq_hist = self.bq_hists[i]
             mq_hist = self.mq_hists[i]
-
-            self.ret_MEDBQ[i] = bq_hist.compute_median()
-            self.ret_MEDMQ[i] = mq_hist.compute_median()
-            self.ret_FLBQ[i] = round(bq_hist.compute_fraction_below_threshold(int(self.bq_cutoff)), 3)
-            self.ret_FLMQ[i] = round(mq_hist.compute_fraction_below_threshold(int(self.mq_cutoff)), 3)
+            self.MEDBQ[i] = bq_hist.compute_median()
+            self.MEDMQ[i] = mq_hist.compute_median()
+            self.FLBQ[i] = round(bq_hist.compute_fraction_below_threshold(int(self.bq_cutoff)), 3)
+            self.FLMQ[i] = round(mq_hist.compute_fraction_below_threshold(int(self.mq_cutoff)), 3)
 
     def add_pileup(self, pileup_column, i):
-        self.ret_COV[i] = pileup_column.n
+        self.COV[i] = pileup_column.n
         bqs = []
         mqs = []
         qcov = 0
@@ -116,24 +144,24 @@ class SimpleCoverageCalculator(object):
             if pileupread.alignment.mapq >= self.mq_cutoff and bq >= self.bq_cutoff:
                 qcov += 1
 
-        self.ret_QCOV[i] = qcov
-        self.ret_MEDBQ[i] = numpy.median(bqs)
-        self.ret_MEDMQ[i] = numpy.median(mqs)
+        self.QCOV[i] = qcov
+        self.MEDBQ[i] = numpy.median(bqs)
+        self.MEDMQ[i] = numpy.median(mqs)
 
         if len(bqs) > 0:
-            self.ret_FLBQ[i] = round(len([x for x in bqs if x < self.bq_cutoff]) / len(bqs), 3)
+            self.FLBQ[i] = round(len([x for x in bqs if x < self.bq_cutoff]) / len(bqs), 3)
 
         if len(mqs) > 0:
-            self.ret_FLMQ[i] = round(len([x for x in mqs if x < self.mq_cutoff]) / len(mqs), 3)
+            self.FLMQ[i] = round(len([x for x in mqs if x < self.mq_cutoff]) / len(mqs), 3)
 
     def get_coverage_summary(self):
         return (
-            self.ret_COV,
-            self.ret_QCOV,
-            self.ret_MEDBQ,
-            self.ret_FLBQ,
-            self.ret_MEDMQ,
-            self.ret_FLMQ
+            list(self.COV),
+            list(self.QCOV),
+            list(self.MEDBQ),
+            list(self.FLBQ),
+            list(self.MEDMQ),
+            list(self.FLMQ)
         )
 
 
