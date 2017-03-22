@@ -4,6 +4,8 @@ data
 """
 from __future__ import division
 
+import cython
+cimport cython
 
 cdef extern from "stdlib.h":
     void free(void *)
@@ -21,6 +23,7 @@ cdef class QualityHistogramArray:
     """
     def __init__(self, int num_hists):
         cdef int size = 101
+        self.num_hists = num_hists
         self.data = <int**>(malloc(num_hists*sizeof(int*)))
         self.n_data_points = <int*>(calloc(num_hists, sizeof(int)))
 
@@ -30,8 +33,14 @@ cdef class QualityHistogramArray:
             self.data[i] = <int*>(calloc(size, sizeof(int)))
 
     def __dealloc__(self):
-        free(self.data)
+        cdef int i = 0
+        for i from 0 < i < self.num_hists:
+            free(self.data[i])
 
+        free(self.data)
+        free(self.n_data_points)
+
+    @cython.profile(False)
     cdef void add_data(self, int index, int quality_score):
         self.n_data_points[index] += 1
         self.data[index][quality_score] += 1

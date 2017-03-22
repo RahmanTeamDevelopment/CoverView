@@ -17,6 +17,8 @@ import sys
 import transcript
 import warnings
 
+import cProfile
+import pstats
 
 class SingleJob(multiprocessing.Process):
     # Process constructor
@@ -90,46 +92,14 @@ class SingleJob(multiprocessing.Process):
         """
         return coverage.get_profiles(self.samfile, region, self.config)
 
-    # Calculating read counts for a region
-    def readcountsForRegion(self, region):
-
-        # Splitting region to chrom:begin-end
-        chrom = region[:region.find(':')]
-        begin = int(region[region.find(':') + 1:region.find('-')])
-        end = int(region[region.find('-') + 1:])
-
-        if not chrom in self.reads.keys(): self.reads[chrom] = set()
-
-        goodchrom = chrom
-        chrprefix = self.samfile.references[0].startswith('chr')
-        if chrprefix and not chrom.startswith('chr'): goodchrom = 'chr' + chrom
-        if not chrprefix and chrom.startswith('chr'): goodchrom = chrom[3:]
-
-        if not goodchrom in self.samfile.references: return None, None, None
-
-        count = 0
-        count_f = 0
-        count_r = 0
-        for x in self.samfile.fetch(goodchrom, begin, end):
-            if self.config['duplicates']:
-                count += 1
-                if x.is_reverse: count_r += 1
-                else: count_f += 1
-            else:
-                if not x.is_duplicate:
-                    count += 1
-                    if x.is_reverse: count_r += 1
-                    else: count_f += 1
-            self.reads[chrom].add((x.qname, x.pos))
-
-        return count, count_f, count_r
-
-    # Running process
     def run(self):
         self.run_process()
+        #p = cProfile.Profile()
+        #p.runctx('self.run_process()', globals(), locals())
+        #s = pstats.Stats(p)
+        #s.sort_stats("cumulative").print_stats()
 
     def run_process(self):
-        # If there is only one thread
         if int(options.threads) == 1:
 
             # Outputting _target file header
@@ -213,13 +183,21 @@ class SingleJob(multiprocessing.Process):
             target['Start'] = begin + 1
             target['End'] = end
 
+            summary = dict()
+
             # Calculate profiles if either _profiles or _regions files are to be outputted
             if self.config['outputs']['profiles'] or self.config['outputs']['regions']:
                 profiles = dict()
 
                 # Calculate directional and/or non-directional profiles
-                if self.config['direction']: COV, QCOV, MEDBQ, FLBQ, MEDMQ, FLMQ, COV_f, QCOV_f, MEDBQ_f, FLBQ_f, MEDMQ_f, FLMQ_f, COV_r, QCOV_r, MEDBQ_r, FLBQ_r, MEDMQ_r, FLMQ_r = self.get_profiles(region)
-                else: COV, QCOV, MEDBQ, FLBQ, MEDMQ, FLMQ = self.get_profiles(region)
+                if self.config['direction']:
+                    count, count_f, count_r,COV, QCOV, MEDBQ, FLBQ, MEDMQ, FLMQ, COV_f, QCOV_f, MEDBQ_f, FLBQ_f, MEDMQ_f, FLMQ_f, COV_r, QCOV_r, MEDBQ_r, FLBQ_r, MEDMQ_r, FLMQ_r = self.get_profiles(region)
+                    summary['RC'] = count
+                    summary['RC_f'] = count_f
+                    summary['RC_r'] = count_r
+                else:
+                    count, COV, QCOV, MEDBQ, FLBQ, MEDMQ, FLMQ = self.get_profiles(region)
+                    summary['RC'] = count
 
                 # Make profiles dictionary
                 profiles['COV'] = COV
@@ -246,16 +224,6 @@ class SingleJob(multiprocessing.Process):
 
                 # Add profiles to target dict
                 target['Profiles'] = profiles
-
-
-            # Calculate summary metrics for the target
-
-            # Read counts
-            summary = dict()
-            summary['RC'], count_f, count_r = self.readcountsForRegion(region)
-            if self.config['direction']:
-                summary['RC_f'] = count_f
-                summary['RC_r'] = count_r
 
             # Calculate additional summary metrics if _regions file is to be outputted
             if self.config['outputs']['regions']:
@@ -439,14 +407,11 @@ class SingleJob(multiprocessing.Process):
             record.extend([str(summary['MEDCOV_r']), str(summary['MINCOV_r']), str(summary['MEDQCOV_r']),
                            str(summary['MINQCOV_r']), str(summary['MAXFLMQ_r']), str(summary['MAXFLBQ_r'])])
 
-        # Write record to output file
         self.out_targets.write('\t'.join(record) + '\n')
 
-    # Writing _profiles output file
     def output_profiles(self, target):
         profiles = target['Profiles']
 
-        # Write target name to output file
         self.out_profiles.write('\n')
         self.out_profiles.write('[' + target['Name'] + ']\n')
 
@@ -454,7 +419,7 @@ class SingleJob(multiprocessing.Process):
             window_qcov = {"targetname": None, "chrom": None, "start": None, "transcriptstart": None}
 
         # Iterate through all bases of the targeted region
-        for i in range(len(profiles['COV'])):
+        for i in xrange(len(profiles['COV'])):
             transcoordstr = ''
 
             # Calculate transcript coordinates if required
@@ -615,7 +580,8 @@ def printInfo_minimal(options):
 # Setting default values for unspecified configuration options
 def defaultConfigs(config):
     if not 'duplicates' in config.keys(): config['duplicates'] = True
-    if not 'outputs' in config.keys(): config['outputs'] = {'regions': True, 'profiles': True, 'gui': False}
+    if not 'outputs' in config.keys(): config['outputs'] = {'regions': True,
+                                                            'profiles': True, 'gui': False}
     if not 'regions' in config['outputs'].keys(): config['outputs']['regions'] = True
     if not 'profiles' in config['outputs'].keys(): config['outputs']['profiles'] = True
     if not 'gui' in config['outputs'].keys(): config['outputs']['gui'] = False

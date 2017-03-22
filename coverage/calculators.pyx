@@ -32,6 +32,7 @@ cdef class SimpleCoverageCalculator(object):
     cdef int end
     cdef int bq_cutoff
     cdef int mq_cutoff
+    cdef int n_reads_in_region
     cdef array.array COV,QCOV,MEDBQ,FLBQ,MEDMQ,FLMQ
     cdef QualityHistogramArray bq_hists
     cdef QualityHistogramArray mq_hists
@@ -42,6 +43,7 @@ cdef class SimpleCoverageCalculator(object):
         self.end = end
         self.bq_cutoff = bq_cutoff
         self.mq_cutoff = mq_cutoff
+        self.n_reads_in_region = 0
         self.COV = array.array('l', [0] * (bases_in_region))
         self.QCOV = array.array('l', [0] * (bases_in_region))
         self.MEDBQ = array.array('f', [float('NaN')] * (bases_in_region))
@@ -78,10 +80,10 @@ cdef class SimpleCoverageCalculator(object):
             if read_iterator.retval < 0:
                 break
 
+            self.n_reads_in_region += 1
             src = read_iterator.b
             mapping_quality = src.core.qual
             base_qualities = bam_get_qual(src)
-
             n_cigar = src.core.n_cigar
 
             if n_cigar == 0:
@@ -152,6 +154,7 @@ cdef class SimpleCoverageCalculator(object):
 
     def get_coverage_summary(self):
         return (
+            self.n_reads_in_region,
             list(self.COV),
             list(self.QCOV),
             list(self.MEDBQ),
