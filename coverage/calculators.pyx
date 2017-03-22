@@ -5,17 +5,22 @@ Utilities for calculating coverage summaries from a BAM file
 from __future__ import division
 
 import numpy
-from coverage.statistics cimport QualityHistogram
+from coverage.statistics cimport QualityHistogramArray
 
-from libc.stdint cimport uint32_t, uint64_t
+from libc.stdint cimport uint32_t, uint64_t, uint8_t
+
 from pysam.libcalignmentfile cimport AlignmentFile, AlignedSegment, bam1_t, BAM_CIGAR_MASK,\
     BAM_CIGAR_SHIFT, BAM_CINS, BAM_CSOFT_CLIP, BAM_CREF_SKIP, BAM_CMATCH, BAM_CDEL
 
+from pysam.libcalignmentfile cimport IteratorRowRegion
 from cpython cimport array
 
 cdef extern from "hts.h":
     ctypedef struct hts_idx_t
     int hts_idx_get_stat(const hts_idx_t* idx, int tid, uint64_t* mapped, uint64_t* unmapped)
+
+cdef extern from "sam.h":
+    uint8_t* bam_get_qual(bam1_t* b)
 
 
 cdef class SimpleCoverageCalculator(object):
@@ -28,60 +33,55 @@ cdef class SimpleCoverageCalculator(object):
     cdef int bq_cutoff
     cdef int mq_cutoff
     cdef array.array COV,QCOV,MEDBQ,FLBQ,MEDMQ,FLMQ
-    cdef list bq_hists
-    cdef list mq_hists
+    cdef QualityHistogramArray bq_hists
+    cdef QualityHistogramArray mq_hists
 
     def __init__(self, chrom, begin, end, bq_cutoff, mq_cutoff):
+        cdef int bases_in_region = end - begin
         self.begin = begin
         self.end = end
         self.bq_cutoff = bq_cutoff
         self.mq_cutoff = mq_cutoff
-        self.COV = array.array('l', [0] * (end - begin))
-        self.QCOV = array.array('l', [0] * (end - begin))
-        self.MEDBQ = array.array('f', [float('NaN')] * (end - begin))
-        self.FLBQ = array.array('f', [float('NaN')] * (end - begin))
-        self.MEDMQ = array.array('f', [float('NaN')] * (end - begin))
-        self.FLMQ = array.array('f', [float('NaN')] * (end - begin))
+        self.COV = array.array('l', [0] * (bases_in_region))
+        self.QCOV = array.array('l', [0] * (bases_in_region))
+        self.MEDBQ = array.array('f', [float('NaN')] * (bases_in_region))
+        self.FLBQ = array.array('f', [float('NaN')] * (bases_in_region))
+        self.MEDMQ = array.array('f', [float('NaN')] * (bases_in_region))
+        self.FLMQ = array.array('f', [float('NaN')] * (bases_in_region))
 
-        self.bq_hists = []
-        self.mq_hists = []
+        self.bq_hists = QualityHistogramArray(bases_in_region)
+        self.mq_hists = QualityHistogramArray(bases_in_region)
 
-        for x in self.COV:
-            self.bq_hists.append(QualityHistogram())
-            self.mq_hists.append(QualityHistogram())
-
-    def add_reads(self, reads):
+    def add_reads(self, IteratorRowRegion read_iterator):
         """
         """
-        # Caching object variables to local variables here, as these are used
-        # very frequently in this function.
-        cdef QualityHistogram bq_hist
-        cdef QualityHistogram mq_hist
         cdef int region_size = self.end - self.begin
         cdef int begin = self.begin
         cdef int end = self.end
-        cdef list bq_hists = self.bq_hists
-        cdef list mq_hists = self.mq_hists
         cdef int bq_cutoff = self.bq_cutoff
         cdef int mq_cutoff = self.mq_cutoff
         cdef long* COV = self.COV.data.as_longs
         cdef long* QCOV = self.QCOV.data.as_longs
-        cdef AlignedSegment read
         cdef int index
         cdef int base_quality
         cdef int mapping_quality
-        cdef array.array base_qualities_array
-        cdef unsigned char* base_qualities
-        cdef uint32_t k, i, pos, n_cigar
+        cdef uint32_t k, i
+        cdef uint32_t pos, n_cigar
         cdef int op,l
         cdef uint32_t* cigar_p
         cdef bam1_t* src
+        cdef uint8_t* base_qualities
 
-        for read in reads:
-            mapping_quality = read.mapping_quality
-            base_qualities_array = read.query_qualities
-            base_qualities = base_qualities_array.data.as_uchars
-            src = read._delegate
+        while True:
+            read_iterator.cnext()
+
+            if read_iterator.retval < 0:
+                break
+
+            src = read_iterator.b
+            mapping_quality = src.core.qual
+            base_qualities = bam_get_qual(src)
+
             n_cigar = src.core.n_cigar
 
             if n_cigar == 0:
@@ -103,10 +103,8 @@ cdef class SimpleCoverageCalculator(object):
                         if begin < i <= end:
                             offset = i - (begin + 1)
                             base_quality = base_qualities[index + (i-pos)]
-                            bq_hist = bq_hists[offset]
-                            mq_hist = mq_hists[offset]
-                            bq_hist.add_data(base_quality)
-                            mq_hist.add_data(mapping_quality)
+                            self.bq_hists.add_data(offset, base_quality)
+                            self.mq_hists.add_data(offset, mapping_quality)
                             COV[offset] += 1
 
                             if mapping_quality >= mq_cutoff and base_quality >= bq_cutoff:
@@ -117,13 +115,11 @@ cdef class SimpleCoverageCalculator(object):
                 elif op == BAM_CDEL or op == BAM_CREF_SKIP:
                     pos += l
 
-        for i in xrange(len(self.bq_hists)):
-            bq_hist = self.bq_hists[i]
-            mq_hist = self.mq_hists[i]
-            self.MEDBQ[i] = bq_hist.compute_median()
-            self.MEDMQ[i] = mq_hist.compute_median()
-            self.FLBQ[i] = round(bq_hist.compute_fraction_below_threshold(int(self.bq_cutoff)), 3)
-            self.FLMQ[i] = round(mq_hist.compute_fraction_below_threshold(int(self.mq_cutoff)), 3)
+        for i in xrange(self.end - self.begin):
+            self.MEDBQ[i] = self.bq_hists.compute_median(i)
+            self.MEDMQ[i] = self.mq_hists.compute_median(i)
+            self.FLBQ[i] = round(self.bq_hists.compute_fraction_below_threshold(i, int(self.bq_cutoff)), 3)
+            self.FLMQ[i] = round(self.mq_hists.compute_fraction_below_threshold(i, int(self.mq_cutoff)), 3)
 
     def add_pileup(self, pileup_column, i):
         self.COV[i] = pileup_column.n
