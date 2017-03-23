@@ -10,14 +10,21 @@ from coverage.statistics cimport QualityHistogramArray
 from libc.stdint cimport uint32_t, uint64_t, uint8_t
 
 from pysam.libcalignmentfile cimport AlignmentFile, AlignedSegment, bam1_t, BAM_CIGAR_MASK,\
-    BAM_CIGAR_SHIFT, BAM_CINS, BAM_CSOFT_CLIP, BAM_CREF_SKIP, BAM_CMATCH, BAM_CDEL
+    BAM_CIGAR_SHIFT, BAM_CINS, BAM_CSOFT_CLIP, BAM_CREF_SKIP, BAM_CMATCH, BAM_CDEL, BAM_FDUP
 
 from pysam.libcalignmentfile cimport IteratorRowRegion
 from cpython cimport array
 
+
 cdef extern from "hts.h":
     ctypedef struct hts_idx_t
+    ctypedef struct hts_itr_t
+    ctypedef struct BGZF
+    ctypedef struct htsFile
     int hts_idx_get_stat(const hts_idx_t* idx, int tid, uint64_t* mapped, uint64_t* unmapped)
+    BGZF *hts_get_bgzfp(htsFile *fp)
+    int hts_itr_next(BGZF *fp, hts_itr_t *iter, void *r, void *data)
+
 
 cdef extern from "sam.h":
     uint8_t* bam_get_qual(bam1_t* b)
@@ -50,11 +57,10 @@ cdef class SimpleCoverageCalculator(object):
         self.FLBQ = array.array('f', [float('NaN')] * (bases_in_region))
         self.MEDMQ = array.array('f', [float('NaN')] * (bases_in_region))
         self.FLMQ = array.array('f', [float('NaN')] * (bases_in_region))
-
         self.bq_hists = QualityHistogramArray(bases_in_region)
         self.mq_hists = QualityHistogramArray(bases_in_region)
 
-    def add_reads(self, IteratorRowRegion read_iterator):
+    cdef void add_reads(self, IteratorRowRegion read_iterator):
         """
         """
         cdef int region_size = self.end - self.begin
@@ -73,22 +79,33 @@ cdef class SimpleCoverageCalculator(object):
         cdef uint32_t* cigar_p
         cdef bam1_t* src
         cdef uint8_t* base_qualities
+        cdef int iterator_status = 0
 
         while True:
-            read_iterator.cnext()
+            iterator_status = hts_itr_next(
+                hts_get_bgzfp(read_iterator.htsfile),
+                read_iterator.iter,
+                read_iterator.b,
+                read_iterator.htsfile
+            )
 
-            if read_iterator.retval < 0:
+            if iterator_status < 0:
                 break
 
-            self.n_reads_in_region += 1
             src = read_iterator.b
-            mapping_quality = src.core.qual
-            base_qualities = bam_get_qual(src)
+
+            # Skip duplicate reads
+            #if src.core.flag & BAM_FDUP != 0:
+            #    continue
+
             n_cigar = src.core.n_cigar
 
             if n_cigar == 0:
                 break
 
+            self.n_reads_in_region += 1
+            mapping_quality = src.core.qual
+            base_qualities = bam_get_qual(src)
             pos = src.core.pos
             cigar_p = <uint32_t*> (src.data + src.core.l_qname)
             index = 0
@@ -115,42 +132,27 @@ cdef class SimpleCoverageCalculator(object):
                     pos += l
                     index += l
                 elif op == BAM_CDEL or op == BAM_CREF_SKIP:
+                    for i from pos <= i < pos + l:
+                        if begin < i <= end:
+                            offset = i - (begin + 1)
+                            COV[offset] += 1
+                            if mapping_quality >= mq_cutoff:
+                                QCOV[offset] += 1
                     pos += l
 
+        self.compute_summary_statistics_for_region()
+
+    cdef void compute_summary_statistics_for_region(self):
+        cdef float* MEDBQ = self.MEDBQ.data.as_floats
+        cdef float* MEDMQ = self.MEDMQ.data.as_floats
+        cdef float* FLBQ = self.FLBQ.data.as_floats
+        cdef float* FLMQ = self.FLMQ.data.as_floats
+
         for i in xrange(self.end - self.begin):
-            self.MEDBQ[i] = self.bq_hists.compute_median(i)
-            self.MEDMQ[i] = self.mq_hists.compute_median(i)
-            self.FLBQ[i] = round(self.bq_hists.compute_fraction_below_threshold(i, int(self.bq_cutoff)), 3)
-            self.FLMQ[i] = round(self.mq_hists.compute_fraction_below_threshold(i, int(self.mq_cutoff)), 3)
-
-    def add_pileup(self, pileup_column, i):
-        self.COV[i] = pileup_column.n
-        bqs = []
-        mqs = []
-        qcov = 0
-
-        for pileupread in pileup_column.pileups:
-            if pileupread.is_del:
-                if pileupread.alignment.mapq >= self.mq_cutoff:
-                    qcov += 1
-                continue
-
-            bq = pileupread.alignment.query_qualities[pileupread.query_position]
-            bqs.append(bq)
-            mqs.append(pileupread.alignment.mapq)
-
-            if pileupread.alignment.mapq >= self.mq_cutoff and bq >= self.bq_cutoff:
-                qcov += 1
-
-        self.QCOV[i] = qcov
-        self.MEDBQ[i] = numpy.median(bqs)
-        self.MEDMQ[i] = numpy.median(mqs)
-
-        if len(bqs) > 0:
-            self.FLBQ[i] = round(len([x for x in bqs if x < self.bq_cutoff]) / len(bqs), 3)
-
-        if len(mqs) > 0:
-            self.FLMQ[i] = round(len([x for x in mqs if x < self.mq_cutoff]) / len(mqs), 3)
+            MEDBQ[i] = self.bq_hists.compute_median(i)
+            MEDMQ[i] = self.mq_hists.compute_median(i)
+            FLBQ[i] = self.bq_hists.compute_fraction_below_threshold(i, <int>(self.bq_cutoff))
+            FLMQ[i] = self.mq_hists.compute_fraction_below_threshold(i, <int>(self.mq_cutoff))
 
     def get_coverage_summary(self):
         return (
@@ -346,7 +348,7 @@ def get_profiles(bam_file, region, config):
 
     chrom, beg_end = region.split(":")
     begin = int(beg_end.split("-")[0]) - 1
-    end = int(beg_end.split("-")[1]) - 1
+    end = int(beg_end.split("-")[1]) - 1 + 1 # TODO: sort out the indexing!
 
     good_chrom = get_valid_chromosome_name(chrom, bam_file)
 

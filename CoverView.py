@@ -99,16 +99,25 @@ class SingleJob(multiprocessing.Process):
         #s = pstats.Stats(p)
         #s.sort_stats("cumulative").print_stats()
 
-    def run_process(self):
+    def output_target_file_header(self):
         if int(options.threads) == 1:
 
             # Outputting _target file header
             if self.config['outputs']['regions']:
+
                 targetheader = ['Region', 'Chromosome', 'Start_position', 'End_position']
-                if config['transcript']['regions'] and not config['transcript_db'] is None: targetheader.extend(
-                    ['Start_transcript', 'End_transcript'])
-                if not config['pass'] is None: targetheader.append('Pass_or_fail')
-                targetheader.extend(['RC', 'MEDCOV', 'MINCOV', 'MEDQCOV', 'MINQCOV', 'MAXFLMQ', 'MAXFLBQ'])
+
+                if config['transcript']['regions'] and not config['transcript_db'] is None:
+                    targetheader.extend(
+                        ['Start_transcript', 'End_transcript']
+                    )
+
+                if not config['pass'] is None:
+                    targetheader.append('Pass_or_fail')
+
+                targetheader.extend(
+                    ['RC', 'MEDCOV', 'MINCOV', 'MEDQCOV', 'MINQCOV', 'MAXFLMQ', 'MAXFLBQ']
+                )
 
                 if self.config['direction']:
                     targetheader.extend(['MEDCOV+', 'MINCOV+', 'MEDQCOV+', 'MINQCOV+', 'MAXFLMQ+', 'MAXFLBQ+'])
@@ -129,53 +138,63 @@ class SingleJob(multiprocessing.Process):
 
                 self.out_profiles.write('#' + '\t'.join(profheader) + '\n')
 
-            # Outputting _poor file header
-            if not config['transcript_db'] is None and config['outputs']['profiles']:
-                poorheader = ['Region', 'Chromosome', 'Start_position', 'End_position', 'Start_transcript',
-                              'End_transcript']
-                self.out_poor.write('#' + '\t'.join(poorheader) + '\n')
+                # Outputting _poor file header
+                if not config['transcript_db'] is None and config['outputs']['profiles']:
+                    poorheader = ['Region', 'Chromosome', 'Start_position', 'End_position', 'Start_transcript',
+                                  'End_transcript']
+                    self.out_poor.write('#' + '\t'.join(poorheader) + '\n')
 
-            # Initializing gui data json file
-            if self.config['outputs']['gui']:
-                self.out_json.write('function readData() {\n')
-                self.out_json.write('\tdata={\"targets\":[')
+                # Initializing gui data json file
+                if self.config['outputs']['gui']:
+                    self.out_json.write('function readData() {\n')
+                    self.out_json.write('\tdata={\"targets\":[')
 
-        # Initializing progress info
+    def run_process(self):
+        self.output_target_file_header()
+
         if self.threadidx == 1:
             print ''
             sys.stdout.write('\rRunning analysis ... 0.0%')
             sys.stdout.flush()
 
-        # Iteriate through the bed file
         fails = []
         numOfFails = 0
         counter = 0
+
         for line in open(self.options.bedfile):
             counter += 1
 
             # Check which part of the bed file should be process by this thread
-            if counter < int(self.startline): continue
+            if counter < int(self.startline):
+                continue
+
             if not self.endline == '':
-                if counter > int(self.endline): break
+                if counter > int(self.endline):
+                    break
 
-            # Retrieve target as a dictionary
             target = dict()
-
             line = line.rstrip()
-            if line == '': continue
-            if line.startswith('#'): continue
+
+            if line == '':
+                continue
+
+            if line.startswith('#'):
+                continue
 
             row = line.split('\t')
+
             if len(row) < 4:
                 print "Error: incorrect BED file!"
                 quit()
 
             key = self.names[counter - 1]
-
             chrom = row[0]
             begin = int(row[1])
             end = int(row[2])
-            if not chrom.startswith('chr'): chrom = 'chr' + chrom
+
+            if not chrom.startswith('chr'):
+                chrom = 'chr' + chrom
+
             region = chrom + ':' + row[1] + '-' + row[2]
 
             target['Name'] = key
@@ -960,122 +979,125 @@ def finalizeJSONOutput(options):
     out_json.write('}\n')
     out_json.close()
 
-#########################################################################################################################################
 
+if __name__ == "__main__":
+    numpy.seterr(all='ignore')
+    warnings.simplefilter("ignore", RuntimeWarning)
 
-numpy.seterr(all='ignore')
-warnings.simplefilter("ignore", RuntimeWarning)
+    print ""
+    print "======================================================================================"
+    print 'CoverView v1.2.0 started running: ', datetime.datetime.now()
+    print ""
 
-print ""
-print "======================================================================================"
-print 'CoverView v1.2.0 started running: ', datetime.datetime.now()
-print ""
+    parser = OptionParser(usage='usage: python %prog [options]')
+    parser.add_option("-i", "--input", default='input.bam', dest='input', action='store', help="Input (BAM) filename [default value: %default]")
+    parser.add_option("-o", "--output", default='output', dest='output', action='store', help="Output filename [default value: %default]")
+    parser.add_option("-b", "--bed", default=None, dest='bedfile', action='store', help="Input BED filename [default value: %default]")
+    parser.add_option("-c", "--config", default=None, dest='config', action='store', help="Configuration file [default value: %default]")
+    parser.add_option("-t", "--threads", default=1, dest='threads', action='store', help="Number of processes used [default value: %default]")
+    (options, args) = parser.parse_args()
 
-# Command line argument parsing
-parser = OptionParser(usage='usage: python %prog [options]')
-parser.add_option("-i", "--input", default='input.bam', dest='input', action='store', help="Input (BAM) filename [default value: %default]")
-parser.add_option("-o", "--output", default='output', dest='output', action='store', help="Output filename [default value: %default]")
-parser.add_option("-b", "--bed", default=None, dest='bedfile', action='store', help="Input BED filename [default value: %default]")
-parser.add_option("-c", "--config", default=None, dest='config', action='store', help="Configuration file [default value: %default]")
-parser.add_option("-t", "--threads", default=1, dest='threads', action='store', help="Number of processes used [default value: %default]")
-(options, args) = parser.parse_args()
+    config = dict()
+    if not options.config is None:
+        with open(options.config) as config_file:
+            config = json.load(config_file)
 
-# Loading configuration file
-config = dict()
-if not options.config is None:
-    with open(options.config) as config_file: config = json.load(config_file)
-defaultConfigs(config)
+    defaultConfigs(config)
 
-# Removing unremoved temporary files if exist
-if os.path.isfile(options.output + '_failedtargets.txt'): os.remove(options.output + '_failedtargets.txt')
-if os.path.isfile(options.output + '_reads_on_target.txt'): os.remove(options.output + '_reads_on_target.txt')
+    # Removing unremoved temporary files if exist
+    if os.path.isfile(options.output + '_failedtargets.txt'):
+        os.remove(options.output + '_failedtargets.txt')
 
-# Minimal mode (no BED file)
-if options.bedfile is None:
-    printInfo_minimal(options)
+    if os.path.isfile(options.output + '_reads_on_target.txt'):
+        os.remove(options.output + '_reads_on_target.txt')
+
+    # Minimal mode (no BED file)
+    if options.bedfile is None:
+        printInfo_minimal(options)
+        samfile = pysam.Samfile(options.input, "rb")
+        chromdata = calculateChromdata_minimal(samfile)
+        output_summary_minimal(options, chromdata)
+        print ""
+        print 'CoverView v1.2.0 succesfully finished: ', datetime.datetime.now()
+        print "======================================================================================"
+        print ""
+        quit()
+
+    # Creating output directory for gui
+    if config['outputs']['gui']:
+        dir = options.output + '_gui'
+        if os.path.exists(dir): shutil.rmtree(dir)
+        os.makedirs(dir)
+        os.makedirs(dir+'/data')
+        cvdir = os.path.dirname(os.path.realpath(__file__))
+        shutil.copy(cvdir+'/gui.html', dir+'/'+options.output+'_coverview.html')
+        shutil.copytree(cvdir+'/lib', dir+'/lib')
+
+    names, uniqueIDs = makeNames(options.bedfile)
+    numOfTargets = len(names)
+
+    samplename = options.input[:options.input.rfind('.bam')]
+
+    breaks = findFileBreaks(options.bedfile, int(options.threads))
+    options.threads = len(breaks)
+
+    printInfo(options, config, numOfTargets)
+
+    threadidx = 0
+    processes = []
+
+    for (startline, endline) in breaks:
+        threadidx += 1
+        processes.append(SingleJob(threadidx, options, config, startline, endline, names))
+
+    for process in processes:
+        process.start()
+
+    for process in processes:
+        process.join()
+
+    if int(options.threads) > 1:
+        mergeTmpFiles(options, config)
+
+    # Reading on-target read counts from tmp file
+    ontarget = dict()
+
+    for threadidx in range(1, int(options.threads) + 1):
+        for line in open(options.output + '_reads_on_target_' + str(threadidx) + '.txt'):
+            [key, value] = line.split(':')
+            if key in ontarget.keys(): ontarget[key] += int(value.strip())
+            else: ontarget[key] = int(value.strip())
+        os.remove(options.output + '_reads_on_target_' + str(threadidx) + '.txt')
+
+    # Reading number of failed targets from tmp file
+    failedtargets = 0
+    uniqueids = set()
+
+    for threadidx in range(1, int(options.threads) + 1):
+        for line in open(options.output + '_failedtargets_' + str(threadidx) + '.txt'):
+            line = line.strip()
+            fails = line[1:-1].split(',')
+            failedtargets += len(fails)
+            for x in fails:
+                x = x.strip()
+                uniqueids.add(x[1:-1])
+
+        os.remove(options.output + '_failedtargets_' + str(threadidx) + '.txt')
+
+    # Closing progress info
+    if failedtargets > 0:
+        print ' - Done. (' + str(failedtargets) + ' failed regions)'
+    else:
+        print ' - Done.'
+
     samfile = pysam.Samfile(options.input, "rb")
-    chromdata = calculateChromdata_minimal(samfile)
-    output_summary_minimal(options, chromdata)
+    chromdata = calculateChromdata(samfile, ontarget)
+    output_summary(options, chromdata)
+
+    if config['outputs']['gui']:
+        finalizeJSONOutput(options)
+
     print ""
     print 'CoverView v1.2.0 succesfully finished: ', datetime.datetime.now()
     print "======================================================================================"
     print ""
-    quit()
-
-# Creating output directory for gui
-if config['outputs']['gui']:
-    dir = options.output + '_gui'
-    if os.path.exists(dir): shutil.rmtree(dir)
-    os.makedirs(dir)
-    os.makedirs(dir+'/data')
-    cvdir = os.path.dirname(os.path.realpath(__file__))
-    shutil.copy(cvdir+'/gui.html', dir+'/'+options.output+'_coverview.html')
-    shutil.copytree(cvdir+'/lib', dir+'/lib')
-
-# Creating target name list
-names, uniqueIDs = makeNames(options.bedfile)
-numOfTargets = len(names)
-
-# Setting sample name
-samplename = options.input[:options.input.rfind('.bam')]
-
-# Defining break points in the input BED file
-breaks = findFileBreaks(options.bedfile, int(options.threads))
-options.threads = len(breaks)
-
-# Print out info
-printInfo(options, config, numOfTargets)
-
-# Initializing processes
-threadidx = 0
-processes = []
-for (startline, endline) in breaks:
-    threadidx += 1
-    processes.append(SingleJob(threadidx, options, config, startline, endline, names))
-
-# Running processes
-for process in processes: process.start()
-for process in processes: process.join()
-
-# Merging tmp files
-if int(options.threads) > 1: mergeTmpFiles(options, config)
-
-# Reading on-target read counts from tmp file
-ontarget = dict()
-for threadidx in range(1, int(options.threads) + 1):
-    for line in open(options.output + '_reads_on_target_' + str(threadidx) + '.txt'):
-        [key, value] = line.split(':')
-        if key in ontarget.keys(): ontarget[key] += int(value.strip())
-        else: ontarget[key] = int(value.strip())
-    os.remove(options.output + '_reads_on_target_' + str(threadidx) + '.txt')
-
-# Reading number of failed targets from tmp file
-failedtargets = 0
-uniqueids = set()
-for threadidx in range(1, int(options.threads) + 1):
-    for line in open(options.output + '_failedtargets_' + str(threadidx) + '.txt'):
-        line = line.strip()
-        fails = line[1:-1].split(',')
-        failedtargets += len(fails)
-        for x in fails:
-            x = x.strip()
-            uniqueids.add(x[1:-1])
-    os.remove(options.output + '_failedtargets_' + str(threadidx) + '.txt')
-
-# Closing progress info
-if failedtargets > 0: print ' - Done. (' + str(failedtargets) + ' failed regions)'
-else: print ' - Done.'
-
-# Calculate and output chromosome summary data
-samfile = pysam.Samfile(options.input, "rb")
-chromdata = calculateChromdata(samfile, ontarget)
-output_summary(options, chromdata)
-
-# Finalizing JSON output file
-if config['outputs']['gui']: finalizeJSONOutput(options)
-
-# Goodbye message
-print ""
-print 'CoverView v1.2.0 succesfully finished: ', datetime.datetime.now()
-print "======================================================================================"
-print ""

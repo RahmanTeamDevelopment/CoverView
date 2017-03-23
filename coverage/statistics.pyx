@@ -56,7 +56,7 @@ cdef class QualityHistogramArray:
             for i from 0 <= i < threshold:
                 total += self.data[index][i]
 
-            return total / self.n_data_points[index]
+            return <float>(total) / <float>(self.n_data_points[index])
 
     cdef float compute_median(self, int index):
 
