@@ -22,7 +22,7 @@ cython_directives = {
     "boundscheck": False,
     "nonecheck" : False,
     "cdivision" : True,
-    "profile" : False,
+    "profile" : True,
     "initializedcheck" : False,
     "wraparound" : True
 }

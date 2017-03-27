@@ -89,6 +89,8 @@ cdef class SimpleCoverageCalculator(object):
                 read_iterator.htsfile
             )
 
+            return
+
             if iterator_status < 0:
                 break
 
@@ -356,7 +358,7 @@ def get_profiles(bam_file, region, config):
         return None
 
     coverage_calc = SimpleCoverageCalculator(good_chrom, begin, end, bq_cutoff, mq_cutoff)
-    reads = bam_file.fetch(good_chrom, begin, end)
+    reads = bam_file.fetch(good_chrom, begin, end, multiple_iterators=False)
     coverage_calc.add_reads(reads)
     # if config['direction']:
     #     coverage_calc = DirectionalCoverageCalculator(chrom, begin, end, bq_cutoff, mq_cutoff)
