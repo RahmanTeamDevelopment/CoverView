@@ -22,7 +22,7 @@ cython_directives = {
     "boundscheck": False,
     "nonecheck" : False,
     "cdivision" : True,
-    "profile" : True,
+    "profile" : False,
     "initializedcheck" : False,
     "wraparound" : True
 }
@@ -39,6 +39,11 @@ modules = [
         include_dirs=include_dirs,
         libraries=libraries,
         library_dirs=library_dirs,
+    ),
+    Extension(
+        "output",
+        ["output.pyx"],
+        include_dirs=include_dirs,
     )
 ]
 

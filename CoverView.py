@@ -124,7 +124,7 @@ class SingleJob(object):
         fails = []
         numOfFails = 0
 
-        for line in open(self.options.bedfile):
+        for index,line in enumerate(open(self.options.bedfile)):
             target = dict()
             line = line.rstrip()
 
@@ -267,8 +267,8 @@ class SingleJob(object):
                 else: ids = target['Name']
                 fails.append(ids)
 
-            if counter % 100 == 0:
-                x = round(100 * counter / numOfTargets, 1)
+            if index % 100 == 0:
+                x = round(100 * index / numOfTargets, 1)
                 x = min(x, 100.0)
                 sys.stdout.write('\rRunning analysis ... ' + str(x) + '%')
                 sys.stdout.flush()
@@ -321,13 +321,22 @@ class SingleJob(object):
 
         if self.config['outputs']['profiles']:
             if not self.config['only_fail_profiles']:
-                self.output_profiles(target)
+                coverage.output.output_profiles(
+                    target,
+                    self.out_profiles
+                )
             else:
                 if not self.config['pass'] is None:
                     if not target['PASS']:
-                        self.output_profiles(target)
+                        coverage.output.output_profiles(
+                            target,
+                            self.out_profiles
+                        )
                 else:
-                    self.output_profiles(target)
+                    coverage.output.output_profiles(
+                        target,
+                        self.out_profiles
+                    )
 
         if self.config['outputs']['gui']:
             self.output_json(target)
@@ -393,193 +402,6 @@ class SingleJob(object):
                            str(summary['MINQCOV_r']), str(summary['MAXFLMQ_r']), str(summary['MAXFLBQ_r'])])
 
         self.out_targets.write('\t'.join(record) + '\n')
-
-    def output_profiles(self, target):
-        profiles = target['Profiles']
-
-        self.out_profiles.write('\n')
-        self.out_profiles.write('[' + target['Name'] + ']\n')
-
-        if not self.config['transcript_db'] is None:
-
-            window_qcov = {
-                "targetname": None,
-                "chrom": None,
-                "start": None,
-                "transcriptstart": None
-            }
-
-        # Iterate through all bases of the targeted region
-        for i in xrange(len(profiles['COV'])):
-            transcoordstr = ''
-
-            # Calculate transcript coordinates if required
-            if self.config['transcript']['profiles'] and not self.config['transcript_db'] is None:
-
-                transcoords = transcript.getTranscriptCoordinates(
-                    self.enstdb,
-                    target['Chrom'],
-                    target['Start'] + i
-                )
-
-                v = []
-
-                for key, value in transcoords.iteritems():
-                    v.append(key.geneSymbol + ':' + key.ENST + ':' + value)
-
-                transcoordstr = ','.join(v)
-
-            record = [
-                target['Chrom'],
-                str(target['Start'] + i)
-            ]
-
-            if self.config['transcript']['profiles'] and not self.config['transcript_db'] is None:
-                record.append(transcoordstr)
-
-            record.extend(
-                [
-                    str(profiles['COV'][i]),
-                    str(profiles['QCOV'][i]),
-                    str(profiles['MEDBQ'][i]),
-                    str(profiles['FLBQ'][i]),
-                    str(profiles['MEDMQ'][i]),
-                    str(profiles['FLMQ'][i])
-                ]
-            )
-
-            if self.config['direction']:
-                record.extend(
-                    [
-                        str(profiles['COV_f'][i]),
-                        str(profiles['QCOV_f'][i]),
-                        str(profiles['MEDBQ_f'][i]),
-                        str(profiles['FLBQ_f'][i]),
-                        str(profiles['MEDMQ_f'][i]),
-                        str(profiles['FLMQ_f'][i])
-                    ]
-                )
-
-                record.extend(
-                    [
-                        str(profiles['COV_r'][i]),
-                        str(profiles['QCOV_r'][i]),
-                        str(profiles['MEDBQ_r'][i]),
-                        str(profiles['FLBQ_r'][i]),
-                        str(profiles['MEDMQ_r'][i]),
-                        str(profiles['FLMQ_r'][i])
-                    ]
-                )
-
-            if record[-1] == 'nan':
-                record[-1] = '.'
-
-            if record[-2] == 'nan':
-                record[-2] = '.'
-
-            if record[-3] == 'nan':
-                record[-3] = '.'
-
-            if record[-4] == 'nan':
-                record[-4] = '.'
-
-            self.out_profiles.write('\t'.join(record) + '\n')
-
-            if self.config['transcript_db'] is not None:
-                if profiles['QCOV'][i] < 15:
-                    if window_qcov['transcriptstart'] is None:
-                        window_qcov['targetname'] = target['Name']
-                        window_qcov['chrom'] = target['Chrom']
-                        window_qcov['start'] = target['Start'] + i
-
-                        if transcoordstr == '':
-                            transcoords = transcript.getTranscriptCoordinates(
-                                self.enstdb,
-                                target['Chrom'],
-                                target['Start'] + i
-                            )
-
-                            v = []
-                            for key, value in transcoords.iteritems():
-                                v.append(key.geneSymbol + ':' + key.ENST + ':' + value)
-
-                            transcoordstr = ','.join(v)
-                        window_qcov['transcriptstart'] = transcoordstr
-                else:
-                    if not window_qcov['transcriptstart'] is None:
-
-                        transcoords = transcript.getTranscriptCoordinates(
-                            self.enstdb,
-                            target['Chrom'],
-                            target['Start'] + i - 1
-                        )
-                        v = []
-
-                        for key, value in transcoords.iteritems():
-                            v.append(
-                                key.geneSymbol + ':' + key.ENST + ':' + value
-                            )
-
-                        transcoordstr_end = ','.join(v)
-
-                        record = [
-                            window_qcov['targetname'],
-                            window_qcov['chrom'],
-                            str(window_qcov['start']),
-                            str(target['Start'] + i - 1),
-                            window_qcov['transcriptstart'],
-                            transcoordstr_end
-                        ]
-
-                        if record[4] == '':
-                            record[4] = 'None'
-
-                        if record[5] == '':
-                            record[5] = 'None'
-
-                        if not (record[4] == 'None' and record[5] == 'None'):
-                            self.out_poor.write('\t'.join(record) + '\n')
-
-                        window_qcov = {
-                            "targetname": None,
-                            "chrom": None,
-                            "start": None,
-                            "transcriptstart": None
-                        }
-
-        if self.config['transcript_db'] is not None:
-            if not window_qcov['transcriptstart'] is None:
-
-                if transcoordstr == '':
-                    transcoords = transcript.getTranscriptCoordinates(
-                        self.enstdb,
-                        target['Chrom'],
-                        target['Start'] + i
-                    )
-
-                    v = []
-
-                    for key, value in transcoords.iteritems():
-                        v.append(key.geneSymbol + ':' + key.ENST + ':' + value)
-
-                    transcoordstr = ','.join(v)
-
-                record = [
-                    window_qcov['targetname'],
-                    window_qcov['chrom'],
-                    str(window_qcov['start']),
-                    str(target['Start'] + i), window_qcov['transcriptstart'],
-                    transcoordstr
-                ]
-
-                if record[4] == '':
-                    record[4] = 'None'
-
-                if record[5] == '':
-                    record[5] = 'None'
-
-                if not record[4] == 'None' and record[5] == 'None':
-                    self.out_poor.write('\t'.join(record) + '\n')
 
 
 def printInfo(options, config, numOfTargets):
@@ -802,20 +624,27 @@ def calculateChromdata_minimal(samfile):
 
 
 def output_summary_minimal(options, chromdata):
-    out_summary = open(options.output + '_summary.txt', 'w')
+    out_summary = open(
+        options.output + '_summary.txt', 'w'
+    )
+
     out_summary.write('#CHROM\tRC\n')
+
     mapped = chromdata['Mapped']
     unmapped = chromdata['Unmapped']
     total = chromdata['Total']
+
     out_summary.write('Total\t' + str(total) + '\n')
     out_summary.write('Unmapped\t' + str(unmapped) + '\n')
     record = 'Mapped' + '\t' + str(mapped['RC'])
     out_summary.write(record + '\n')
+
     for i in range(len(chromdata['Chroms'])):
         chromres = chromdata['Chroms'][i]
         chrom = chromres['CHROM']
         record = chrom + '\t' + str(chromres['RC'])
         out_summary.write(record + '\n')
+
     out_summary.close()
 
 
@@ -920,6 +749,56 @@ def finalizeJSONOutput(options):
     out_json.close()
 
 
+def get_input_options():
+    parser = OptionParser(usage='usage: python %prog [options]')
+
+    parser.add_option(
+        "-i",
+        "--input",
+        default='input.bam',
+        dest='input',
+        action='store',
+        help="Input (BAM) filename [default value: %default]"
+    )
+
+    parser.add_option(
+        "-o",
+        "--output",
+        default='output',
+        dest='output',
+        action='store',
+        help="Output filename [default value: %default]"
+    )
+
+    parser.add_option(
+        "-b",
+        "--bed",
+        default=None,
+        dest='bedfile',
+        action='store',
+        help="Input BED filename [default value: %default]"
+    )
+
+    parser.add_option(
+        "-c",
+        "--config",
+        default=None,
+        dest='config',
+        action='store',
+        help="Configuration file [default value: %default]"
+    )
+
+    options, args = parser.parse_args()
+    config = {}
+
+    if options.config is not None:
+        with open(options.config) as config_file:
+            config = json.load(config_file)
+
+    defaultConfigs(config)
+    return options, config
+
+
 if __name__ == "__main__":
     numpy.seterr(all='ignore')
     warnings.simplefilter("ignore", RuntimeWarning)
@@ -929,28 +808,8 @@ if __name__ == "__main__":
     print 'CoverView v1.2.0 started running: ', datetime.datetime.now()
     print ""
 
-    parser = OptionParser(usage='usage: python %prog [options]')
-    parser.add_option("-i", "--input", default='input.bam', dest='input', action='store', help="Input (BAM) filename [default value: %default]")
-    parser.add_option("-o", "--output", default='output', dest='output', action='store', help="Output filename [default value: %default]")
-    parser.add_option("-b", "--bed", default=None, dest='bedfile', action='store', help="Input BED filename [default value: %default]")
-    parser.add_option("-c", "--config", default=None, dest='config', action='store', help="Configuration file [default value: %default]")
-    (options, args) = parser.parse_args()
+    options, config = get_input_options()
 
-    config = dict()
-    if not options.config is None:
-        with open(options.config) as config_file:
-            config = json.load(config_file)
-
-    defaultConfigs(config)
-
-    # Removing unremoved temporary files if exist
-    if os.path.isfile(options.output + '_failedtargets.txt'):
-        os.remove(options.output + '_failedtargets.txt')
-
-    if os.path.isfile(options.output + '_reads_on_target.txt'):
-        os.remove(options.output + '_reads_on_target.txt')
-
-    # Minimal mode (no BED file)
     if options.bedfile is None:
         printInfo_minimal(options)
         samfile = pysam.Samfile(options.input, "rb")
@@ -962,10 +821,12 @@ if __name__ == "__main__":
         print ""
         quit()
 
-    # Creating output directory for gui
     if config['outputs']['gui']:
         dir = options.output + '_gui'
-        if os.path.exists(dir): shutil.rmtree(dir)
+
+        if os.path.exists(dir):
+            shutil.rmtree(dir)
+
         os.makedirs(dir)
         os.makedirs(dir+'/data')
         cvdir = os.path.dirname(os.path.realpath(__file__))
@@ -974,31 +835,27 @@ if __name__ == "__main__":
 
     names, uniqueIDs = makeNames(options.bedfile)
     numOfTargets = len(names)
-
     samplename = options.input[:options.input.rfind('.bam')]
-
     printInfo(options, config, numOfTargets)
 
     process = SingleJob(options, config)
     process.run()
 
-    # Reading on-target read counts from tmp file
     ontarget = dict()
 
-    for line in open(options.output + '_reads_on_target_' + '.txt'):
+    for line in open(options.output + '_reads_on_target' + '.txt'):
         [key, value] = line.split(':')
         if key in ontarget.keys():
             ontarget[key] += int(value.strip())
         else:
             ontarget[key] = int(value.strip())
 
-    os.remove(options.output + '_reads_on_target_' + '.txt')
+    os.remove(options.output + '_reads_on_target' + '.txt')
 
-    # Reading number of failed targets from tmp file
     failedtargets = 0
     uniqueids = set()
 
-    for line in open(options.output + '_failedtargets_' + '.txt'):
+    for line in open(options.output + '_failedtargets' + '.txt'):
         line = line.strip()
         fails = line[1:-1].split(',')
         failedtargets += len(fails)
@@ -1006,7 +863,7 @@ if __name__ == "__main__":
             x = x.strip()
             uniqueids.add(x[1:-1])
 
-    os.remove(options.output + '_failedtargets_' + '.txt')
+    os.remove(options.output + '_failedtargets' + '.txt')
 
     print ' - Done. (' + str(failedtargets) + ' failed regions)'
 

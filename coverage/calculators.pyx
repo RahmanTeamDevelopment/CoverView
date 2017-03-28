@@ -89,8 +89,6 @@ cdef class SimpleCoverageCalculator(object):
                 read_iterator.htsfile
             )
 
-            return
-
             if iterator_status < 0:
                 break
 
@@ -159,12 +157,12 @@ cdef class SimpleCoverageCalculator(object):
     def get_coverage_summary(self):
         return (
             self.n_reads_in_region,
-            list(self.COV),
-            list(self.QCOV),
-            list(self.MEDBQ),
-            list(self.FLBQ),
-            list(self.MEDMQ),
-            list(self.FLMQ)
+            self.COV,
+            self.QCOV,
+            self.MEDBQ,
+            self.FLBQ,
+            self.MEDMQ,
+            self.FLMQ
         )
 
 
