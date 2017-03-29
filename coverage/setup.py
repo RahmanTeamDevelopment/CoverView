@@ -44,6 +44,11 @@ modules = [
         "output",
         ["output.pyx"],
         include_dirs=include_dirs,
+    ),
+    Extension(
+        "reads",
+        ["reads.pyx"],
+        include_dirs=include_dirs,
     )
 ]
 

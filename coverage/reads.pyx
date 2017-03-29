@@ -3,9 +3,9 @@ Utility classes and functions for efficient processing of read data
 """
 
 from libc.stdint cimport int32_t
+from pysam.libcalignmentfile cimport bam1_t
 
 cdef extern from "sam.h":
-    ctypedef struct bam1_t
     bam1_t *bam_dup1(const bam1_t *bsrc)
     void bam_destroy1(bam1_t *b)
     int32_t bam_endpos(const bam1_t *b)
@@ -32,7 +32,7 @@ cdef extern from "string.h":
   int memcmp( void * s1, void *s2, size_t len )
 
 
-cdef int bisectReadsLeft(bam1_t** reads, int testPos, int nReads, int testMatePos=0):
+cdef int bisectReadsLeft(bam1_t** reads, int testPos, int nReads):
     """
     Specialisation of bisection algorithm for array of
     read pointers.
@@ -45,7 +45,7 @@ cdef int bisectReadsLeft(bam1_t** reads, int testPos, int nReads, int testMatePo
 
         mid = (low + high) / 2
 
-        if reads[mid].pos < testPos:
+        if reads[mid].core.pos < testPos:
             low = mid + 1
         else:
             high = mid
@@ -53,7 +53,7 @@ cdef int bisectReadsLeft(bam1_t** reads, int testPos, int nReads, int testMatePo
     return low
 
 
-cdef int bisectReadsRight(bam1_t** reads, int testPos, int nReads, int testMatePos=0):
+cdef int bisectReadsRight(bam1_t** reads, int testPos, int nReads):
     """
     Specialisation of bisection algorithm for array of
     read pointers.
@@ -66,7 +66,7 @@ cdef int bisectReadsRight(bam1_t** reads, int testPos, int nReads, int testMateP
 
         mid = (low + high) / 2
 
-        if testPos < reads[mid].pos:
+        if testPos < reads[mid].core.pos:
             high = mid
         else:
             low = mid + 1
@@ -79,11 +79,6 @@ cdef class ReadArray:
     Simple structure to wrap a raw C array, with some bounds
     checking.
     """
-    cdef bam1_t** reads
-    cdef int __size
-    cdef int __capacity
-    cdef int __longest_read
-
     def __init__(self, int size):
         """
         Allocate an array of size 'size', with initial values
@@ -133,7 +128,7 @@ cdef class ReadArray:
         self.reads[self.__size] = bam_dup1(read)
         self.__size += 1
 
-        cdef int read_length = bam_endpos(read) - read.pos
+        cdef int read_length = bam_endpos(read) - read.core.pos
 
         if read_length > self.__longest_read:
             self.__longest_read = read_length
@@ -149,8 +144,8 @@ cdef class ReadArray:
         cdef int endPosOfReads = -1
 
         if self.__size == 0:
-            self.windowStart = self.reads
-            self.windowEnd = self.reads
+            window_start = self.reads
+            window_end = self.reads
         else:
             firstOverlapStart = max(1, start - self.__longest_read)
             startPosOfReads = bisectReadsLeft(self.reads, firstOverlapStart, self.__size)
@@ -159,10 +154,10 @@ cdef class ReadArray:
             while startPosOfReads < self.__size and bam_endpos(self.reads[startPosOfReads]) <= start:
                 startPosOfReads += 1
 
-            self.windowStart = self.reads + startPosOfReads
-            self.windowEnd = min(self.reads + endPosOfReads, self.reads + self.__size)
+            window_start = self.reads + startPosOfReads
+            window_end = min(self.reads + endPosOfReads, self.reads + self.__size)
 
-            assert startPosOfReads <= endPosOfReads:
+            assert startPosOfReads <= endPosOfReads
 
 
 
