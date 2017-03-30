@@ -5,6 +5,212 @@ Format and write per-base coverage profile output
 from cpython cimport array
 
 
+def printInfo(options, config, numOfTargets):
+    targetstxt = ' (' + str(numOfTargets) + ' regions)'
+    print 'Input, output and settings:'
+    print "--------------------------------------------------------------------------------------"
+
+    if not options.config is None:
+        print "Configuration file:     " + options.config
+    else:
+        print "Configuration file:     using default settings"
+
+    print "Input file name:        " + options.input
+    print "BED file name:          " + options.bedfile + targetstxt
+    print ''
+
+    if config['transcript_db'] is not None:
+        if  (config['outputs']['regions'] and config['transcript']['regions']) or (config['outputs']['profiles'] and config['transcript']['profiles']):
+            print "Transcript db file:     " + config['transcript_db']
+            print ''
+
+    formats = 'summary'
+    if config['outputs']['regions']: formats += ', regions'
+    if config['outputs']['profiles']:
+        if config['only_fail_profiles']:
+            formats += ', profiles (failed regions)'
+        else:
+            formats += ', profiles (all regions)'
+    if config['transcript_db'] is not None and config['outputs']['profiles']:
+        formats += ', poor'
+    if config['outputs']['gui']: formats += ', GUI'
+    print "Output formats:         " + formats
+    print "Output files prefix:    " + options.output
+    print ''
+    if config['duplicates']:
+        print "Duplicate reads:        Included"
+    else:
+        print "Duplicate reads:        Excluded"
+    if config['direction']:
+        print  "Directional metrics:    Outputted"
+    else:
+        print  "Directional metrics:    Not outputted"
+    if config['outputs']['regions'] or config['outputs']['profiles']:
+        print "Mapping quality cutoff: " + str(config['low_mq'])
+        print "Base quality cutoff:    " + str(config['low_bq'])
+    if not config['pass'] is None and (config['outputs']['regions'] or config['outputs']['profiles']):
+        print ''
+        params = []
+        for k, v in config['pass'].iteritems():
+            params.append(str(k) + '=' + str(v))
+        print "Region pass parameters: " + '; '.join(params)
+    print "--------------------------------------------------------------------------------------"
+
+
+def printInfo_minimal(options):
+    print 'Input, output and settings:'
+    print "--------------------------------------------------------------------------------------"
+    print "Input file name:        " + options.input
+    print ''
+    print "Output formats:         _summary"
+    print "Output files prefix:    " + options.output
+    print "--------------------------------------------------------------------------------------"
+
+
+def output_summary(options, chromdata):
+    out_summary = open(options.output + '_summary.txt', 'w')
+    out_summary.write('#CHROM\tRC\tRCIN\tRCOUT\n')
+    mapped = chromdata['Mapped']
+    unmapped = chromdata['Unmapped']
+    total = chromdata['Total']
+    out_summary.write('Total\t' + str(total) + '\t-\t-\n')
+    out_summary.write('Unmapped\t' + str(unmapped) + '\t-\t-\n')
+    record = 'Mapped' + '\t' + str(mapped['RC']) + '\t' + str(mapped['RCIN']) + '\t' + str(mapped['RCOUT'])
+    out_summary.write(record + '\n')
+    for i in range(len(chromdata['Chroms'])):
+        chromres = chromdata['Chroms'][i]
+        chrom = chromres['CHROM']
+        record = chrom + '\t' + str(chromres['RC']) + '\t' + str(chromres['RCIN']) + '\t' + str(chromres['RCOUT'])
+        out_summary.write(record + '\n')
+    out_summary.close()
+
+
+def output_summary_minimal(options, chromdata):
+    out_summary = open(
+        options.output + '_summary.txt', 'w'
+    )
+
+    out_summary.write('#CHROM\tRC\n')
+
+    mapped = chromdata['Mapped']
+    unmapped = chromdata['Unmapped']
+    total = chromdata['Total']
+
+    out_summary.write('Total\t' + str(total) + '\n')
+    out_summary.write('Unmapped\t' + str(unmapped) + '\n')
+    record = 'Mapped' + '\t' + str(mapped['RC'])
+    out_summary.write(record + '\n')
+
+    for i in range(len(chromdata['Chroms'])):
+        chromres = chromdata['Chroms'][i]
+        chrom = chromres['CHROM']
+        record = chrom + '\t' + str(chromres['RC'])
+        out_summary.write(record + '\n')
+
+    out_summary.close()
+
+
+def finalizeJSONOutput(options):
+
+    out_json = open(options.output + '_gui/data/results.js', 'a')
+
+    newchromsres = []
+
+    others = {
+        'CHROM': '...',
+        'RC': 0,
+        'RCIN': 0,
+        'RCOUT': 0
+    }
+
+    chrnames = [
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
+        '11', '12', '13', '14', '15', '16', '17', '18', '19',
+        '20', '21', '22', 'X', 'Y', 'chr1', 'chr2', 'chr3', 'chr4',
+        'chr5', 'chr6', 'chr7', 'chr8', 'chr9', 'chr10', 'chr11',
+        'chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 'chr18',
+        'chr19', 'chr20', 'chr21', 'chr22', 'chrX', 'chrY'
+    ]
+
+    chromsres = chromdata['Chroms']
+
+    for x in chromsres:
+        if x['CHROM'] in chrnames:
+            newchromsres.append(x)
+        else:
+            others['RC'] += x['RC']
+            others['RCIN'] += x['RCIN']
+            others['RCOUT'] += x['RCOUT']
+
+    newchromsres.append(others)
+    chromdata['Chroms'] = newchromsres
+
+    out_json.write(
+        ',\"chromdata\":' + json.dumps(chromdata, separators=(',', ':'))
+    )
+
+    infn = options.input
+
+    if '/' in infn:
+        infn = infn[infn.rfind('/') + 1:]
+
+    if len(infn) > 27:
+        infn = infn[:27] + '...bam'
+
+    out_json.write(',\"input\":\"' + infn + '\"')
+    out_json.write(',\"direction\":' + str(config['direction']).lower())
+    out_json.write(',\"duplicates\":' + str(config['duplicates']).lower())
+    out_json.write(',\"ntargets\":' + str(numOfTargets))
+    out_json.write(',\"unique\":' + str(uniqueIDs))
+    out_json.write(',\"nfailed\":' + str(failedtargets))
+    out_json.write(',\"uniquefailed\":' + str(len(uniqueids)))
+
+    bedfn = options.bedfile
+
+    if '/' in bedfn:
+        bedfn = bedfn[bedfn.rfind('/') + 1:]
+
+    if len(bedfn) > 20:
+        bedfn = bedfn[:20] + '...bed'
+
+    out_json.write(',\"bedfile\":\"' + bedfn + '\"')
+
+    now = datetime.datetime.now()
+    out_json.write(',\"date\":\"' + now.strftime("%d-%m-%Y, %H:%M") + "\"")
+
+    passdef = []
+
+    for k, v in config['pass'].iteritems():
+        [met,minmax] = k.split('_')
+        if minmax == 'MIN':
+            passdef.append(met + '>' + str(v))
+        else:
+            passdef.append(met + '<' + str(v))
+
+    passdefstr = ', '.join(passdef)
+    out_json.write(',\"passdef\":\"' + passdefstr + '\"')
+
+    passmets = dict()
+
+    for k, v in config['pass'].iteritems():
+        [met, minmax] = k.split('_')
+        if met.endswith('QCOV'):
+            passmets['QCOV'] = v
+        elif met.endswith('COV'):
+            passmets['COV'] = v
+        elif met.endswith('FLMQ'):
+            passmets['FLMQ'] = v
+        elif met.endswith('FLBQ'):
+            passmets['FLBQ'] = v
+        passmets[met] = v
+
+    out_json.write(',\"passmets\":' + json.dumps(passmets, separators=(',', ':')))
+    out_json.write('}\n')
+    out_json.write('\treturn data\n')
+    out_json.write('}\n')
+    out_json.close()
+
+
 # def output_profiles_with_transcript_coordinates(config, target, enstdb, output_file):
 #     profiles = target['Profiles']
 #

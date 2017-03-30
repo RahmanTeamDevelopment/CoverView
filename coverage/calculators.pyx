@@ -14,7 +14,7 @@ from pysam.libcalignmentfile cimport AlignmentFile, AlignedSegment, bam1_t, BAM_
 
 from pysam.libcalignmentfile cimport IteratorRowRegion
 from cpython cimport array
-
+from reads cimport ReadArray
 
 cdef extern from "hts.h":
     ctypedef struct hts_idx_t
@@ -372,3 +372,98 @@ def get_profiles(bam_file, region, config):
     #     coverage_calc.add_pileup(pileup_column, i)
 
     return coverage_calc.get_coverage_summary()
+
+
+def calculateChromdata(samfile, ontarget):
+    sys.stdout.write('\rFinalizing analysis ... 0.0%')
+    sys.stdout.flush()
+
+    chrom_lengths = samfile.lengths
+    total_reference_length = sum(chrom_lengths)
+    chroms = samfile.references
+
+    chromdata = dict()
+    chromsres = []
+    total_mapped_reads_in_bam = 0
+    allon = 0
+    alloff = 0
+
+    chrom_lengths_processed_so_far = 0
+
+    for chrom,length in zip(chroms,chrom_lengths):
+
+        total = coverage.get_num_mapped_reads_covering_chromosome(samfile, chrom)
+        chrom_lengths_processed_so_far += length
+
+        if 'chr' + chrom in ontarget:
+            on = int(ontarget['chr' + chrom])
+            off = total - on
+        else:
+            on = 0
+            off = 0
+
+        chromsres.append({'CHROM': chrom, 'RC': total, 'RCIN': on, 'RCOUT': off})
+        total_mapped_reads_in_bam += total
+        allon += on
+        alloff += off
+
+        x = round(100 * chrom_lengths_processed_so_far / total_reference_length, 1)
+        sys.stdout.write('\rFinalizing analysis ... ' + str(x) + '%')
+        sys.stdout.flush()
+
+    chromdata['Chroms'] = chromsres
+    chromdata['Mapped'] = {'RC': total_mapped_reads_in_bam, 'RCIN': allon, 'RCOUT': alloff}
+
+    total_reads_in_bam = samfile.mapped + samfile.unmapped
+    chromdata['Total'] = total_reads_in_bam
+    chromdata['Unmapped'] = total_reads_in_bam - total_mapped_reads_in_bam
+
+    sys.stdout.write('\rFinalizing analysis ... 100.0% - Done')
+    sys.stdout.flush()
+    print ''
+
+    return chromdata
+
+
+def calculateChromdata_minimal(samfile):
+    print ''
+    # Initializing progress info
+    sys.stdout.write('\rRunning analysis ... 0.0%')
+    sys.stdout.flush()
+
+    chromdata = dict()
+    chroms = samfile.references
+    chromsres = []
+    alltotal = 0
+
+    i = 0
+    # Iterate through chromosomes
+    for chrom in chroms:
+        total = sum(1 for _ in samfile.fetch(chrom))
+        chromsres.append({'CHROM': chrom, 'RC': total})
+        alltotal += total
+
+        i += 1
+
+        # Updating progress info
+        x = round(100 * i / len(chroms), 1)
+        x = min(x, 100.0)
+        sys.stdout.write('\rRunning analysis ... ' + str(x) + '%')
+        sys.stdout.flush()
+
+    chromdata['Chroms'] = chromsres
+    chromdata['Mapped'] = {'RC': alltotal}
+
+    allreads = pysam.flagstat(options.input)
+    allreads = allreads[:allreads.find('+')]
+    allreads = int(allreads.strip())
+
+    chromdata['Total'] = allreads
+    chromdata['Unmapped'] = allreads - alltotal
+
+    # Finalizing progress info
+    sys.stdout.write('\rRunning analysis ... 100.0% - Done')
+    sys.stdout.flush()
+    print ''
+
+    return chromdata
