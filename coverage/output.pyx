@@ -5,6 +5,67 @@ Format and write per-base coverage profile output
 from cpython cimport array
 
 
+def output_target_file_header(self, config, out_poor, out_json, out_targets, out_profiles):
+    if config['outputs']['regions']:
+
+        targetheader = ['Region', 'Chromosome', 'Start_position', 'End_position']
+
+        if config['transcript']['regions'] and not config['transcript_db'] is None:
+            targetheader.extend(
+                ['Start_transcript', 'End_transcript']
+            )
+
+        if not config['pass'] is None:
+            targetheader.append('Pass_or_fail')
+
+        targetheader.extend(
+            ['RC', 'MEDCOV', 'MINCOV', 'MEDQCOV', 'MINQCOV', 'MAXFLMQ', 'MAXFLBQ']
+        )
+
+        if config['direction']:
+            targetheader.extend(
+                ['MEDCOV+', 'MINCOV+', 'MEDQCOV+', 'MINQCOV+', 'MAXFLMQ+', 'MAXFLBQ+']
+            )
+            targetheader.extend(
+                ['MEDCOV-', 'MINCOV-', 'MEDQCOV-', 'MINQCOV-', 'MAXFLMQ-', 'MAXFLBQ-']
+            )
+
+        out_targets.write('#' + '\t'.join(targetheader) + '\n')
+
+    if config['outputs']['profiles']:
+        profheader = ['Chromosome', 'Position']
+
+        if config['transcript']['profiles'] and not config['transcript_db'] is None:
+            profheader.append('Transcript_coordinate')
+
+        profheader.extend(
+            ['COV', 'QCOV', 'MEDBQ', 'FLBQ', 'MEDMQ', 'FLMQ']
+        )
+
+        if config['direction']:
+            profheader.extend(
+                ['COV+', 'QCOV+', 'MEDBQ+', 'FLBQ+', 'MEDMQ+', 'FLMQ+']
+            )
+            profheader.extend(
+                ['COV-', 'QCOV-', 'MEDBQ-', 'FLBQ-', 'MEDMQ-', 'FLMQ-']
+            )
+
+        out_profiles.write('#' + '\t'.join(profheader) + '\n')
+
+        if not config['transcript_db'] is None and config['outputs']['profiles']:
+            poorheader = [
+                'Region', 'Chromosome', 'Start_position',
+                'End_position', 'Start_transcript',
+                'End_transcript'
+            ]
+
+            out_poor.write('#' + '\t'.join(poorheader) + '\n')
+
+        if config['outputs']['gui']:
+            out_json.write('function readData() {\n')
+            out_json.write('\tdata={\"targets\":[')
+
+
 def printInfo(options, config, numOfTargets):
     targetstxt = ' (' + str(numOfTargets) + ' regions)'
     print 'Input, output and settings:'

@@ -4,7 +4,6 @@ Utilities for calculating coverage summaries from a BAM file
 
 from __future__ import division
 
-import numpy
 from coverage.statistics cimport QualityHistogramArray
 
 from libc.stdint cimport uint32_t, uint64_t, uint8_t
@@ -40,7 +39,9 @@ cdef class SimpleCoverageCalculator(object):
     cdef int bq_cutoff
     cdef int mq_cutoff
     cdef int n_reads_in_region
-    cdef array.array COV,QCOV,MEDBQ,FLBQ,MEDMQ,FLMQ
+    cdef array.array COV, QCOV, MEDBQ, FLBQ, MEDMQ, FLMQ
+    cdef array.array COV_f, QCOV_f, MEDBQ_f, FLBQ_f, MEDMQ_f, FLMQ_f
+    cdef array.array COV_r, QCOV_r, MEDBQ_r, FLBQ_r, MEDMQ_r, FLMQ_r
     cdef QualityHistogramArray bq_hists
     cdef QualityHistogramArray mq_hists
 
@@ -51,12 +52,13 @@ cdef class SimpleCoverageCalculator(object):
         self.bq_cutoff = bq_cutoff
         self.mq_cutoff = mq_cutoff
         self.n_reads_in_region = 0
-        self.COV = array.array('l', [0] * (bases_in_region))
-        self.QCOV = array.array('l', [0] * (bases_in_region))
-        self.MEDBQ = array.array('f', [float('NaN')] * (bases_in_region))
-        self.FLBQ = array.array('f', [float('NaN')] * (bases_in_region))
-        self.MEDMQ = array.array('f', [float('NaN')] * (bases_in_region))
-        self.FLMQ = array.array('f', [float('NaN')] * (bases_in_region))
+        self.COV = array.array('l', [0] * bases_in_region)
+        self.QCOV = array.array('l', [0] * bases_in_region)
+        self.MEDBQ = array.array('f', [float('NaN')] * bases_in_region)
+        self.FLBQ = array.array('f', [float('NaN')] * bases_in_region)
+        self.MEDMQ = array.array('f', [float('NaN')] * bases_in_region)
+        self.FLMQ = array.array('f', [float('NaN')] * bases_in_region)
+
         self.bq_hists = QualityHistogramArray(bases_in_region)
         self.mq_hists = QualityHistogramArray(bases_in_region)
 
@@ -162,128 +164,7 @@ cdef class SimpleCoverageCalculator(object):
             self.MEDBQ,
             self.FLBQ,
             self.MEDMQ,
-            self.FLMQ
-        )
-
-
-class DirectionalCoverageCalculator(object):
-    """
-    Utility class for computing coverage summaries for the case when we do
-    care about direction.
-    """
-    def __init__(self, chrom, begin, end, bq_cutoff, mq_cutoff):
-        self.bq_cutoff = bq_cutoff
-        self.mq_cutoff = mq_cutoff
-        self.ret_COV = [0] * (end - begin)
-        self.ret_QCOV = [0] * (end - begin)
-        self.ret_MEDBQ = [float('NaN')] * (end - begin)
-        self.ret_FLBQ = [float('NaN')] * (end - begin)
-        self.ret_MEDMQ = [float('NaN')] * (end - begin)
-        self.ret_FLMQ = [float('NaN')] * (end - begin)
-        self.ret_COV_f = [0] * (end - begin)
-        self.ret_QCOV_f = [0] * (end - begin)
-        self.ret_MEDBQ_f = [float('NaN')] * (end - begin)
-        self.ret_FLBQ_f = [float('NaN')] * (end - begin)
-        self.ret_MEDMQ_f = [float('NaN')] * (end - begin)
-        self.ret_FLMQ_f = [float('NaN')] * (end - begin)
-        self.ret_COV_r = [0] * (end - begin)
-        self.ret_QCOV_r = [0] * (end - begin)
-        self.ret_MEDBQ_r = [float('NaN')] * (end - begin)
-        self.ret_FLBQ_r = [float('NaN')] * (end - begin)
-        self.ret_MEDMQ_r = [float('NaN')] * (end - begin)
-        self.ret_FLMQ_r = [float('NaN')] * (end - begin)
-
-    def add_pileup(self, pileup_column, i):
-        self.ret_COV[i] = pileup_column.n
-        bqs = []
-        mqs = []
-        qcov = 0
-        cov_f = 0
-        cov_r = 0
-        bqs_f = []
-        bqs_r = []
-        mqs_f = []
-        mqs_r = []
-        qcov_f = 0
-        qcov_r = 0
-
-        for pileupread in pileup_column.pileups:
-
-            if pileupread.alignment.is_reverse:
-                cov_r += 1
-            else:
-                cov_f += 1
-
-            if pileupread.is_del:
-                if pileupread.alignment.mapq >= self.mq_cutoff:
-                    qcov += 1
-                    if pileupread.alignment.is_reverse:
-                        qcov_r += 1
-                    else:
-                        qcov_f += 1
-                continue
-
-            bq = pileupread.alignment.query_qualities[pileupread.query_position]
-            bqs.append(bq)
-
-            if pileupread.alignment.is_reverse:
-                bqs_r.append(bq)
-            else:
-                bqs_f.append(bq)
-
-            mqs.append(pileupread.alignment.mapq)
-
-            if pileupread.alignment.is_reverse:
-                mqs_r.append(pileupread.alignment.mapq)
-            else:
-                mqs_f.append(pileupread.alignment.mapq)
-
-            if pileupread.alignment.mapq >= self.mq_cutoff and bq >= self.bq_cutoff:
-                qcov += 1
-                if pileupread.alignment.is_reverse:
-                    qcov_r += 1
-                else:
-                    qcov_f += 1
-
-        self.ret_QCOV[i] = qcov
-        self.ret_MEDBQ[i] = numpy.median(bqs)
-        self.ret_MEDMQ[i] = numpy.median(mqs)
-
-        if len(bqs) > 0:
-            self.ret_FLBQ[i] = round(len([x for x in bqs if x < self.bq_cutoff]) / len(bqs), 3)
-
-        if len(mqs) > 0:
-            self.ret_FLMQ[i] = round(len([x for x in mqs if x < self.mq_cutoff]) / len(mqs), 3)
-
-        self.ret_COV_f[i] = cov_f
-        self.ret_COV_r[i] = cov_r
-        self.ret_QCOV_f[i] = qcov_f
-        self.ret_QCOV_r[i] = qcov_r
-        self.ret_MEDBQ_f[i] = numpy.median(bqs_f)
-        self.ret_MEDBQ_r[i] = numpy.median(bqs_r)
-        self.ret_MEDMQ_f[i] = numpy.median(mqs_f)
-        self.ret_MEDMQ_r[i] = numpy.median(mqs_r)
-
-        if len(bqs_f) > 0:
-            self.ret_FLBQ_f[i] = round(len([x for x in bqs_f if x < self.bq_cutoff]) / len(bqs_f), 3)
-
-        if len(bqs_r) > 0:
-            self.ret_FLBQ_r[i] = round(len([x for x in bqs_r if x < self.bq_cutoff]) / len(bqs_r), 3)
-
-        if len(mqs_f) > 0:
-            self.ret_FLMQ_f[i] = round(len([x for x in mqs_f if x < self.mq_cutoff]) / len(mqs_f), 3)
-
-        if len(mqs_r) > 0:
-            self.ret_FLMQ_r[i] = round(len([x for x in mqs_r if x < self.mq_cutoff]) / len(mqs_r), 3)
-
-    def get_coverage_summary(self):
-        return (
-            self.ret_COV,
-            self.ret_QCOV,
-            self.ret_MEDBQ,
-            self.ret_FLBQ,
-            self.ret_MEDMQ,
-            self.ret_FLMQ,
+            self.FLMQ,
             self.ret_COV_f,
             self.ret_QCOV_f,
             self.ret_MEDBQ_f,
@@ -333,6 +214,27 @@ def get_valid_chromosome_name(chrom, bam_file):
     return chrom
 
 
+cdef void load_reads_into_array(ReadArray read_array, bam_file, chrom, start, end):
+    """
+    Load a chunk of BAM data into an in-memory read array
+    """
+    cdef int iterator_status = 0
+    cdef IteratorRowRegion read_iterator = bam_file.fetch(chrom, start, end)
+
+    while True:
+        iterator_status = hts_itr_next(
+            hts_get_bgzfp(read_iterator.htsfile),
+            read_iterator.iter,
+            read_iterator.b,
+            read_iterator.htsfile
+        )
+
+        if iterator_status < 0:
+            break
+
+        read_array.append(read_iterator.b)
+
+
 def get_profiles(bam_file, region, config):
     """
     Calculate and return coverage metrics for a specified region. Metrics include total
@@ -343,6 +245,8 @@ def get_profiles(bam_file, region, config):
     This is by far the most computationally expensive part of CoverView. > 90% of the run-time is
     currently spent in this function.
     """
+    cdef ReadArray read_array
+
     bq_cutoff = float(config['low_bq'])
     mq_cutoff = float(config['low_mq'])
 
@@ -355,21 +259,10 @@ def get_profiles(bam_file, region, config):
     if not good_chrom in bam_file.references:
         return None
 
+    load_reads_into_array(read_array, bam_file, good_chrom, begin, end)
     coverage_calc = SimpleCoverageCalculator(good_chrom, begin, end, bq_cutoff, mq_cutoff)
     reads = bam_file.fetch(good_chrom, begin, end, multiple_iterators=False)
     coverage_calc.add_reads(reads)
-    # if config['direction']:
-    #     coverage_calc = DirectionalCoverageCalculator(chrom, begin, end, bq_cutoff, mq_cutoff)
-    # else:
-    #     coverage_calc = SimpleCoverageCalculator(chrom, begin, end, bq_cutoff, mq_cutoff)
-    #
-    # if config['duplicates']:
-    #     x = bam_file.pileup(good_chrom, begin + 1, end + 1, mask=0, truncate=True)
-    # else:
-    #     x = bam_file.pileup(good_chrom, begin + 1, end + 1, truncate=True)
-    #
-    # for i, pileup_column in enumerate(x):
-    #     coverage_calc.add_pileup(pileup_column, i)
 
     return coverage_calc.get_coverage_summary()
 

@@ -15,6 +15,22 @@ import sys
 import transcript
 import warnings
 
+from coverage.output import *
+
+
+def min_or_nan(data):
+    if len(data) == 0:
+        return float('NaN')
+    else:
+        return min(data)
+
+
+def max_or_nan(data):
+    if len(data) == 0:
+        return float('NaN')
+    else:
+        return max(data)
+
 
 class SingleJob(object):
     def __init__(self, options, config):
@@ -69,52 +85,14 @@ class SingleJob(object):
     def run(self):
         self.run_process()
 
-    def output_target_file_header(self):
-        if self.config['outputs']['regions']:
-
-            targetheader = ['Region', 'Chromosome', 'Start_position', 'End_position']
-
-            if config['transcript']['regions'] and not config['transcript_db'] is None:
-                targetheader.extend(
-                    ['Start_transcript', 'End_transcript']
-                )
-
-            if not config['pass'] is None:
-                targetheader.append('Pass_or_fail')
-
-            targetheader.extend(
-                ['RC', 'MEDCOV', 'MINCOV', 'MEDQCOV', 'MINQCOV', 'MAXFLMQ', 'MAXFLBQ']
-            )
-
-            if self.config['direction']:
-                targetheader.extend(['MEDCOV+', 'MINCOV+', 'MEDQCOV+', 'MINQCOV+', 'MAXFLMQ+', 'MAXFLBQ+'])
-                targetheader.extend(['MEDCOV-', 'MINCOV-', 'MEDQCOV-', 'MINQCOV-', 'MAXFLMQ-', 'MAXFLBQ-'])
-
-            self.out_targets.write('#' + '\t'.join(targetheader) + '\n')
-
-        if self.config['outputs']['profiles']:
-            profheader = ['Chromosome', 'Position']
-            if config['transcript']['profiles'] and not config['transcript_db'] is None: profheader.append(
-                'Transcript_coordinate')
-            profheader.extend(['COV', 'QCOV', 'MEDBQ', 'FLBQ', 'MEDMQ', 'FLMQ'])
-
-            if self.config['direction']:
-                profheader.extend(['COV+', 'QCOV+', 'MEDBQ+', 'FLBQ+', 'MEDMQ+', 'FLMQ+'])
-                profheader.extend(['COV-', 'QCOV-', 'MEDBQ-', 'FLBQ-', 'MEDMQ-', 'FLMQ-'])
-
-            self.out_profiles.write('#' + '\t'.join(profheader) + '\n')
-
-            if not config['transcript_db'] is None and config['outputs']['profiles']:
-                poorheader = ['Region', 'Chromosome', 'Start_position', 'End_position', 'Start_transcript',
-                              'End_transcript']
-                self.out_poor.write('#' + '\t'.join(poorheader) + '\n')
-
-            if self.config['outputs']['gui']:
-                self.out_json.write('function readData() {\n')
-                self.out_json.write('\tdata={\"targets\":[')
-
     def run_process(self):
-        self.output_target_file_header()
+        output_target_file_header(
+            self.config,
+            self.out_poor,
+            self.out_json,
+            self.out_targets,
+            self.out_profiles
+        )
 
         print ''
         sys.stdout.write('\rRunning analysis ... 0.0%')
@@ -195,50 +173,25 @@ class SingleJob(object):
 
                 summary['MEDCOV'] = numpy.median(COV)
                 summary['MEDQCOV'] = numpy.median(QCOV)
-
-                if len(COV) > 0:
-                    summary['MINCOV'] = min(COV)
-                else:
-                    summary['MINCOV'] = float('NaN')
-
-                if len(QCOV) > 0:
-                    summary['MINQCOV'] = min(QCOV)
-                else:
-                    summary['MINQCOV'] = float('NaN')
-
-                if len(FLBQ) > 0:
-                    summary['MAXFLBQ'] = max(FLBQ)
-                else:
-                    summary['MAXFLBQ'] = float('NaN')
-
-                if len(FLMQ) > 0:
-                    summary['MAXFLMQ'] = max(FLMQ)
-                else:
-                    summary['MAXFLMQ'] = float('NaN')
+                summary['MINCOV'] = min_or_nan(COV)
+                summary['MINQCOV'] = min_or_nan(QCOV)
+                summary['MAXFLBQ'] = max_or_nan(FLBQ)
+                summary['MAXFLMQ'] = max_or_nan(FLMQ)
 
                 if self.config['direction']:
 
                     summary['MEDCOV_f'] = numpy.median(COV_f)
-                    if len(COV_f) > 0: summary['MINCOV_f'] = min(COV_f)
-                    else: summary['MINCOV_f'] = float('NaN')
-                    summary['MEDQCOV_f'] = numpy.median(QCOV_f)
-                    if len(QCOV_f) > 0: summary['MINQCOV_f'] = min(QCOV_f)
-                    else: summary['MINQCOV_f'] = float('NaN')
-                    if len(FLBQ_f) > 0: summary['MAXFLBQ_f'] = max(FLBQ_f)
-                    else: summary['MAXFLBQ_f'] = float('NaN')
-                    if len(FLMQ_f) > 0: summary['MAXFLMQ_f'] = max(FLMQ_f)
-                    else: summary['MAXFLMQ_f'] = float('NaN')
-
-                    summary['MEDCOV_r'] = numpy.median(COV_r)
-                    if len(COV_r) > 0: summary['MINCOV_r'] = min(COV_r)
-                    else: summary['MINCOV_r'] = float('NaN')
                     summary['MEDQCOV_r'] = numpy.median(QCOV_r)
-                    if len(QCOV_r) > 0: summary['MINQCOV_r'] = min(QCOV_r)
-                    else: summary['MINQCOV_r'] = float('NaN')
-                    if len(FLBQ_r) > 0: summary['MAXFLBQ_r'] = max(FLBQ_r)
-                    else: summary['MAXFLBQ_r'] = float('NaN')
-                    if len(FLMQ_r) > 0: summary['MAXFLMQ_r'] = max(FLMQ_r)
-                    else: summary['MAXFLMQ_r'] = float('NaN')
+                    summary['MEDQCOV_f'] = numpy.median(QCOV_f)
+                    summary['MEDCOV_r'] = numpy.median(COV_r)
+                    summary['MINCOV_f'] = min_or_nan(COV_f)
+                    summary['MINQCOV_f'] = min_or_nan(QCOV_f)
+                    summary['MAXFLBQ_f'] = max_or_nan(FLBQ_f)
+                    summary['MAXFLMQ_f'] = max_or_nan(FLMQ_f)
+                    summary['MINCOV_r'] = min_or_nan(COV_r)
+                    summary['MINQCOV_r'] = min_or_nan(QCOV_r)
+                    summary['MAXFLBQ_r'] = max_or_nan(FLBQ_r)
+                    summary['MAXFLMQ_r'] = max_or_nan(FLMQ_r)
 
                 # Add summary metrics to target dict
                 target['Summary'] = summary
