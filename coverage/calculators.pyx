@@ -4,6 +4,7 @@ Utilities for calculating coverage summaries from a BAM file
 
 from __future__ import division
 
+
 from coverage.statistics cimport QualityHistogramArray
 
 from libc.stdint cimport uint32_t, uint64_t, uint8_t
@@ -11,9 +12,13 @@ from libc.stdint cimport uint32_t, uint64_t, uint8_t
 from pysam.libcalignmentfile cimport AlignmentFile, AlignedSegment, bam1_t, BAM_CIGAR_MASK,\
     BAM_CIGAR_SHIFT, BAM_CINS, BAM_CSOFT_CLIP, BAM_CREF_SKIP, BAM_CMATCH, BAM_CDEL, BAM_FDUP
 
+import pysam
+
 from pysam.libcalignmentfile cimport IteratorRowRegion
 from cpython cimport array
 from reads cimport ReadArray
+
+import sys
 
 cdef extern from "hts.h":
     ctypedef struct hts_idx_t
@@ -245,7 +250,7 @@ def get_profiles(bam_file, region, config):
     This is by far the most computationally expensive part of CoverView. > 90% of the run-time is
     currently spent in this function.
     """
-    cdef ReadArray read_array
+    cdef ReadArray read_array = ReadArray(100)
 
     bq_cutoff = float(config['low_bq'])
     mq_cutoff = float(config['low_mq'])
@@ -267,7 +272,7 @@ def get_profiles(bam_file, region, config):
     return coverage_calc.get_coverage_summary()
 
 
-def calculateChromdata(samfile, ontarget):
+def calculateChromData(samfile, ontarget):
     sys.stdout.write('\rFinalizing analysis ... 0.0%')
     sys.stdout.flush()
 
@@ -285,7 +290,7 @@ def calculateChromdata(samfile, ontarget):
 
     for chrom,length in zip(chroms,chrom_lengths):
 
-        total = coverage.get_num_mapped_reads_covering_chromosome(samfile, chrom)
+        total = get_num_mapped_reads_covering_chromosome(samfile, chrom)
         chrom_lengths_processed_so_far += length
 
         if 'chr' + chrom in ontarget:
@@ -318,7 +323,7 @@ def calculateChromdata(samfile, ontarget):
     return chromdata
 
 
-def calculateChromdata_minimal(samfile):
+def calculateChromdata_minimal(samfile, options):
     print ''
     # Initializing progress info
     sys.stdout.write('\rRunning analysis ... 0.0%')

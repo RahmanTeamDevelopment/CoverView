@@ -1,4 +1,3 @@
-
 check:
 	pep8 bamgen/bamgen.py
 

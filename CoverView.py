@@ -16,6 +16,7 @@ import transcript
 import warnings
 
 from coverage.output import *
+from coverage.calculators import calculateChromData
 
 
 def min_or_nan(data):
@@ -463,7 +464,7 @@ if __name__ == "__main__":
     if options.bedfile is None:
         printInfo_minimal(options)
         samfile = pysam.Samfile(options.input, "rb")
-        chromdata = calculateChromdata_minimal(samfile)
+        chromdata = calculateChromdata_minimal(samfile, options)
         output_summary_minimal(options, chromdata)
         print ""
         print 'CoverView v1.2.0 succesfully finished: ', datetime.datetime.now()
@@ -518,11 +519,19 @@ if __name__ == "__main__":
     print ' - Done. (' + str(failedtargets) + ' failed regions)'
 
     samfile = pysam.Samfile(options.input, "rb")
-    chromdata = calculateChromdata(samfile, ontarget)
+    chromdata = calculateChromData(samfile, ontarget)
     output_summary(options, chromdata)
 
     if config['outputs']['gui']:
-        finalizeJSONOutput(options)
+        finalizeJSONOutput(
+            options,
+            chromdata,
+            config,
+            numOfTargets,
+            failedtargets,
+            uniqueIDs,
+            uniqueids
+        )
 
     print ""
     print 'CoverView v1.2.0 succesfully finished: ', datetime.datetime.now()

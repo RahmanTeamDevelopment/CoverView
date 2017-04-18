@@ -2,6 +2,8 @@
 Format and write per-base coverage profile output
 """
 
+import datetime
+import json
 from cpython cimport array
 
 
@@ -171,10 +173,10 @@ def output_summary_minimal(options, chromdata):
     out_summary.close()
 
 
-def finalizeJSONOutput(options):
+def finalizeJSONOutput(options, chromdata, config,
+                       numOfTargets, failedtargets, uniqueIDs, uniqueids):
 
     out_json = open(options.output + '_gui/data/results.js', 'a')
-
     newchromsres = []
 
     others = {
