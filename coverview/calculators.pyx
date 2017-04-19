@@ -16,6 +16,7 @@ from pysam.libcalignmentfile cimport AlignmentFile, AlignedSegment, bam1_t, BAM_
 from coverview.statistics cimport QualityHistogramArray
 from coverview.reads cimport ReadArray
 
+import logging
 import sys
 
 
@@ -31,6 +32,9 @@ cdef extern from "hts.h":
 
 cdef extern from "sam.h":
     uint8_t* bam_get_qual(bam1_t* b)
+
+
+logger = logging.getLogger("coverview")
 
 
 cdef class SimpleCoverageCalculator(object):
@@ -90,7 +94,7 @@ cdef class SimpleCoverageCalculator(object):
         self.mq_hists_f = QualityHistogramArray(bases_in_region)
         self.mq_hists_r = QualityHistogramArray(bases_in_region)
 
-    cdef void add_reads(self, IteratorRowRegion read_iterator):
+    cdef void add_reads(self, bam1_t* reads_start, bam1_t* reads_end):
         """
         """
         cdef int region_size = self.end - self.begin
@@ -112,18 +116,9 @@ cdef class SimpleCoverageCalculator(object):
         cdef int iterator_status = 0
         cdef int is_forward_read = 0
 
-        while True:
-            iterator_status = hts_itr_next(
-                hts_get_bgzfp(read_iterator.htsfile),
-                read_iterator.iter,
-                read_iterator.b,
-                read_iterator.htsfile
-            )
+        while reads_start != reads_end:
 
-            if iterator_status < 0:
-                break
-
-            src = read_iterator.b
+            src = reads_start
 
             # Skip duplicate reads
             #if src.core.flag & BAM_FDUP != 0:
@@ -210,6 +205,7 @@ cdef class SimpleCoverageCalculator(object):
                                 else:
                                     self.QCOV_r[offset] += 1
                     pos += l
+            reads_start += 1
 
         self.compute_summary_statistics_for_region()
 
@@ -248,29 +244,29 @@ cdef class SimpleCoverageCalculator(object):
             FLMQ_r[i] = self.mq_hists_r.compute_fraction_below_threshold(i, <int>(self.mq_cutoff))
 
     def get_coverage_summary(self):
-        return (
-            self.n_reads_in_region,
-            self.n_reads_in_region_f,
-            self.n_reads_in_region_r,
-            self.COV,
-            self.QCOV,
-            self.MEDBQ,
-            self.FLBQ,
-            self.MEDMQ,
-            self.FLMQ,
-            self.COV_f,
-            self.QCOV_f,
-            self.MEDBQ_f,
-            self.FLBQ_f,
-            self.MEDMQ_f,
-            self.FLMQ_f,
-            self.COV_r,
-            self.QCOV_r,
-            self.MEDBQ_r,
-            self.FLBQ_r,
-            self.MEDMQ_r,
-            self.FLMQ_r
-        )
+        return {
+            "RC": self.n_reads_in_region,
+            "RC_f": self.n_reads_in_region_f,
+            "RC_r": self.n_reads_in_region_r,
+            "COV": self.COV,
+            "QCOV": self.QCOV,
+            "MEDBQ": self.MEDBQ,
+            "FLBQ": self.FLBQ,
+            "MEDMQ": self.MEDMQ,
+            "FLMQ": self.FLMQ,
+            "COV_f": self.COV_f,
+            "QCOV_f": self.QCOV_f,
+            "MEDBQ_f": self.MEDBQ_f,
+            "FLBQ_f": self.FLBQ_f,
+            "MEDMQ_f": self.MEDMQ_f,
+            "FLMQ_f": self.FLMQ_f,
+            "COV_r": self.COV_r,
+            "QCOV_r": self.QCOV_r,
+            "MEDBQ_r": self.MEDBQ_r,
+            "FLBQ_r": self.FLBQ_r,
+            "MEDMQ_r": self.MEDMQ_r,
+            "FLMQ_r": self.FLMQ_r
+        }
 
 
 def get_num_mapped_reads_covering_chromosome(bam_file, chrom):
@@ -328,7 +324,7 @@ cdef void load_reads_into_array(ReadArray read_array, bam_file, chrom, start, en
         read_array.append(read_iterator.b)
 
 
-def get_profiles(bam_file, region, config):
+def get_profiles(bam_file, cluster, config):
     """
     Calculate and return coverage metrics for a specified region. Metrics include total
     coverage, coverage above the required base-quality and mapping quality threshold, fractions of
@@ -337,27 +333,43 @@ def get_profiles(bam_file, region, config):
 
     This is by far the most computationally expensive part of CoverView. > 90% of the run-time is
     currently spent in this function.
+    
     """
     cdef ReadArray read_array = ReadArray(100)
+    cdef bam1_t* reads_start
+    cdef bam1_t* reads_end
 
-    bq_cutoff = float(config['low_bq'])
-    mq_cutoff = float(config['low_mq'])
+    cluster_chrom = get_valid_chromosome_name(cluster[0][0], bam_file)
+    cluster_begin = cluster[0][1]
+    cluster_end = cluster[-1][2]
 
-    chrom, beg_end = region.split(":")
-    begin = int(beg_end.split("-")[0]) - 1
-    end = int(beg_end.split("-")[1]) - 1 + 1 # TODO: sort out the indexing!
+    logger.info("Processing cluster of regions spanning {}:{}-{}".format(
+        cluster_chrom, cluster_begin, cluster_end
+    ))
 
-    good_chrom = get_valid_chromosome_name(chrom, bam_file)
+    logger.info("Loading reads into in-memory array")
+    load_reads_into_array(read_array, bam_file, cluster_chrom, cluster_begin, cluster_end)
 
-    if not good_chrom in bam_file.references:
-        return None
+    for chrom, begin, end, region, key in cluster:
 
-    load_reads_into_array(read_array, bam_file, good_chrom, begin, end)
-    coverage_calc = SimpleCoverageCalculator(good_chrom, begin, end, bq_cutoff, mq_cutoff)
-    reads = bam_file.fetch(good_chrom, begin, end, multiple_iterators=False)
-    coverage_calc.add_reads(reads)
+        target = {
+            "Name": key,
+            "Chrom": chrom,
+            "Start": begin + 1,
+            "End": end
+        }
 
-    return coverage_calc.get_coverage_summary()
+        bq_cutoff = float(config['low_bq'])
+        mq_cutoff = float(config['low_mq'])
+
+        if config['outputs']['profiles'] or config['outputs']['regions']:
+            coverage_calc = SimpleCoverageCalculator(cluster_chrom, begin, end, bq_cutoff, mq_cutoff)
+            read_array.setWindowPointers(begin, end, &reads_start, &reads_end)
+            coverage_calc.add_reads(reads_start, reads_end)
+            target['Profiles'] = coverage_calc.get_coverage_summary()
+            yield target
+
+    logger.info("Finished processing cluster")
 
 
 def calculateChromData(samfile, ontarget):

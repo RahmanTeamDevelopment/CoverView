@@ -34,17 +34,67 @@ def max_or_nan(data):
         return max(data)
 
 
+def get_clusters_of_regions_from_bed_file(bed_file_name, size_limit=100000):
+    """
+    Reads a BED file and yields lists of regions that are close
+    together.
+    """
+    all_regions = []
+
+    with open(bed_file_name, 'r') as bed_file:
+        for line in bed_file:
+
+            line = line.rstrip()
+
+            if len(line) == 0 or line.startswith('#'):
+                continue
+
+            row = line.split('\t')
+
+            if len(row) < 4:
+                raise StandardError("Error: incorrect BED file!")
+
+            chrom = row[0]
+            begin = int(row[1])
+            end = int(row[2])
+            key = row[3]
+
+            if not chrom.startswith('chr'):
+                chrom = 'chr' + chrom
+
+            region = "{}:{}-{}".format(chrom, begin, end)
+            all_regions.append((chrom, begin, end, region, key))
+
+    all_regions.sort()
+    current_cluster = []
+
+    for chrom, begin, end, region, key in all_regions:
+        if len(current_cluster) == 0:
+            current_cluster.append((chrom, begin, end, region, key))
+        elif current_cluster[-1][0] != chrom:
+            yield current_cluster
+            current_cluster = [(chrom, begin, end, region, key)]
+        elif end - current_cluster[0][1] > size_limit:
+            yield current_cluster
+            current_cluster = [(chrom, begin, end, region, key)]
+        else:
+            current_cluster.append((chrom, begin, end, region, key))
+
+    yield current_cluster
+
+
 class SingleJob(object):
     def __init__(self, options, config):
         self.options = options
         self.config = config
-        self.reads = dict()
         self.samfile = pysam.Samfile(options.input, "rb")
         self.entsdb = None
         self.out_targets = None
         self.out_poor = None
         self.out_json = None
         self.out_profiles = None
+        self.num_reads_on_target = {}
+        self.ids_of_failed_targets = set()
 
         if config['outputs']['gui']:
             self.reffile = pysam.Fastafile(config["reference"])
@@ -75,158 +125,42 @@ class SingleJob(object):
                 return False
         return True
 
-    def get_profiles(self, region):
+    def compute_summaries_of_region_coverage(self, profile):
         """
-        Calculate and return coverage metrics for a specified region. Metrics include total
-        coverage, coverage above the required base-quality and mapping quality threshold, fractions of
-        low base qualities at a given position, fractions of low mapping quality reads covering a given
-        position, median mapping qualities and median base qualities.
-
-        This is by far the most computationally expensive part of CoverView. > 90% of the run-time is
-        currently spent in this function.
+        Caclculates medians, minimums and maximums of various coverage metrics
+        for a single region.
         """
-        return get_profiles(self.samfile, region, self.config)
+        summary = {}
 
-    def run(self):
-        output.output_target_file_header(
-            self.config,
-            self.out_poor,
-            self.out_json,
-            self.out_targets,
-            self.out_profiles
-        )
+        summary['MEDCOV'] = numpy.median(profile['COV'])
+        summary['MEDQCOV'] = numpy.median(profile['QCOV'])
+        summary['MINCOV'] = min_or_nan(profile['COV'])
+        summary['MINQCOV'] = min_or_nan(profile['QCOV'])
+        summary['MAXFLBQ'] = max_or_nan(profile['FLBQ'])
+        summary['MAXFLMQ'] = max_or_nan(profile['FLMQ'])
 
-        print ''
-        sys.stdout.write('\rRunning analysis ... 0.0%')
-        sys.stdout.flush()
+        if self.config['direction']:
+            summary['MEDCOV_f'] = numpy.median(profile['COV_f'])
+            summary['MEDQCOV_r'] = numpy.median(profile['QCOV_r'])
+            summary['MEDQCOV_f'] = numpy.median(profile['QCOV_f'])
+            summary['MEDCOV_r'] = numpy.median(profile['COV_r'])
+            summary['MINCOV_f'] = min_or_nan(profile['COV_f'])
+            summary['MINQCOV_f'] = min_or_nan(profile['QCOV_f'])
+            summary['MAXFLBQ_f'] = max_or_nan(profile['FLBQ_f'])
+            summary['MAXFLMQ_f'] = max_or_nan(profile['FLMQ_f'])
+            summary['MINCOV_r'] = min_or_nan(profile['COV_r'])
+            summary['MINQCOV_r'] = min_or_nan(profile['QCOV_r'])
+            summary['MAXFLBQ_r'] = max_or_nan(profile['FLBQ_r'])
+            summary['MAXFLMQ_r'] = max_or_nan(profile['FLMQ_r'])
 
-        fails = []
-        numOfFails = 0
+        return summary
 
-        for index,line in enumerate(open(self.options.bedfile)):
-            target = dict()
-            line = line.rstrip()
-
-            if line == '':
-                continue
-
-            if line.startswith('#'):
-                continue
-
-            row = line.split('\t')
-
-            if len(row) < 4:
-                print "Error: incorrect BED file!"
-                quit()
-
-            chrom = row[0]
-            begin = int(row[1])
-            end = int(row[2])
-            key = row[3]
-
-            if not chrom.startswith('chr'):
-                chrom = 'chr' + chrom
-
-            region = chrom + ':' + row[1] + '-' + row[2]
-
-            target['Name'] = key
-            target['Chrom'] = chrom
-            target['Start'] = begin + 1
-            target['End'] = end
-
-            summary = dict()
-
-            if self.config['outputs']['profiles'] or self.config['outputs']['regions']:
-                profiles = dict()
-
-                count, count_f, count_r,COV, QCOV, MEDBQ, FLBQ, MEDMQ, FLMQ, COV_f, QCOV_f, MEDBQ_f, FLBQ_f, MEDMQ_f, FLMQ_f, COV_r, QCOV_r, MEDBQ_r, FLBQ_r, MEDMQ_r, FLMQ_r = self.get_profiles(region)
-
-                if self.config['direction']:
-                    summary['RC'] = count
-                    summary['RC_f'] = count_f
-                    summary['RC_r'] = count_r
-                else:
-                    summary['RC'] = count
-
-                profiles['COV'] = COV
-                profiles['QCOV'] = QCOV
-                profiles['MEDBQ'] = MEDBQ
-                profiles['FLBQ'] = FLBQ
-                profiles['MEDMQ'] = MEDMQ
-                profiles['FLMQ'] = FLMQ
-
-                if self.config['direction']:
-                    profiles['COV_f'] = COV_f
-                    profiles['QCOV_f'] = QCOV_f
-                    profiles['MEDBQ_f'] = MEDBQ_f
-                    profiles['FLBQ_f'] = FLBQ_f
-                    profiles['MEDMQ_f'] = MEDMQ_f
-                    profiles['FLMQ_f'] = FLMQ_f
-                    profiles['COV_r'] = COV_r
-                    profiles['QCOV_r'] = QCOV_r
-                    profiles['MEDBQ_r'] = MEDBQ_r
-                    profiles['FLBQ_r'] = FLBQ_r
-                    profiles['MEDMQ_r'] = MEDMQ_r
-                    profiles['FLMQ_r'] = FLMQ_r
-
-                target['Profiles'] = profiles
-
-            if self.config['outputs']['regions']:
-
-                summary['MEDCOV'] = numpy.median(COV)
-                summary['MEDQCOV'] = numpy.median(QCOV)
-                summary['MINCOV'] = min_or_nan(COV)
-                summary['MINQCOV'] = min_or_nan(QCOV)
-                summary['MAXFLBQ'] = max_or_nan(FLBQ)
-                summary['MAXFLMQ'] = max_or_nan(FLMQ)
-
-                if self.config['direction']:
-
-                    summary['MEDCOV_f'] = numpy.median(COV_f)
-                    summary['MEDQCOV_r'] = numpy.median(QCOV_r)
-                    summary['MEDQCOV_f'] = numpy.median(QCOV_f)
-                    summary['MEDCOV_r'] = numpy.median(COV_r)
-                    summary['MINCOV_f'] = min_or_nan(COV_f)
-                    summary['MINQCOV_f'] = min_or_nan(QCOV_f)
-                    summary['MAXFLBQ_f'] = max_or_nan(FLBQ_f)
-                    summary['MAXFLMQ_f'] = max_or_nan(FLMQ_f)
-                    summary['MINCOV_r'] = min_or_nan(COV_r)
-                    summary['MINQCOV_r'] = min_or_nan(QCOV_r)
-                    summary['MAXFLBQ_r'] = max_or_nan(FLBQ_r)
-                    summary['MAXFLMQ_r'] = max_or_nan(FLMQ_r)
-
-                # Add summary metrics to target dict
-                target['Summary'] = summary
-
-                # Calculate if target is PASS or FAIL
-                if not config['pass'] is None:
-                    target['PASS'] = self.targetPASS(target)
-                else:
-                    target['PASS'] = True
-
-                # Retrieve reference sequence if GUI output is created
-                if self.config['outputs']['gui']:
-                    target['Ref'] = self.getReferenceSequence(chrom, begin, end)
-                else:
-                    target['Ref'] = ''
-
-            else:
-                target['PASS'] = True
-
-            self.output(target)
-
-            if not target['PASS']:
-                numOfFails += 1
-                if '_' in target['Name']: ids = target['Name'][:target['Name'].find('_')]
-                else: ids = target['Name']
-                fails.append(ids)
-
-            if index % 100 == 0:
-                x = round(100 * index / numOfTargets, 1)
-                x = min(x, 100.0)
-                sys.stdout.write('\rRunning analysis ... ' + str(x) + '%')
-                sys.stdout.flush()
-
+    def close_output_files(self):
+        """
+        Make sure that all output files are closed. The way CoverView is configured means that there
+        are several optional output files, which may or may not exist depending on flags in the config
+        file.
+        """
         if self.config['outputs']['regions']:
             self.out_targets.close()
 
@@ -239,15 +173,59 @@ class SingleJob(object):
             self.out_json.write(']')
             self.out_json.close()
 
-        with open(options.output + '_failedtargets' + '.txt', 'w') as failedtargetsfile:
-            failedtargetsfile.write(str(fails) + '\n')
+    def run(self):
+        logger.info("Coverage metrics will be generated in a single process")
+        logger.info("Writing output headers")
 
-        with open(options.output + '_reads_on_target' + '.txt', 'w') as ontargetfile:
-            for k, v in self.reads.iteritems():
-                ontargetfile.write(k + ':' + str(len(v)) + '\n')
+        output.output_target_file_header(
+            self.config,
+            self.out_poor,
+            self.out_json,
+            self.out_targets,
+            self.out_profiles
+        )
 
-        sys.stdout.write('\rRunning analysis ... 100.0%')
-        sys.stdout.flush()
+        num_clusters = 0
+
+        for cluster in get_clusters_of_regions_from_bed_file(options.bedfile):
+            num_clusters += 1
+            for target in get_profiles(self.samfile, cluster, self.config):
+
+                if target is None:
+                    continue
+
+                chrom = target['Chrom']
+                begin = target['Start']
+                end = target['End']
+                self.num_reads_on_target[target['Name']] = target['Profiles']['RC']
+
+                if config['outputs']['regions']:
+                    target['Summary'] = self.compute_summaries_of_region_coverage(target['Profiles'])
+
+                    if config['pass'] is not None:
+                        target['PASS'] = self.targetPASS(target)
+                    else:
+                        target['PASS'] = True
+
+                    if self.config['outputs']['gui']:
+                        target['Ref'] = self.getReferenceSequence(chrom, begin, end)
+                    else:
+                        target['Ref'] = ''
+                else:
+                    target['PASS'] = True
+
+                if not target['PASS']:
+                    if '_' in target['Name']:
+                        ids = target['Name'][:target['Name'].find('_')]
+                    else:
+                        ids = target['Name']
+
+                    self.ids_of_failed_targets.append(ids)
+                self.output(target)
+
+        self.close_output_files()
+        logger.info("Finished computing coverage metrics in all regions")
+        logger.info("Data was processed in {} clusters".format(num_clusters))
 
     def getReferenceSequence(self, chrom, start, end):
         goodchrom = chrom
@@ -340,7 +318,7 @@ class SingleJob(object):
         if str(summary['MAXFLMQ']) == 'nan': summary['MAXFLMQ'] = '.'
         if str(summary['MAXFLBQ']) == 'nan': summary['MAXFLBQ'] = '.'
 
-        record.extend([str(summary['RC']), str(summary['MEDCOV']), str(summary['MINCOV']), str(summary['MEDQCOV']),
+        record.extend([str(target['Profiles']['RC']), str(summary['MEDCOV']), str(summary['MINCOV']), str(summary['MEDQCOV']),
                        str(summary['MINQCOV']), str(summary['MAXFLMQ']), str(summary['MAXFLBQ'])])
 
         if self.config['direction']:
@@ -503,31 +481,12 @@ if __name__ == "__main__":
     process = SingleJob(options, config)
     process.run()
 
-    ontarget = dict()
+    ontarget = process.num_reads_on_target
 
-    for line in open(options.output + '_reads_on_target' + '.txt'):
-        [key, value] = line.split(':')
-        if key in ontarget.keys():
-            ontarget[key] += int(value.strip())
-        else:
-            ontarget[key] = int(value.strip())
+    ids_of_failed_targets = process.ids_of_failed_targets
+    num_failed_targets = len(ids_of_failed_targets)
 
-    os.remove(options.output + '_reads_on_target' + '.txt')
-
-    failedtargets = 0
-    uniqueids = set()
-
-    for line in open(options.output + '_failedtargets' + '.txt'):
-        line = line.strip()
-        fails = line[1:-1].split(',')
-        failedtargets += len(fails)
-        for x in fails:
-            x = x.strip()
-            uniqueids.add(x[1:-1])
-
-    os.remove(options.output + '_failedtargets' + '.txt')
-
-    print ' - Done. (' + str(failedtargets) + ' failed regions)'
+    logger.info("{} regions failed the coverage thresholds".format(num_failed_targets))
 
     samfile = pysam.Samfile(options.input, "rb")
     chromdata = calculateChromData(samfile, ontarget)
@@ -539,9 +498,9 @@ if __name__ == "__main__":
             chromdata,
             config,
             numOfTargets,
-            failedtargets,
+            num_failed_targets,
             uniqueIDs,
-            uniqueids
+            ids_of_failed_targets
         )
 
     logger.info("CoverView v1.2.0 succesfully finished")

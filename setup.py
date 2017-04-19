@@ -22,7 +22,7 @@ cython_directives = {
     "boundscheck": False,
     "nonecheck" : False,
     "cdivision" : True,
-    "profile" : False,
+    "profile" : True,
     "initializedcheck" : False,
     "wraparound" : True
 }
@@ -52,9 +52,6 @@ modules = [
     )
 ]
 
-for module in modules:
-    module.cython_directives = cython_directives
-
 setup(
     name="CoverView",
     version=1.0,
@@ -64,7 +61,7 @@ setup(
     author_email='munzmarci@gmail.com',
     license='MIT',
     cmdclass = {'build_ext': build_ext},
-    ext_modules = cythonize(modules),
+    ext_modules = cythonize(modules, compiler_directives=cython_directives),
     packages=['coverview'],
     scripts=[
         "bin/CoverView.py"

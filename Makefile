@@ -4,8 +4,8 @@ check:
 clean:
 	rm -f *.bam
 	rm -f *.bai
-	rm -f coverage/*.c
-	rm -f coverage/*.so
+	rm -f coverview/*.c
+	rm -f coverview/*.so
 	rm -rf build
 	rm -rf dist
 
