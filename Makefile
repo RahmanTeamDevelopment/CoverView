@@ -15,5 +15,5 @@ libs:
 test: check
 	./run_unit_tests.bash
 
-profile:
+profile: libs
 	time python -m cProfile -s cumulative bin/CoverView.py --input ../Data/NA21144.mapped.ILLUMINA.bwa.GIH.exome.20121211.bam -b chrom20_exons.bed > profile.out

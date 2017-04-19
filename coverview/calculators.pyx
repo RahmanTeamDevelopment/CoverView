@@ -10,7 +10,8 @@ from libc.stdint cimport uint32_t, uint64_t, uint8_t
 import pysam
 from pysam.libcalignmentfile cimport IteratorRowRegion
 from pysam.libcalignmentfile cimport AlignmentFile, AlignedSegment, bam1_t, BAM_CIGAR_MASK,\
-    BAM_CIGAR_SHIFT, BAM_CINS, BAM_CSOFT_CLIP, BAM_CREF_SKIP, BAM_CMATCH, BAM_CDEL, BAM_FDUP
+    BAM_CIGAR_SHIFT, BAM_CINS, BAM_CSOFT_CLIP, BAM_CREF_SKIP, BAM_CMATCH, BAM_CDEL, BAM_FDUP,\
+    BAM_FREVERSE
 
 from coverview.statistics cimport QualityHistogramArray
 from coverview.reads cimport ReadArray
@@ -41,12 +42,12 @@ cdef class SimpleCoverageCalculator(object):
     cdef int end
     cdef int bq_cutoff
     cdef int mq_cutoff
-    cdef int n_reads_in_region
+    cdef int n_reads_in_region, n_reads_in_region_f, n_reads_in_region_r
     cdef array.array COV, QCOV, MEDBQ, FLBQ, MEDMQ, FLMQ
     cdef array.array COV_f, QCOV_f, MEDBQ_f, FLBQ_f, MEDMQ_f, FLMQ_f
     cdef array.array COV_r, QCOV_r, MEDBQ_r, FLBQ_r, MEDMQ_r, FLMQ_r
-    cdef QualityHistogramArray bq_hists
-    cdef QualityHistogramArray mq_hists
+    cdef QualityHistogramArray bq_hists, bq_hists_f, bq_hists_r
+    cdef QualityHistogramArray mq_hists, mq_hists_f, mq_hists_r
 
     def __init__(self, chrom, begin, end, bq_cutoff, mq_cutoff):
         cdef int bases_in_region = end - begin
@@ -55,15 +56,39 @@ cdef class SimpleCoverageCalculator(object):
         self.bq_cutoff = bq_cutoff
         self.mq_cutoff = mq_cutoff
         self.n_reads_in_region = 0
+        self.n_reads_in_region_f = 0
+        self.n_reads_in_region_r = 0
+
         self.COV = array.array('l', [0] * bases_in_region)
+        self.COV_f = array.array('l', [0] * bases_in_region)
+        self.COV_r = array.array('l', [0] * bases_in_region)
+
         self.QCOV = array.array('l', [0] * bases_in_region)
+        self.QCOV_f = array.array('l', [0] * bases_in_region)
+        self.QCOV_r = array.array('l', [0] * bases_in_region)
+
         self.MEDBQ = array.array('f', [float('NaN')] * bases_in_region)
+        self.MEDBQ_f = array.array('f', [float('NaN')] * bases_in_region)
+        self.MEDBQ_r = array.array('f', [float('NaN')] * bases_in_region)
+
         self.FLBQ = array.array('f', [float('NaN')] * bases_in_region)
+        self.FLBQ_f = array.array('f', [float('NaN')] * bases_in_region)
+        self.FLBQ_r = array.array('f', [float('NaN')] * bases_in_region)
+
         self.MEDMQ = array.array('f', [float('NaN')] * bases_in_region)
+        self.MEDMQ_f = array.array('f', [float('NaN')] * bases_in_region)
+        self.MEDMQ_r = array.array('f', [float('NaN')] * bases_in_region)
+
         self.FLMQ = array.array('f', [float('NaN')] * bases_in_region)
+        self.FLMQ_f = array.array('f', [float('NaN')] * bases_in_region)
+        self.FLMQ_r = array.array('f', [float('NaN')] * bases_in_region)
 
         self.bq_hists = QualityHistogramArray(bases_in_region)
+        self.bq_hists_f = QualityHistogramArray(bases_in_region)
+        self.bq_hists_r = QualityHistogramArray(bases_in_region)
         self.mq_hists = QualityHistogramArray(bases_in_region)
+        self.mq_hists_f = QualityHistogramArray(bases_in_region)
+        self.mq_hists_r = QualityHistogramArray(bases_in_region)
 
     cdef void add_reads(self, IteratorRowRegion read_iterator):
         """
@@ -85,6 +110,7 @@ cdef class SimpleCoverageCalculator(object):
         cdef bam1_t* src
         cdef uint8_t* base_qualities
         cdef int iterator_status = 0
+        cdef int is_forward_read = 0
 
         while True:
             iterator_status = hts_itr_next(
@@ -103,12 +129,24 @@ cdef class SimpleCoverageCalculator(object):
             #if src.core.flag & BAM_FDUP != 0:
             #    continue
 
+            # Reverse bit is set, so read is reverse
+            if src.core.flag & BAM_FREVERSE != 0:
+                is_forward_read = 0
+            else:
+                is_forward_read = 1
+
             n_cigar = src.core.n_cigar
 
             if n_cigar == 0:
                 break
 
             self.n_reads_in_region += 1
+
+            if is_forward_read:
+                self.n_reads_in_region_f += 1
+            else:
+                self.n_reads_in_region_r += 1
+
             mapping_quality = src.core.qual
             base_qualities = bam_get_qual(src)
             pos = src.core.pos
@@ -127,59 +165,111 @@ cdef class SimpleCoverageCalculator(object):
                         if begin < i <= end:
                             offset = i - (begin + 1)
                             base_quality = base_qualities[index + (i-pos)]
+
                             self.bq_hists.add_data(offset, base_quality)
                             self.mq_hists.add_data(offset, mapping_quality)
-                            COV[offset] += 1
+                            self.COV[offset] += 1
+
+                            if is_forward_read:
+                                self.bq_hists_f.add_data(offset, base_quality)
+                                self.mq_hists_f.add_data(offset, mapping_quality)
+                                self.COV_f[offset] += 1
+                            else:
+                                self.bq_hists_r.add_data(offset, base_quality)
+                                self.mq_hists_r.add_data(offset, mapping_quality)
+                                self.COV_r[offset] += 1
+
 
                             if mapping_quality >= mq_cutoff and base_quality >= bq_cutoff:
-                                QCOV[offset] += 1
+                                self.QCOV[offset] += 1
+
+                                if is_forward_read:
+                                    self.QCOV_f[offset] += 1
+                                else:
+                                    self.QCOV_r[offset] += 1
 
                     pos += l
                     index += l
+
                 elif op == BAM_CDEL or op == BAM_CREF_SKIP:
                     for i from pos <= i < pos + l:
                         if begin < i <= end:
                             offset = i - (begin + 1)
-                            COV[offset] += 1
+                            self.COV[offset] += 1
+
+                            if is_forward_read:
+                                self.COV_f[offset] += 1
+                            else:
+                                self.COV_r[offset] += 1
+
                             if mapping_quality >= mq_cutoff:
-                                QCOV[offset] += 1
+                                self.QCOV[offset] += 1
+
+                                if is_forward_read:
+                                    self.QCOV_f[offset] += 1
+                                else:
+                                    self.QCOV_r[offset] += 1
                     pos += l
 
         self.compute_summary_statistics_for_region()
 
     cdef void compute_summary_statistics_for_region(self):
         cdef float* MEDBQ = self.MEDBQ.data.as_floats
+        cdef float* MEDBQ_f = self.MEDBQ_f.data.as_floats
+        cdef float* MEDBQ_r = self.MEDBQ_r.data.as_floats
+
         cdef float* MEDMQ = self.MEDMQ.data.as_floats
+        cdef float* MEDMQ_f = self.MEDMQ_f.data.as_floats
+        cdef float* MEDMQ_r = self.MEDMQ_r.data.as_floats
+
         cdef float* FLBQ = self.FLBQ.data.as_floats
+        cdef float* FLBQ_f = self.FLBQ_f.data.as_floats
+        cdef float* FLBQ_r = self.FLBQ_r.data.as_floats
+
         cdef float* FLMQ = self.FLMQ.data.as_floats
+        cdef float* FLMQ_f = self.FLMQ_f.data.as_floats
+        cdef float* FLMQ_r = self.FLMQ_r.data.as_floats
 
         for i in xrange(self.end - self.begin):
             MEDBQ[i] = self.bq_hists.compute_median(i)
+            MEDBQ_f[i] = self.bq_hists_f.compute_median(i)
+            MEDBQ_r[i] = self.bq_hists_r.compute_median(i)
+
             MEDMQ[i] = self.mq_hists.compute_median(i)
+            MEDMQ_f[i] = self.mq_hists_f.compute_median(i)
+            MEDMQ_r[i] = self.mq_hists_r.compute_median(i)
+
             FLBQ[i] = self.bq_hists.compute_fraction_below_threshold(i, <int>(self.bq_cutoff))
+            FLBQ_f[i] = self.bq_hists_f.compute_fraction_below_threshold(i, <int>(self.bq_cutoff))
+            FLBQ_r[i] = self.bq_hists_r.compute_fraction_below_threshold(i, <int>(self.bq_cutoff))
+
             FLMQ[i] = self.mq_hists.compute_fraction_below_threshold(i, <int>(self.mq_cutoff))
+            FLMQ_f[i] = self.mq_hists_f.compute_fraction_below_threshold(i, <int>(self.mq_cutoff))
+            FLMQ_r[i] = self.mq_hists_r.compute_fraction_below_threshold(i, <int>(self.mq_cutoff))
 
     def get_coverage_summary(self):
         return (
             self.n_reads_in_region,
+            self.n_reads_in_region_f,
+            self.n_reads_in_region_r,
             self.COV,
             self.QCOV,
             self.MEDBQ,
             self.FLBQ,
             self.MEDMQ,
             self.FLMQ,
-            self.ret_COV_f,
-            self.ret_QCOV_f,
-            self.ret_MEDBQ_f,
-            self.ret_FLBQ_f,
-            self.ret_MEDMQ_f,
-            self.ret_FLMQ_f,
-            self.ret_COV_r,
-            self.ret_QCOV_r,
-            self.ret_MEDBQ_r,
-            self.ret_FLBQ_r,
-            self.ret_MEDMQ_r,
-            self.ret_FLMQ_r
+            self.COV_f,
+            self.QCOV_f,
+            self.MEDBQ_f,
+            self.FLBQ_f,
+            self.MEDMQ_f,
+            self.FLMQ_f,
+            self.COV_r,
+            self.QCOV_r,
+            self.MEDBQ_r,
+            self.FLBQ_r,
+            self.MEDMQ_r,
+            self.FLMQ_r
         )
 
 

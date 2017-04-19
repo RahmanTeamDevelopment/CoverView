@@ -13,8 +13,8 @@ import sys
 import warnings
 
 from coverview import transcript
-from coverview.output import *
-from coverview.calculators import calculateChromData
+from coverview import output
+from coverview.calculators import calculateChromData, get_profiles
 
 
 logger = logging.getLogger("coverview")
@@ -40,14 +40,17 @@ class SingleJob(object):
         self.config = config
         self.reads = dict()
         self.samfile = pysam.Samfile(options.input, "rb")
+        self.entsdb = None
+        self.out_targets = None
+        self.out_poor = None
+        self.out_json = None
+        self.out_profiles = None
 
         if config['outputs']['gui']:
             self.reffile = pysam.Fastafile(config["reference"])
 
         if not config['transcript_db'] is None:
             self.enstdb = pysam.Tabixfile(config['transcript_db'])
-        else:
-            self.enstdb = None
 
         if config['outputs']['regions']:
             self.out_targets = open(options.output + '_regions.txt', 'w')
@@ -82,13 +85,10 @@ class SingleJob(object):
         This is by far the most computationally expensive part of CoverView. > 90% of the run-time is
         currently spent in this function.
         """
-        return coverage.get_profiles(self.samfile, region, self.config)
+        return get_profiles(self.samfile, region, self.config)
 
     def run(self):
-        self.run_process()
-
-    def run_process(self):
-        output_target_file_header(
+        output.output_target_file_header(
             self.config,
             self.out_poor,
             self.out_json,
@@ -139,13 +139,13 @@ class SingleJob(object):
             if self.config['outputs']['profiles'] or self.config['outputs']['regions']:
                 profiles = dict()
 
+                count, count_f, count_r,COV, QCOV, MEDBQ, FLBQ, MEDMQ, FLMQ, COV_f, QCOV_f, MEDBQ_f, FLBQ_f, MEDMQ_f, FLMQ_f, COV_r, QCOV_r, MEDBQ_r, FLBQ_r, MEDMQ_r, FLMQ_r = self.get_profiles(region)
+
                 if self.config['direction']:
-                    count, count_f, count_r,COV, QCOV, MEDBQ, FLBQ, MEDMQ, FLMQ, COV_f, QCOV_f, MEDBQ_f, FLBQ_f, MEDMQ_f, FLMQ_f, COV_r, QCOV_r, MEDBQ_r, FLBQ_r, MEDMQ_r, FLMQ_r = self.get_profiles(region)
                     summary['RC'] = count
                     summary['RC_f'] = count_f
                     summary['RC_r'] = count_r
                 else:
-                    count, COV, QCOV, MEDBQ, FLBQ, MEDMQ, FLMQ = self.get_profiles(region)
                     summary['RC'] = count
 
                 profiles['COV'] = COV
@@ -275,7 +275,7 @@ class SingleJob(object):
 
         if self.config['outputs']['profiles']:
             if not self.config['only_fail_profiles']:
-                coverage.output.output_profiles(
+                output.output_profiles(
                     target,
                     self.out_profiles
                 )
@@ -475,10 +475,11 @@ if __name__ == "__main__":
     logger.info(config)
 
     if options.bedfile is None:
-        printInfo_minimal(options)
+        logger.info("No input BED file specified. Computing minimal coverage information")
+        output.printInfo_minimal(options)
         samfile = pysam.Samfile(options.input, "rb")
         chromdata = calculateChromdata_minimal(samfile, options)
-        output_summary_minimal(options, chromdata)
+        output.output_summary_minimal(options, chromdata)
         logger.info('CoverView v1.2.0 succesfully finished')
         quit()
 
@@ -497,7 +498,7 @@ if __name__ == "__main__":
     names, uniqueIDs = makeNames(options.bedfile)
     numOfTargets = len(names)
     samplename = options.input[:options.input.rfind('.bam')]
-    printInfo(options, config, numOfTargets)
+    output.printInfo(options, config, numOfTargets)
 
     process = SingleJob(options, config)
     process.run()
@@ -530,10 +531,10 @@ if __name__ == "__main__":
 
     samfile = pysam.Samfile(options.input, "rb")
     chromdata = calculateChromData(samfile, ontarget)
-    output_summary(options, chromdata)
+    output.output_summary(options, chromdata)
 
     if config['outputs']['gui']:
-        finalizeJSONOutput(
+        output.finalizeJSONOutput(
             options,
             chromdata,
             config,

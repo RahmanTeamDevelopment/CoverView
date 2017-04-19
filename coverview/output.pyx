@@ -4,10 +4,15 @@ Format and write per-base coverage profile output
 
 import datetime
 import json
+import logging
+
 from cpython cimport array
 
 
-def output_target_file_header(self, config, out_poor, out_json, out_targets, out_profiles):
+logger = logging.getLogger("coverview")
+
+
+def output_target_file_header(config, out_poor, out_json, out_targets, out_profiles):
     if config['outputs']['regions']:
 
         targetheader = ['Region', 'Chromosome', 'Start_position', 'End_position']
