@@ -6,13 +6,14 @@ clean:
 	rm -f *.bai
 	rm -f coverage/*.c
 	rm -f coverage/*.so
-	rm -rf coverage/build
+	rm -rf build
+	rm -rf dist
 
 libs:
-	cd coverage; python setup.py build_ext --inplace
+	pip install -e .
 
 test: check
 	./run_unit_tests.bash
 
 profile:
-	time python -m cProfile -s cumulative CoverView.py --input ../Data/NA21144.mapped.ILLUMINA.bwa.GIH.exome.20121211.bam -b chrom20_exons.bed > profile.out
+	time python -m cProfile -s cumulative bin/CoverView.py --input ../Data/NA21144.mapped.ILLUMINA.bwa.GIH.exome.20121211.bam -b chrom20_exons.bed > profile.out

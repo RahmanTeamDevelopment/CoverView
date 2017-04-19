@@ -1,22 +1,23 @@
-#!/env/bin/python
+#!env/bin/python
 
 from __future__ import division
 
 from optparse import OptionParser
 
-import coverage
-import datetime
-import json
+import logging
 import numpy
 import os
 import pysam
 import shutil
 import sys
-import transcript
 import warnings
 
-from coverage.output import *
-from coverage.calculators import calculateChromData
+from coverview import transcript
+from coverview.output import *
+from coverview.calculators import calculateChromData
+
+
+logger = logging.getLogger("coverview")
 
 
 def min_or_nan(data):
@@ -451,25 +452,34 @@ def get_input_options():
 
 
 if __name__ == "__main__":
+
+    logger = logging.getLogger("coverview")
+
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(pathname)s - Line %(lineno)s - %(message)s")
+
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter)
+    stream_handler.setLevel(logging.DEBUG)
+
+    logger.addHandler(stream_handler)
+    logger.setLevel(logging.DEBUG)
+
     numpy.seterr(all='ignore')
     warnings.simplefilter("ignore", RuntimeWarning)
 
-    print ""
-    print "======================================================================================"
-    print 'CoverView v1.2.0 started running: ', datetime.datetime.now()
-    print ""
+    logger.info('CoverView v1.2.0 started running')
 
     options, config = get_input_options()
+
+    logger.info(options)
+    logger.info(config)
 
     if options.bedfile is None:
         printInfo_minimal(options)
         samfile = pysam.Samfile(options.input, "rb")
         chromdata = calculateChromdata_minimal(samfile, options)
         output_summary_minimal(options, chromdata)
-        print ""
-        print 'CoverView v1.2.0 succesfully finished: ', datetime.datetime.now()
-        print "======================================================================================"
-        print ""
+        logger.info('CoverView v1.2.0 succesfully finished')
         quit()
 
     if config['outputs']['gui']:
@@ -533,7 +543,4 @@ if __name__ == "__main__":
             uniqueids
         )
 
-    print ""
-    print 'CoverView v1.2.0 succesfully finished: ', datetime.datetime.now()
-    print "======================================================================================"
-    print ""
+    logger.info("CoverView v1.2.0 succesfully finished")

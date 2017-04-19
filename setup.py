@@ -3,11 +3,11 @@ from Cython.Distutils import build_ext
 from Cython.Build import cythonize
 
 include_dirs = [
-    "../env/lib/python2.7/site-packages",
-    "../env/lib/python2.7/site-packages/pysam",
-    "../env/lib/python2.7/site-packages/pysam/include/htslib",
-    "../env/lib/python2.7/site-packages/pysam/include/htslib/htslib",
-    "."
+    "env/lib/python2.7/site-packages",
+    "env/lib/python2.7/site-packages/pysam",
+    "env/lib/python2.7/site-packages/pysam/include/htslib",
+    "env/lib/python2.7/site-packages/pysam/include/htslib/htslib",
+    "coverview"
 ]
 
 library_dirs = [
@@ -29,25 +29,25 @@ cython_directives = {
 
 modules = [
     Extension(
-        name="coverage.statistics",
-        sources=["statistics.pyx"],
+        name="coverview.statistics",
+        sources=["coverview/statistics.pyx"],
         include_dirs=include_dirs,
     ),
     Extension(
-        name="coverage.calculators",
-        sources=["calculators.pyx"],
+        name="coverview.calculators",
+        sources=["coverview/calculators.pyx"],
         include_dirs=include_dirs,
         libraries=libraries,
         library_dirs=library_dirs,
     ),
     Extension(
-        name="coverage.output",
-        sources=["output.pyx"],
+        name="coverview.output",
+        sources=["coverview/output.pyx"],
         include_dirs=include_dirs,
     ),
     Extension(
-        "coverage.reads",
-        ["reads.pyx"],
+        "coverview.reads",
+        ["coverview/reads.pyx"],
         include_dirs=include_dirs,
     )
 ]
@@ -64,7 +64,12 @@ setup(
     author_email='munzmarci@gmail.com',
     license='MIT',
     cmdclass = {'build_ext': build_ext},
-    ext_modules = cythonize(modules)
+    ext_modules = cythonize(modules),
+    packages=['coverview'],
+    scripts=[
+        "bin/CoverView.py"
+    ],
+    zip_safe=False
 )
 
 

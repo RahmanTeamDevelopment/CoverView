@@ -4,21 +4,19 @@ Utilities for calculating coverage summaries from a BAM file
 
 from __future__ import division
 
-
-from coverage.statistics cimport QualityHistogramArray
-
+from cpython cimport array
 from libc.stdint cimport uint32_t, uint64_t, uint8_t
 
+import pysam
+from pysam.libcalignmentfile cimport IteratorRowRegion
 from pysam.libcalignmentfile cimport AlignmentFile, AlignedSegment, bam1_t, BAM_CIGAR_MASK,\
     BAM_CIGAR_SHIFT, BAM_CINS, BAM_CSOFT_CLIP, BAM_CREF_SKIP, BAM_CMATCH, BAM_CDEL, BAM_FDUP
 
-import pysam
-
-from pysam.libcalignmentfile cimport IteratorRowRegion
-from cpython cimport array
-from reads cimport ReadArray
+from coverview.statistics cimport QualityHistogramArray
+from coverview.reads cimport ReadArray
 
 import sys
+
 
 cdef extern from "hts.h":
     ctypedef struct hts_idx_t
