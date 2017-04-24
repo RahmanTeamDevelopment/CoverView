@@ -15,72 +15,9 @@ import warnings
 from coverview import transcript
 from coverview import output
 from coverview.calculators import calculateChromData, get_profiles
-
+from coverview.utils import *
 
 logger = logging.getLogger("coverview")
-
-
-def min_or_nan(data):
-    if len(data) == 0:
-        return float('NaN')
-    else:
-        return min(data)
-
-
-def max_or_nan(data):
-    if len(data) == 0:
-        return float('NaN')
-    else:
-        return max(data)
-
-
-def get_clusters_of_regions_from_bed_file(bed_file_name, size_limit=100000):
-    """
-    Reads a BED file and yields lists of regions that are close
-    together.
-    """
-    all_regions = []
-
-    with open(bed_file_name, 'r') as bed_file:
-        for line in bed_file:
-
-            line = line.rstrip()
-
-            if len(line) == 0 or line.startswith('#'):
-                continue
-
-            row = line.split('\t')
-
-            if len(row) < 4:
-                raise StandardError("Error: incorrect BED file!")
-
-            chrom = row[0]
-            begin = int(row[1])
-            end = int(row[2])
-            key = row[3]
-
-            if not chrom.startswith('chr'):
-                chrom = 'chr' + chrom
-
-            region = "{}:{}-{}".format(chrom, begin, end)
-            all_regions.append((chrom, begin, end, region, key))
-
-    all_regions.sort()
-    current_cluster = []
-
-    for chrom, begin, end, region, key in all_regions:
-        if len(current_cluster) == 0:
-            current_cluster.append((chrom, begin, end, region, key))
-        elif current_cluster[-1][0] != chrom:
-            yield current_cluster
-            current_cluster = [(chrom, begin, end, region, key)]
-        elif end - current_cluster[0][1] > size_limit:
-            yield current_cluster
-            current_cluster = [(chrom, begin, end, region, key)]
-        else:
-            current_cluster.append((chrom, begin, end, region, key))
-
-    yield current_cluster
 
 
 class SingleJob(object):
@@ -96,22 +33,13 @@ class SingleJob(object):
         self.num_reads_on_target = {}
         self.ids_of_failed_targets = set()
 
-        if config['outputs']['gui']:
-            self.reffile = pysam.Fastafile(config["reference"])
-
         if not config['transcript_db'] is None:
             self.enstdb = pysam.Tabixfile(config['transcript_db'])
-
-        if config['outputs']['regions']:
-            self.out_targets = open(options.output + '_regions.txt', 'w')
 
         if config['outputs']['profiles']:
             self.out_profiles = open(options.output + '_profiles.txt', 'w')
             if not config['transcript_db'] is None:
                 self.out_poor = open(options.output + '_poor.txt', 'w')
-
-        if config['outputs']['gui']:
-            self.out_json = open(options.output + '_gui/data/results.js', 'w')
 
         self.first = True
 
@@ -161,17 +89,10 @@ class SingleJob(object):
         are several optional output files, which may or may not exist depending on flags in the config
         file.
         """
-        if self.config['outputs']['regions']:
-            self.out_targets.close()
-
         if self.config['outputs']['profiles']:
             self.out_profiles.close()
             if not config['transcript_db'] is None:
                 self.out_poor.close()
-
-        if self.config['outputs']['gui']:
-            self.out_json.write(']')
-            self.out_json.close()
 
     def run(self):
         logger.info("Coverage metrics will be generated in a single process")
@@ -194,25 +115,10 @@ class SingleJob(object):
                 if target is None:
                     continue
 
-                chrom = target['Chrom']
-                begin = target['Start']
-                end = target['End']
                 self.num_reads_on_target[target['Name']] = target['Profiles']['RC']
 
-                if config['outputs']['regions']:
-                    target['Summary'] = self.compute_summaries_of_region_coverage(target['Profiles'])
-
-                    if config['pass'] is not None:
-                        target['PASS'] = self.targetPASS(target)
-                    else:
-                        target['PASS'] = True
-
-                    if self.config['outputs']['gui']:
-                        target['Ref'] = self.getReferenceSequence(chrom, begin, end)
-                    else:
-                        target['Ref'] = ''
-                else:
-                    target['PASS'] = True
+                for o in self.outputs:
+                    o.compute_coverage_metric(target)
 
                 if not target['PASS']:
                     if '_' in target['Name']:
@@ -355,31 +261,6 @@ def get_default_config():
         "pass": None,
         "direction": False
     }
-
-
-def makeNames(inputf):
-    ret = []
-    latest = dict()
-    for line in open(inputf):
-        line = line.rstrip()
-        if line == '': continue
-        if line.startswith('#'): continue
-        cols = line.split('\t')
-
-        if cols[3] in latest.keys():
-            latest[cols[3]] += 1
-        else:
-            latest[cols[3]] = 1
-
-        ret.append(cols[3] + '_' + str(latest[cols[3]]))
-
-    for i in range(len(ret)):
-        x = ret[i]
-        if x.endswith('_1'):
-            if not x[:-2] + '_2' in ret:
-                ret[i] = x[:-2]
-
-    return ret, len(latest.keys())
 
 
 def get_input_options():

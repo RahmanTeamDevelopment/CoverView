@@ -9,38 +9,203 @@ import logging
 from cpython cimport array
 
 import cython
+import pysam
 cimport cython
 
 
 logger = logging.getLogger("coverview")
 
 
-def output_target_file_header(config, out_poor, out_json, out_targets, out_profiles):
-    if config['outputs']['regions']:
+class ProfilesOutput(object):
+    """
+    Data and functions needed for producing summary coverage output for
+    each base across a region.
+    """
+    def __init__(self, options, config):
+        pass
 
-        targetheader = ['Region', 'Chromosome', 'Start_position', 'End_position']
+    def __del__(self):
+        pass
 
-        if config['transcript']['regions'] and not config['transcript_db'] is None:
-            targetheader.extend(
+    def write_header(self):
+        pass
+
+    def compute_coverage_metric(self, coverage_data):
+        pass
+
+
+class RegionsOutput(object):
+    """
+    Data and functions needed for producing summary coverage output for
+    targeted regions.
+    """
+    def __init__(self, options, config):
+        self.output_file = open(options.output + '_regions.txt', 'w')
+        self.config = config
+        self.options = options
+
+    def __del__(self):
+        self.out_targets.close()
+
+    def write_header(self):
+        header = ['Region', 'Chromosome', 'Start_position', 'End_position']
+
+        if self.config['transcript_db'] is not None:
+            header.extend(
                 ['Start_transcript', 'End_transcript']
             )
 
-        if not config['pass'] is None:
-            targetheader.append('Pass_or_fail')
+        if self.config['pass'] is not None:
+            header.append('Pass_or_fail')
 
-        targetheader.extend(
+        header.extend(
             ['RC', 'MEDCOV', 'MINCOV', 'MEDQCOV', 'MINQCOV', 'MAXFLMQ', 'MAXFLBQ']
         )
 
-        if config['direction']:
-            targetheader.extend(
+        if self.config['direction']:
+            header.extend(
                 ['MEDCOV+', 'MINCOV+', 'MEDQCOV+', 'MINQCOV+', 'MAXFLMQ+', 'MAXFLBQ+']
             )
-            targetheader.extend(
+            header.extend(
                 ['MEDCOV-', 'MINCOV-', 'MEDQCOV-', 'MINQCOV-', 'MAXFLMQ-', 'MAXFLBQ-']
             )
 
-        out_targets.write('#' + '\t'.join(targetheader) + '\n')
+        self.output_file.write('#' + '\t'.join(header) + '\n')
+
+    def compute_coverage_metric(self, coverage_data):
+        coverage_data['Summary'] = self.compute_summaries_of_region_coverage(
+            coverage_data['Profiles']
+        )
+
+        if self.config['pass'] is not None:
+            coverage_data['PASS'] = self.targetPASS(coverage_data)
+        else:
+            coverage_data['PASS'] = True
+
+        if self.config['outputs']['gui']:
+            coverage_data['Ref'] = self.getReferenceSequence(chrom, begin, end)
+        else:
+            coverage_data['Ref'] = ''
+
+
+class GuiOutput(object):
+    """
+    Encapsulates all data and functions needed or producing the JSON output for
+    the graphical interface.
+    """
+    def __init__(self, options, config):
+        self.output_file = open(options.output  + '_gui/data/results.js', 'w')
+        self.ref_file = pysam.Fastafile(config["reference"])
+
+    def __del__(self):
+        self.output_file.write(']')
+        self.output_file.close()
+        self.ref_file.close()
+
+    def write_header(self):
+        self.output_file.write('function readData() {\n')
+        self.output_file.write('\tdata={\"targets\":[')
+
+    def finalize_output(self, options, chromdata, config,
+                        numOfTargets, failedtargets, uniqueIDs, uniqueids):
+
+        newchromsres = []
+
+        others = {
+            'CHROM': '...',
+            'RC': 0,
+            'RCIN': 0,
+            'RCOUT': 0
+        }
+
+        chrnames = [
+            '1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
+            '11', '12', '13', '14', '15', '16', '17', '18', '19',
+            '20', '21', '22', 'X', 'Y', 'chr1', 'chr2', 'chr3', 'chr4',
+            'chr5', 'chr6', 'chr7', 'chr8', 'chr9', 'chr10', 'chr11',
+            'chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 'chr18',
+            'chr19', 'chr20', 'chr21', 'chr22', 'chrX', 'chrY'
+        ]
+
+        chromsres = chromdata['Chroms']
+
+        for x in chromsres:
+            if x['CHROM'] in chrnames:
+                newchromsres.append(x)
+            else:
+                others['RC'] += x['RC']
+                others['RCIN'] += x['RCIN']
+                others['RCOUT'] += x['RCOUT']
+
+        newchromsres.append(others)
+        chromdata['Chroms'] = newchromsres
+
+        self.output_file.write(
+            ',\"chromdata\":' + json.dumps(chromdata, separators=(',', ':'))
+        )
+
+        infn = options.input
+
+        if '/' in infn:
+            infn = infn[infn.rfind('/') + 1:]
+
+        if len(infn) > 27:
+            infn = infn[:27] + '...bam'
+
+        self.output_file.write(',\"input\":\"' + infn + '\"')
+        self.output_file.write(',\"direction\":' + str(config['direction']).lower())
+        self.output_file.write(',\"duplicates\":' + str(config['duplicates']).lower())
+        self.output_file.write(',\"ntargets\":' + str(numOfTargets))
+        self.output_file.write(',\"unique\":' + str(uniqueIDs))
+        self.output_file.write(',\"nfailed\":' + str(failedtargets))
+        self.output_file.write(',\"uniquefailed\":' + str(len(uniqueids)))
+
+        bedfn = options.bedfile
+
+        if '/' in bedfn:
+            bedfn = bedfn[bedfn.rfind('/') + 1:]
+
+        if len(bedfn) > 20:
+            bedfn = bedfn[:20] + '...bed'
+
+        self.output_file.write(',\"bedfile\":\"' + bedfn + '\"')
+
+        now = datetime.datetime.now()
+        self.output_file.write(',\"date\":\"' + now.strftime("%d-%m-%Y, %H:%M") + "\"")
+
+        passdef = []
+
+        for k, v in config['pass'].iteritems():
+            [met,minmax] = k.split('_')
+            if minmax == 'MIN':
+                passdef.append(met + '>' + str(v))
+            else:
+                passdef.append(met + '<' + str(v))
+
+        passdefstr = ', '.join(passdef)
+        self.output_file.write(',\"passdef\":\"' + passdefstr + '\"')
+
+        passmets = dict()
+
+        for k, v in config['pass'].iteritems():
+            [met, minmax] = k.split('_')
+            if met.endswith('QCOV'):
+                passmets['QCOV'] = v
+            elif met.endswith('COV'):
+                passmets['COV'] = v
+            elif met.endswith('FLMQ'):
+                passmets['FLMQ'] = v
+            elif met.endswith('FLBQ'):
+                passmets['FLBQ'] = v
+            passmets[met] = v
+
+        self.output_file.write(',\"passmets\":' + json.dumps(passmets, separators=(',', ':')))
+        self.output_file.write('}\n')
+        self.output_file.write('\treturn data\n')
+        self.output_file.write('}\n')
+
+
+def output_target_file_header(config, out_poor, out_json, out_targets, out_profiles):
 
     if config['outputs']['profiles']:
         profheader = ['Chromosome', 'Position']
@@ -72,25 +237,7 @@ def output_target_file_header(config, out_poor, out_json, out_targets, out_profi
             out_poor.write('#' + '\t'.join(poorheader) + '\n')
 
         if config['outputs']['gui']:
-            out_json.write('function readData() {\n')
-            out_json.write('\tdata={\"targets\":[')
 
-
-def print_config_info(options, config, number_of_targets):
-    logger.info('Configuration options:')
-    logger.info(options)
-    logger.info(config)
-    logger.info(number_of_targets)
-
-
-def printInfo_minimal(options):
-    print 'Input, output and settings:'
-    print "--------------------------------------------------------------------------------------"
-    print "Input file name:        " + options.input
-    print ''
-    print "Output formats:         _summary"
-    print "Output files prefix:    " + options.output
-    print "--------------------------------------------------------------------------------------"
 
 
 def output_summary(options, chromdata):
@@ -134,107 +281,6 @@ def output_summary_minimal(options, chromdata):
         out_summary.write(record + '\n')
 
     out_summary.close()
-
-
-def finalizeJSONOutput(options, chromdata, config,
-                       numOfTargets, failedtargets, uniqueIDs, uniqueids):
-
-    out_json = open(options.output + '_gui/data/results.js', 'a')
-    newchromsres = []
-
-    others = {
-        'CHROM': '...',
-        'RC': 0,
-        'RCIN': 0,
-        'RCOUT': 0
-    }
-
-    chrnames = [
-        '1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
-        '11', '12', '13', '14', '15', '16', '17', '18', '19',
-        '20', '21', '22', 'X', 'Y', 'chr1', 'chr2', 'chr3', 'chr4',
-        'chr5', 'chr6', 'chr7', 'chr8', 'chr9', 'chr10', 'chr11',
-        'chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 'chr18',
-        'chr19', 'chr20', 'chr21', 'chr22', 'chrX', 'chrY'
-    ]
-
-    chromsres = chromdata['Chroms']
-
-    for x in chromsres:
-        if x['CHROM'] in chrnames:
-            newchromsres.append(x)
-        else:
-            others['RC'] += x['RC']
-            others['RCIN'] += x['RCIN']
-            others['RCOUT'] += x['RCOUT']
-
-    newchromsres.append(others)
-    chromdata['Chroms'] = newchromsres
-
-    out_json.write(
-        ',\"chromdata\":' + json.dumps(chromdata, separators=(',', ':'))
-    )
-
-    infn = options.input
-
-    if '/' in infn:
-        infn = infn[infn.rfind('/') + 1:]
-
-    if len(infn) > 27:
-        infn = infn[:27] + '...bam'
-
-    out_json.write(',\"input\":\"' + infn + '\"')
-    out_json.write(',\"direction\":' + str(config['direction']).lower())
-    out_json.write(',\"duplicates\":' + str(config['duplicates']).lower())
-    out_json.write(',\"ntargets\":' + str(numOfTargets))
-    out_json.write(',\"unique\":' + str(uniqueIDs))
-    out_json.write(',\"nfailed\":' + str(failedtargets))
-    out_json.write(',\"uniquefailed\":' + str(len(uniqueids)))
-
-    bedfn = options.bedfile
-
-    if '/' in bedfn:
-        bedfn = bedfn[bedfn.rfind('/') + 1:]
-
-    if len(bedfn) > 20:
-        bedfn = bedfn[:20] + '...bed'
-
-    out_json.write(',\"bedfile\":\"' + bedfn + '\"')
-
-    now = datetime.datetime.now()
-    out_json.write(',\"date\":\"' + now.strftime("%d-%m-%Y, %H:%M") + "\"")
-
-    passdef = []
-
-    for k, v in config['pass'].iteritems():
-        [met,minmax] = k.split('_')
-        if minmax == 'MIN':
-            passdef.append(met + '>' + str(v))
-        else:
-            passdef.append(met + '<' + str(v))
-
-    passdefstr = ', '.join(passdef)
-    out_json.write(',\"passdef\":\"' + passdefstr + '\"')
-
-    passmets = dict()
-
-    for k, v in config['pass'].iteritems():
-        [met, minmax] = k.split('_')
-        if met.endswith('QCOV'):
-            passmets['QCOV'] = v
-        elif met.endswith('COV'):
-            passmets['COV'] = v
-        elif met.endswith('FLMQ'):
-            passmets['FLMQ'] = v
-        elif met.endswith('FLBQ'):
-            passmets['FLBQ'] = v
-        passmets[met] = v
-
-    out_json.write(',\"passmets\":' + json.dumps(passmets, separators=(',', ':')))
-    out_json.write('}\n')
-    out_json.write('\treturn data\n')
-    out_json.write('}\n')
-    out_json.close()
 
 
 # def output_profiles_with_transcript_coordinates(config, target, enstdb, output_file):

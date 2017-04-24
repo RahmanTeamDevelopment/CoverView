@@ -347,11 +347,11 @@ def get_profiles(bam_file, cluster, config):
     cluster_begin = cluster[0][1]
     cluster_end = cluster[-1][2]
 
-    #logger.info("Processing cluster of regions spanning {}:{}-{}".format(
-    #    cluster_chrom, cluster_begin, cluster_end
-    #))
+    logger.info("Processing cluster of regions spanning {}:{}-{}".format(
+        cluster_chrom, cluster_begin, cluster_end
+    ))
 
-    #logger.info("Loading reads into in-memory array")
+    logger.debug("Loading reads into in-memory array")
     load_reads_into_array(read_array, bam_file, cluster_chrom, cluster_begin, cluster_end)
 
     for chrom, begin, end, region, key in cluster:
@@ -373,7 +373,7 @@ def get_profiles(bam_file, cluster, config):
             target['Profiles'] = coverage_calc.get_coverage_summary()
             yield target
 
-    #logger.info("Finished processing cluster")
+    logger.debug("Finished processing cluster")
 
 
 def calculateChromData(samfile, ontarget):
