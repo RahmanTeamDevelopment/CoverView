@@ -4,12 +4,12 @@ from __future__ import division
 
 from optparse import OptionParser
 
+import json
 import logging
 import numpy
 import os
 import pysam
 import shutil
-import sys
 import warnings
 
 from coverview import transcript
@@ -336,22 +336,25 @@ class SingleJob(object):
         self.out_targets.write('\t'.join(record) + '\n')
 
 
-def defaultConfigs(config):
-    if not 'duplicates' in config.keys(): config['duplicates'] = True
-    if not 'outputs' in config.keys(): config['outputs'] = {'regions': True,
-                                                            'profiles': True, 'gui': False}
-    if not 'regions' in config['outputs'].keys(): config['outputs']['regions'] = True
-    if not 'profiles' in config['outputs'].keys(): config['outputs']['profiles'] = True
-    if not 'gui' in config['outputs'].keys(): config['outputs']['gui'] = False
-    if not 'low_bq' in config.keys(): config['low_bq'] = 10
-    if not 'low_mq' in config.keys(): config['low_mq'] = 20
-    if not 'only_fail_profiles' in config.keys(): config['only_fail_profiles'] = False
-    if not 'transcript_db' in config.keys(): config['transcript_db'] = None
-    if not 'pass' in config.keys() or len(config['pass']) == 0: config['pass'] = None
-    if not 'transcript' in config.keys(): config['transcript'] = {'regions': True, 'profiles': True}
-    if not 'regions' in config['transcript'].keys(): config['transcript']['regions'] = True
-    if not 'profiles' in config['transcript'].keys(): config['transcript']['profiles'] = True
-    if not 'direction' in config.keys(): config['direction'] = False
+def get_default_config():
+    return {
+        "duplicates": True,
+        "outputs": {
+            "regions": True,
+            "profiles": True,
+            "gui": False,
+        },
+        "transcript": {
+            "regions": True,
+            "profiles": True
+        },
+        "low_bq": 10,
+        "low_mq": 20,
+        "only_fail_profiles": False,
+        "transcript_db": None,
+        "pass": None,
+        "direction": False
+    }
 
 
 def makeNames(inputf):
@@ -419,13 +422,14 @@ def get_input_options():
     )
 
     options, args = parser.parse_args()
-    config = {}
+    config = get_default_config()
 
     if options.config is not None:
         with open(options.config) as config_file:
-            config = json.load(config_file)
+            input_config = json.load(config_file)
+            for key,value in input_config.iteritems():
+                config[key] = value
 
-    defaultConfigs(config)
     return options, config
 
 
@@ -449,58 +453,57 @@ if __name__ == "__main__":
 
     options, config = get_input_options()
 
+    logger.info("Configuration options")
     logger.info(options)
     logger.info(config)
 
     if options.bedfile is None:
         logger.info("No input BED file specified. Computing minimal coverage information")
-        output.printInfo_minimal(options)
         samfile = pysam.Samfile(options.input, "rb")
         chromdata = calculateChromdata_minimal(samfile, options)
         output.output_summary_minimal(options, chromdata)
         logger.info('CoverView v1.2.0 succesfully finished')
-        quit()
+    else:
+        if config['outputs']['gui']:
+            dir = options.output + '_gui'
 
-    if config['outputs']['gui']:
-        dir = options.output + '_gui'
+            if os.path.exists(dir):
+                shutil.rmtree(dir)
 
-        if os.path.exists(dir):
-            shutil.rmtree(dir)
+            os.makedirs(dir)
+            os.makedirs(dir+'/data')
+            cvdir = os.path.dirname(os.path.realpath(__file__))
+            shutil.copy(cvdir+'/gui.html', dir+'/'+options.output+'_coverview.html')
+            shutil.copytree(cvdir+'/lib', dir+'/lib')
 
-        os.makedirs(dir)
-        os.makedirs(dir+'/data')
-        cvdir = os.path.dirname(os.path.realpath(__file__))
-        shutil.copy(cvdir+'/gui.html', dir+'/'+options.output+'_coverview.html')
-        shutil.copytree(cvdir+'/lib', dir+'/lib')
+        names, uniqueIDs = makeNames(options.bedfile)
+        number_of_targets = len(names)
+        samplename = options.input[:options.input.rfind('.bam')]
+        logger.info("There are {} target regions".format(number_of_targets))
 
-    names, uniqueIDs = makeNames(options.bedfile)
-    numOfTargets = len(names)
-    samplename = options.input[:options.input.rfind('.bam')]
-    output.printInfo(options, config, numOfTargets)
+        process = SingleJob(options, config)
+        process.run()
 
-    process = SingleJob(options, config)
-    process.run()
+        ontarget = process.num_reads_on_target
 
-    ontarget = process.num_reads_on_target
+        ids_of_failed_targets = process.ids_of_failed_targets
+        num_failed_targets = len(ids_of_failed_targets)
 
-    ids_of_failed_targets = process.ids_of_failed_targets
-    num_failed_targets = len(ids_of_failed_targets)
+        logger.info("{} regions failed the coverage thresholds".format(num_failed_targets))
 
-    logger.info("{} regions failed the coverage thresholds".format(num_failed_targets))
+        samfile = pysam.Samfile(options.input, "rb")
+        chromdata = calculateChromData(samfile, ontarget)
+        output.output_summary(options, chromdata)
 
-    samfile = pysam.Samfile(options.input, "rb")
-    chromdata = calculateChromData(samfile, ontarget)
-    output.output_summary(options, chromdata)
+        if config['outputs']['gui']:
+            output.finalizeJSONOutput(
+                options,
+                chromdata,
+                config,
+                number_of_targets,
+                num_failed_targets,
+                uniqueIDs,
+                ids_of_failed_targets
+            )
 
-    if config['outputs']['gui']:
-        output.finalizeJSONOutput(
-            options,
-            chromdata,
-            config,
-            numOfTargets,
-            num_failed_targets,
-            uniqueIDs,
-            ids_of_failed_targets
-        )
-
-    logger.info("CoverView v1.2.0 succesfully finished")
+        logger.info("CoverView v1.2.0 succesfully finished")

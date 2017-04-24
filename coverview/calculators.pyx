@@ -103,7 +103,11 @@ cdef class SimpleCoverageCalculator(object):
         cdef int bq_cutoff = self.bq_cutoff
         cdef int mq_cutoff = self.mq_cutoff
         cdef long* COV = self.COV.data.as_longs
+        cdef long* COV_f = self.COV_f.data.as_longs
+        cdef long* COV_r = self.COV_r.data.as_longs
         cdef long* QCOV = self.QCOV.data.as_longs
+        cdef long* QCOV_f = self.QCOV_f.data.as_longs
+        cdef long* QCOV_r = self.QCOV_r.data.as_longs
         cdef int index
         cdef int base_quality
         cdef int mapping_quality
@@ -163,25 +167,25 @@ cdef class SimpleCoverageCalculator(object):
 
                             self.bq_hists.add_data(offset, base_quality)
                             self.mq_hists.add_data(offset, mapping_quality)
-                            self.COV[offset] += 1
+                            COV[offset] += 1
 
                             if is_forward_read:
                                 self.bq_hists_f.add_data(offset, base_quality)
                                 self.mq_hists_f.add_data(offset, mapping_quality)
-                                self.COV_f[offset] += 1
+                                COV_f[offset] += 1
                             else:
                                 self.bq_hists_r.add_data(offset, base_quality)
                                 self.mq_hists_r.add_data(offset, mapping_quality)
-                                self.COV_r[offset] += 1
+                                COV_r[offset] += 1
 
 
                             if mapping_quality >= mq_cutoff and base_quality >= bq_cutoff:
-                                self.QCOV[offset] += 1
+                                QCOV[offset] += 1
 
                                 if is_forward_read:
-                                    self.QCOV_f[offset] += 1
+                                    QCOV_f[offset] += 1
                                 else:
-                                    self.QCOV_r[offset] += 1
+                                    QCOV_r[offset] += 1
 
                     pos += l
                     index += l
@@ -190,20 +194,20 @@ cdef class SimpleCoverageCalculator(object):
                     for i from pos <= i < pos + l:
                         if begin < i <= end:
                             offset = i - (begin + 1)
-                            self.COV[offset] += 1
+                            COV[offset] += 1
 
                             if is_forward_read:
-                                self.COV_f[offset] += 1
+                                COV_f[offset] += 1
                             else:
-                                self.COV_r[offset] += 1
+                                COV_r[offset] += 1
 
                             if mapping_quality >= mq_cutoff:
-                                self.QCOV[offset] += 1
+                                QCOV[offset] += 1
 
                                 if is_forward_read:
-                                    self.QCOV_f[offset] += 1
+                                    QCOV_f[offset] += 1
                                 else:
-                                    self.QCOV_r[offset] += 1
+                                    QCOV_r[offset] += 1
                     pos += l
             reads_start += 1
 
@@ -343,11 +347,11 @@ def get_profiles(bam_file, cluster, config):
     cluster_begin = cluster[0][1]
     cluster_end = cluster[-1][2]
 
-    logger.info("Processing cluster of regions spanning {}:{}-{}".format(
-        cluster_chrom, cluster_begin, cluster_end
-    ))
+    #logger.info("Processing cluster of regions spanning {}:{}-{}".format(
+    #    cluster_chrom, cluster_begin, cluster_end
+    #))
 
-    logger.info("Loading reads into in-memory array")
+    #logger.info("Loading reads into in-memory array")
     load_reads_into_array(read_array, bam_file, cluster_chrom, cluster_begin, cluster_end)
 
     for chrom, begin, end, region, key in cluster:
@@ -369,7 +373,7 @@ def get_profiles(bam_file, cluster, config):
             target['Profiles'] = coverage_calc.get_coverage_summary()
             yield target
 
-    logger.info("Finished processing cluster")
+    #logger.info("Finished processing cluster")
 
 
 def calculateChromData(samfile, ontarget):

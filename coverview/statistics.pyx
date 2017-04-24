@@ -1,11 +1,15 @@
+# cython: profile=False
+
 """
 Simple statistics utilities for dealing with coverage and read quality
-data
+data.
+
+N.B. Profiling is disabled for this module. These are all small and highly-optimised 
+functions. Profiling results are misleading because the overhead of profiling is significantly
+greater than the cost of the function call
 """
 from __future__ import division
 
-import cython
-cimport cython
 
 cdef extern from "stdlib.h":
     void free(void *)
@@ -40,7 +44,6 @@ cdef class QualityHistogramArray:
         free(self.data)
         free(self.n_data_points)
 
-    @cython.profile(False)
     cdef void add_data(self, int index, int quality_score):
         self.n_data_points[index] += 1
         self.data[index][quality_score] += 1

@@ -8,6 +8,9 @@ import logging
 
 from cpython cimport array
 
+import cython
+cimport cython
+
 
 logger = logging.getLogger("coverview")
 
@@ -73,56 +76,11 @@ def output_target_file_header(config, out_poor, out_json, out_targets, out_profi
             out_json.write('\tdata={\"targets\":[')
 
 
-def printInfo(options, config, numOfTargets):
-    targetstxt = ' (' + str(numOfTargets) + ' regions)'
-    print 'Input, output and settings:'
-    print "--------------------------------------------------------------------------------------"
-
-    if not options.config is None:
-        print "Configuration file:     " + options.config
-    else:
-        print "Configuration file:     using default settings"
-
-    print "Input file name:        " + options.input
-    print "BED file name:          " + options.bedfile + targetstxt
-    print ''
-
-    if config['transcript_db'] is not None:
-        if  (config['outputs']['regions'] and config['transcript']['regions']) or (config['outputs']['profiles'] and config['transcript']['profiles']):
-            print "Transcript db file:     " + config['transcript_db']
-            print ''
-
-    formats = 'summary'
-    if config['outputs']['regions']: formats += ', regions'
-    if config['outputs']['profiles']:
-        if config['only_fail_profiles']:
-            formats += ', profiles (failed regions)'
-        else:
-            formats += ', profiles (all regions)'
-    if config['transcript_db'] is not None and config['outputs']['profiles']:
-        formats += ', poor'
-    if config['outputs']['gui']: formats += ', GUI'
-    print "Output formats:         " + formats
-    print "Output files prefix:    " + options.output
-    print ''
-    if config['duplicates']:
-        print "Duplicate reads:        Included"
-    else:
-        print "Duplicate reads:        Excluded"
-    if config['direction']:
-        print  "Directional metrics:    Outputted"
-    else:
-        print  "Directional metrics:    Not outputted"
-    if config['outputs']['regions'] or config['outputs']['profiles']:
-        print "Mapping quality cutoff: " + str(config['low_mq'])
-        print "Base quality cutoff:    " + str(config['low_bq'])
-    if not config['pass'] is None and (config['outputs']['regions'] or config['outputs']['profiles']):
-        print ''
-        params = []
-        for k, v in config['pass'].iteritems():
-            params.append(str(k) + '=' + str(v))
-        print "Region pass parameters: " + '; '.join(params)
-    print "--------------------------------------------------------------------------------------"
+def print_config_info(options, config, number_of_targets):
+    logger.info('Configuration options:')
+    logger.info(options)
+    logger.info(config)
+    logger.info(number_of_targets)
 
 
 def printInfo_minimal(options):
@@ -423,6 +381,7 @@ def finalizeJSONOutput(options, chromdata, config,
 #                 output_file.write('\t'.join(record) + '\n')
 
 
+@cython.profile(False)
 cdef bytes format_output_line(bytes chrom,
                               int start_pos,
                               int cov,
