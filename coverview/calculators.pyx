@@ -7,7 +7,6 @@ from __future__ import division
 from cpython cimport array
 from libc.stdint cimport uint32_t, uint64_t, uint8_t
 
-import pysam
 from pysam.libcalignmentfile cimport IteratorRowRegion
 from pysam.libcalignmentfile cimport AlignmentFile, AlignedSegment, bam1_t, BAM_CIGAR_MASK,\
     BAM_CIGAR_SHIFT, BAM_CINS, BAM_CSOFT_CLIP, BAM_CREF_SKIP, BAM_CMATCH, BAM_CDEL, BAM_FDUP,\
@@ -17,7 +16,6 @@ from coverview.statistics cimport QualityHistogramArray
 from coverview.reads cimport ReadArray
 
 import logging
-import sys
 
 
 cdef extern from "hts.h":
@@ -35,6 +33,22 @@ cdef extern from "sam.h":
 
 
 logger = logging.getLogger("coverview")
+
+
+def compute_coverage_metric(self, coverage_data):
+    coverage_data['Summary'] = self.compute_summaries_of_region_coverage(
+        coverage_data['Profiles']
+    )
+
+    if self.config['pass'] is not None:
+        coverage_data['PASS'] = self.targetPASS(coverage_data)
+    else:
+        coverage_data['PASS'] = True
+
+    if self.config['outputs']['gui']:
+        coverage_data['Ref'] = self.getReferenceSequence(chrom, begin, end)
+    else:
+        coverage_data['Ref'] = ''
 
 
 cdef class SimpleCoverageCalculator(object):
@@ -275,7 +289,7 @@ cdef class SimpleCoverageCalculator(object):
 
 def get_num_mapped_reads_covering_chromosome(bam_file, chrom):
     """
-    Return the total number of reads covering the specified chromsome
+    Return the total number of mapped reads covering the specified chromsome
     in the specified BAM file. This is an optimisation, which makes use of the
     index statistics in the BAM index, which record the nunmber of alignments. This is
     an O(1) operation rather than the O(N) operation of looping through all reads in the
@@ -289,6 +303,42 @@ def get_num_mapped_reads_covering_chromosome(bam_file, chrom):
 
     hts_idx_get_stat(index, tid, &n_mapped, &n_unmapped)
     return n_mapped
+
+
+def get_num_unmapped_reads_covering_chromosome(bam_file, chrom):
+    """
+    Return the total number of unmapped reads covering the specified chromsome
+    in the specified BAM file. This is an optimisation, which makes use of the
+    index statistics in the BAM index, which record the nunmber of alignments. This is
+    an O(1) operation rather than the O(N) operation of looping through all reads in the
+    file with read.tid == chromID.
+    """
+    cdef AlignmentFile the_file = bam_file
+    cdef hts_idx_t* index = the_file.index
+    cdef uint64_t n_mapped = 0
+    cdef uint64_t n_unmapped = 0
+    cdef int tid = the_file.get_tid(chrom)
+
+    hts_idx_get_stat(index, tid, &n_mapped, &n_unmapped)
+    return n_unmapped
+
+
+def get_total_num_reads_covering_chromosome(bam_file, chrom):
+    """
+    Return the total number of reads covering the specified chromsome
+    in the specified BAM file. This is an optimisation, which makes use of the
+    index statistics in the BAM index, which record the nunmber of alignments. This is
+    an O(1) operation rather than the O(N) operation of looping through all reads in the
+    file with read.tid == chromID.
+    """
+    cdef AlignmentFile the_file = bam_file
+    cdef hts_idx_t* index = the_file.index
+    cdef uint64_t n_mapped = 0
+    cdef uint64_t n_unmapped = 0
+    cdef int tid = the_file.get_tid(chrom)
+
+    hts_idx_get_stat(index, tid, &n_mapped, &n_unmapped)
+    return n_unmapped + n_mapped
 
 
 def get_valid_chromosome_name(chrom, bam_file):
@@ -376,96 +426,87 @@ def get_profiles(bam_file, cluster, config):
     logger.debug("Finished processing cluster")
 
 
-def calculateChromData(samfile, ontarget):
-    sys.stdout.write('\rFinalizing analysis ... 0.0%')
-    sys.stdout.flush()
+class ChromosomeCoverageCalculator(object):
+    """
+    Computes coverage metrics at the per-chromosome level
+    """
+    def __init__(self):
+        pass
 
-    chrom_lengths = samfile.lengths
-    total_reference_length = sum(chrom_lengths)
-    chroms = samfile.references
+    def compute_coverage():
+        pass
 
-    chromdata = dict()
-    chromsres = []
+
+def calculate_chromosome_coverage_metrics(bam_file, on_target):
+    logger.info("Calculating per-chromosome coverage metrics")
+
+    chromosomes = bam_file.references
+    chromosome_lengths = bam_file.lengths
+
+    number_of_reads_covering_chromosomes = []
+
+    total_reference_length = sum(chromosome_lengths)
     total_mapped_reads_in_bam = 0
-    allon = 0
-    alloff = 0
+    total_reads_in_bam = bam_file.mapped + bam_file.unmapped
+    total_on_target_reads = 0
+    total_off_target_reads = 0
 
-    chrom_lengths_processed_so_far = 0
+    for chrom, length in zip(chromosomes, chromosome_lengths):
 
-    for chrom,length in zip(chroms,chrom_lengths):
+        num_mapped_reads = get_num_mapped_reads_covering_chromosome(bam_file, chrom)
 
-        total = get_num_mapped_reads_covering_chromosome(samfile, chrom)
-        chrom_lengths_processed_so_far += length
-
-        if 'chr' + chrom in ontarget:
-            on = int(ontarget['chr' + chrom])
-            off = total - on
+        if chrom in on_target:
+            num_on_target_reads = on_target[chrom]
+            num_off_target_reads = num_mapped_reads - num_on_target_reads
         else:
-            on = 0
-            off = 0
+            num_on_target_reads = 0
+            num_off_target_reads = 0
 
-        chromsres.append({'CHROM': chrom, 'RC': total, 'RCIN': on, 'RCOUT': off})
-        total_mapped_reads_in_bam += total
-        allon += on
-        alloff += off
+        number_of_reads_covering_chromosomes.append({
+            'CHROM': chrom,
+            'RC': num_mapped_reads,
+            'RCIN': num_on_target_reads,
+            'RCOUT': num_off_target_reads
+        })
 
-        x = round(100 * chrom_lengths_processed_so_far / total_reference_length, 1)
-        sys.stdout.write('\rFinalizing analysis ... ' + str(x) + '%')
-        sys.stdout.flush()
+        total_mapped_reads_in_bam += num_mapped_reads
+        total_on_target_reads += num_on_target_reads
+        total_off_target_reads += num_off_target_reads
 
-    chromdata['Chroms'] = chromsres
-    chromdata['Mapped'] = {'RC': total_mapped_reads_in_bam, 'RCIN': allon, 'RCOUT': alloff}
+    logger.info("Finished calculating per-chromosome coverage metrics")
 
-    total_reads_in_bam = samfile.mapped + samfile.unmapped
-    chromdata['Total'] = total_reads_in_bam
-    chromdata['Unmapped'] = total_reads_in_bam - total_mapped_reads_in_bam
+    return {
+        "Chroms": number_of_reads_covering_chromosomes,
+        "Mapped": {
+            'RC': total_mapped_reads_in_bam,
+            'RCIN': total_on_target_reads,
+            'RCOUT': total_off_target_reads
+        },
+        "Total": total_reads_in_bam,
+        "Unmapped": total_reads_in_bam - total_mapped_reads_in_bam
+    }
 
-    sys.stdout.write('\rFinalizing analysis ... 100.0% - Done')
-    sys.stdout.flush()
-    print ''
 
-    return chromdata
+def calculate_minimal_chromosome_coverage_metrics(bam_file, options):
+    logger.info("Calculating minimal per-chromosome coverage metrics")
 
+    number_of_reads_covering_chromosomes = []
+    total_reads_in_bam = bam_file.mapped + bam_file.unmapped
+    total_mapped_reads_in_bam = bam_file.mapped
 
-def calculateChromdata_minimal(samfile, options):
-    print ''
-    # Initializing progress info
-    sys.stdout.write('\rRunning analysis ... 0.0%')
-    sys.stdout.flush()
+    for chrom in bam_file.references:
+        num_reads = get_total_num_reads_covering_chromosome(bam_file, chrom)
+        number_of_reads_covering_chromosomes.append({
+            'CHROM': chrom, 'RC': num_reads
+        })
 
-    chromdata = dict()
-    chroms = samfile.references
-    chromsres = []
-    alltotal = 0
+    logger.info("Finished calculating minimal per-chromosome coverage metrics")
 
-    i = 0
-    # Iterate through chromosomes
-    for chrom in chroms:
-        total = sum(1 for _ in samfile.fetch(chrom))
-        chromsres.append({'CHROM': chrom, 'RC': total})
-        alltotal += total
-
-        i += 1
-
-        # Updating progress info
-        x = round(100 * i / len(chroms), 1)
-        x = min(x, 100.0)
-        sys.stdout.write('\rRunning analysis ... ' + str(x) + '%')
-        sys.stdout.flush()
-
-    chromdata['Chroms'] = chromsres
-    chromdata['Mapped'] = {'RC': alltotal}
-
-    allreads = pysam.flagstat(options.input)
-    allreads = allreads[:allreads.find('+')]
-    allreads = int(allreads.strip())
-
-    chromdata['Total'] = allreads
-    chromdata['Unmapped'] = allreads - alltotal
-
-    # Finalizing progress info
-    sys.stdout.write('\rRunning analysis ... 100.0% - Done')
-    sys.stdout.flush()
-    print ''
-
-    return chromdata
+    return {
+        "Chrom": number_of_reads_covering_chromosomes,
+        "Mapped": {
+            "RC": total_mapped_reads_in_bam
+        },
+        "Total": total_reads_in_bam,
+        "Unmapped": total_reads_in_bam - total_mapped_reads_in_bam
+    }

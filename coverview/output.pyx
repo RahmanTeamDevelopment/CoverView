@@ -5,6 +5,7 @@ Format and write per-base coverage profile output
 import datetime
 import json
 import logging
+import transcript
 
 from cpython cimport array
 
@@ -16,13 +17,30 @@ cimport cython
 logger = logging.getLogger("coverview")
 
 
+def get_transcripts_overlapping_position(transcript_database, chrom, pos):
+    """
+    Returns a comma-separated list of the transcripts which overlap this base, and the coordinate of
+    the base within each transcript, in.
+    """
+    transcript_coordinates = transcript.getTranscriptCoordinates(transcript_database, chrom, pos)
+    transcripts = []
+
+    for key, value in transcript_coordinates.iteritems():
+        transcripts.append(key.geneSymbol + ':' + key.ENST + ':' + value)
+
+    return ','.join(transcripts)
+
+
 class ProfilesOutput(object):
     """
     Data and functions needed for producing summary coverage output for
     each base across a region.
     """
     def __init__(self, options, config):
-        pass
+        self.out_profiles = open(options.output + '_profiles.txt', 'w')
+
+        if not config['transcript_db'] is None:
+            self.out_poor = open(options.output + '_poor.txt', 'w')
 
     def __del__(self):
         pass
@@ -37,55 +55,151 @@ class ProfilesOutput(object):
 class RegionsOutput(object):
     """
     Data and functions needed for producing summary coverage output for
-    targeted regions.
+    targeted regions. There are several optional metrics, which will only be output
+    if the relevant configuration options are set.
     """
     def __init__(self, options, config):
         self.output_file = open(options.output + '_regions.txt', 'w')
         self.config = config
         self.options = options
 
+        if config['transcript_db'] is not None:
+            self.output_transcript_data = True
+        else:
+            self.output_transcript_data = False
+
+        if not self.config['pass'] is None:
+            self.output_region_pass_fail = True
+        else:
+            self.output_region_pass_fail = False
+
+        if self.config['direction']:
+            self.output_directional_coverage_information = True
+        else:
+            self.output_directional_coverage_information = False
+
     def __del__(self):
         self.out_targets.close()
 
     def write_header(self):
-        header = ['Region', 'Chromosome', 'Start_position', 'End_position']
+        """
+        Write the file header. This is done only once. The header has several
+        optional fields (e.g. for directional coverage summaries) which will only
+        be output if the relevant configuration parameters were set.
+        """
+        header = [
+            'Region',
+            'Chromosome',
+            'Start_position',
+            'End_position'
+        ]
 
-        if self.config['transcript_db'] is not None:
-            header.extend(
-                ['Start_transcript', 'End_transcript']
+        if self.output_transcript_data:
+            header.extend([
+                'Start_transcript',
+                'End_transcript'
+            ])
+
+        if self.output_region_pass_fail:
+            header.append(
+                'Pass_or_fail'
             )
 
-        if self.config['pass'] is not None:
-            header.append('Pass_or_fail')
+        header.extend([
+            'RC',
+            'MEDCOV',
+            'MINCOV',
+            'MEDQCOV',
+            'MINQCOV',
+            'MAXFLMQ',
+            'MAXFLBQ'
+        ])
 
-        header.extend(
-            ['RC', 'MEDCOV', 'MINCOV', 'MEDQCOV', 'MINQCOV', 'MAXFLMQ', 'MAXFLBQ']
+        if self.output_directional_coverage_information:
+            header.extend([
+                'MEDCOV+',
+                'MINCOV+',
+                'MEDQCOV+',
+                'MINQCOV+',
+                'MAXFLMQ+',
+                'MAXFLBQ+',
+                'MEDCOV-',
+                'MINCOV-',
+                'MEDQCOV-',
+                'MINQCOV-',
+                'MAXFLMQ-',
+                'MAXFLBQ-'
+            ])
+
+        self.output_file.write(
+            '#' + '\t'.join(header) + '\n'
         )
 
-        if self.config['direction']:
-            header.extend(
-                ['MEDCOV+', 'MINCOV+', 'MEDQCOV+', 'MINQCOV+', 'MAXFLMQ+', 'MAXFLBQ+']
-            )
-            header.extend(
-                ['MEDCOV-', 'MINCOV-', 'MEDQCOV-', 'MINQCOV-', 'MAXFLMQ-', 'MAXFLBQ-']
+    def write_output(self, coverage_data):
+
+        region_name = coverage_data['Name']
+        chrom = coverage_data['Chrom']
+        region_start = coverage_data['Start']
+        region_end = coverage_data['End']
+        coverage_summary = coverage_data['Summary']
+
+        output_record = [
+            region_name,
+            chrom,
+            region_start,
+            region_end
+        ]
+
+        if self.output_transcript_data:
+
+            transcripts_overlapping_start = get_transcripts_overlapping_position(
+                self.enstdb, chrom, region_start
             )
 
-        self.output_file.write('#' + '\t'.join(header) + '\n')
+            transcripts_overlapping_end = get_transcripts_overlapping_position(
+                self.entsdb, chrom, region_end
+            )
 
-    def compute_coverage_metric(self, coverage_data):
-        coverage_data['Summary'] = self.compute_summaries_of_region_coverage(
-            coverage_data['Profiles']
+            output_record.extend([
+                transcripts_overlapping_start,
+                transcripts_overlapping_end
+            ])
+
+        if self.output_region_pass_fail:
+            if coverage_data['PASS']:
+                output_record.append('PASS')
+            else:
+                output_record.append('FAIL')
+
+        output_record.extend([
+            coverage_data['Profiles']['RC'],
+            coverage_summary['MEDCOV'],
+            coverage_summary['MINCOV'],
+            coverage_summary['MEDQCOV'],
+            coverage_summary['MINQCOV'],
+            coverage_summary['MAXFLMQ'],
+            coverage_summary['MAXFLBQ']
+        ])
+
+        if self.output_directional_coverage_information:
+            output_record.extend([
+                coverage_summary['MEDCOV_f'],
+                coverage_summary['MINCOV_f'],
+                coverage_summary['MEDQCOV_f'],
+                coverage_summary['MINQCOV_f'],
+                coverage_summary['MAXFLMQ_f'],
+                coverage_summary['MAXFLBQ_f'],
+                coverage_summary['MEDCOV_r'],
+                coverage_summary['MINCOV_r'],
+                coverage_summary['MEDQCOV_r'],
+                coverage_summary['MINQCOV_r'],
+                coverage_summary['MAXFLMQ_r'],
+                coverage_summary['MAXFLBQ_r']
+            ])
+
+        self.out_targets.write(
+            ('\t'.join(str(x) for x in output_record) + '\n').replace("nan", ".")
         )
-
-        if self.config['pass'] is not None:
-            coverage_data['PASS'] = self.targetPASS(coverage_data)
-        else:
-            coverage_data['PASS'] = True
-
-        if self.config['outputs']['gui']:
-            coverage_data['Ref'] = self.getReferenceSequence(chrom, begin, end)
-        else:
-            coverage_data['Ref'] = ''
 
 
 class GuiOutput(object):

@@ -1,12 +1,7 @@
-import json
 from collections import OrderedDict
 
 
-#######################################################################################################################
-
-# Class representing a single Ensembl transcript
 class Transcript(object):
-    # Constructor
     def __init__(self, line):
         self.exons = []
         cols = line.split('\t')
@@ -25,7 +20,6 @@ class Transcript(object):
         for i in range(1, len(cols) - 11, 2):
             self.exons.append(Exon(int((i + 1) / 2), int(cols[10 + i]), int(cols[11 + i])))
 
-    # Getting basic information about the transcript
     def getInfo(self):
         if self.strand == 1:
             ret = '+/'
@@ -36,12 +30,9 @@ class Transcript(object):
         return ret + str(round((self.transcriptEnd - self.transcriptStart + 1) / 1000, 1)) + 'kb' + '/' + str(
             len(self.exons)) + '/' + str(round(cds / 1000, 1)) + 'kb'
 
-    # Getting the full coding sequence of the transcript
     def getCodingSequence(self, reference, variant):
         ret = ''
-        # Returning reference coding sequence (no variant)
         if variant is None:
-            # Iterating through exons and retrieving their reference sequences
             for exon in self.exons:
                 if self.strand == 1:
                     ret += reference.getReference(self.chrom, exon.start + 1, exon.end)
@@ -50,17 +41,14 @@ class Transcript(object):
             ret = ret[self.codingStart - 1:]
             return ret
 
-        # Returning coding sequence containing a variant
-        # Iterating through exons
         for exon in self.exons:
-            # CHecking if the variant is located within the exon
             if exon.start < variant.pos <= exon.end:
                 if self.strand == 1:
-                    ret += reference.getReference(self.chrom, exon.start + 1,
-                                                  variant.pos - 1) + variant.alt + reference.getReference(self.chrom,
-                                                                                                          variant.pos + len(
-                                                                                                              variant.ref),
-                                                                                                          exon.end)
+                    ret += reference.getReference(
+                        self.chrom, exon.start + 1,
+                        variant.pos - 1) + variant.alt + reference.getReference(self.chrom,
+                                                                                variant.pos + len(variant.ref),
+                                                                                exon.end)
                 else:
                     temp = Sequence(reference.getReference(self.chrom, exon.start + 1,
                                                            variant.pos - 1) + variant.alt + reference.getReference(
@@ -72,6 +60,7 @@ class Transcript(object):
                 ret += reference.getReference(self.chrom, exon.start + 1, exon.end)
             else:
                 ret += reference.getReference(self.chrom, exon.start + 1, exon.end).reverseComplement()
+
         # Remove 5' UTR
         ret = ret[self.codingStart - 1:]
         return ret
@@ -234,19 +223,13 @@ class Transcript(object):
                 prev = exon.start
 
 
-#######################################################################################################################
-
-# Class representing a single exon
 class Exon(object):
-    # Constructor
     def __init__(self, index, start, end):
         self.index = index
         self.start = start
         self.end = end
         self.length = end - start
 
-
-#######################################################################################################################
 
 def getTranscriptCoordinates(enstdb, chrom, pos):
     ret = OrderedDict()

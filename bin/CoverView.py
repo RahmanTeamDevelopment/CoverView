@@ -14,7 +14,8 @@ import warnings
 
 from coverview import transcript
 from coverview import output
-from coverview.calculators import calculateChromData, get_profiles
+from coverview.calculators import calculate_chromosome_coverage_metrics, get_profiles\
+    calculate_minimal_chromosome_coverage_metrics
 from coverview.utils import *
 
 logger = logging.getLogger("coverview")
@@ -35,11 +36,6 @@ class SingleJob(object):
 
         if not config['transcript_db'] is None:
             self.enstdb = pysam.Tabixfile(config['transcript_db'])
-
-        if config['outputs']['profiles']:
-            self.out_profiles = open(options.output + '_profiles.txt', 'w')
-            if not config['transcript_db'] is None:
-                self.out_poor = open(options.output + '_poor.txt', 'w')
 
         self.first = True
 
@@ -189,55 +185,87 @@ class SingleJob(object):
         self.out_json.write(json.dumps(target, separators=(',', ':')))
 
     def output_target(self, target):
+
         summary = target['Summary']
 
-        # Calculate transcript coordinates for the _regions output file
-        if self.config['transcript']['regions'] and not self.config['transcript_db'] is None:
-
-            transcoords_start = transcript.getTranscriptCoordinates(self.enstdb, target['Chrom'], target['Start'])
-            transcoords_end = transcript.getTranscriptCoordinates(self.enstdb, target['Chrom'], target['End'])
-
-            v = []
-
-            for key, value in transcoords_start.iteritems():
-                v.append(key.geneSymbol + ':' + key.ENST + ':' + value)
-
-            transcoordstr_start = ','.join(v)
-            v = []
-
-            for key, value in transcoords_end.iteritems():
-                v.append(key.geneSymbol + ':' + key.ENST + ':' + value)
-            transcoordstr_end = ','.join(v)
-
-        record = [target['Name'], target['Chrom'], str(target['Start']), str(target['End'])]
+        record = [
+            target['Name'],
+            target['Chrom'],
+            str(target['Start']),
+            str(target['End'])
+        ]
 
         if self.config['transcript']['regions'] and not self.config['transcript_db'] is None:
-            if not transcoordstr_start == '':
-                record.extend([transcoordstr_start, transcoordstr_end])
-            else:
-                record.extend(['.', '.'])
+
+            chrom = target['Chrom']
+            region_start = target['Start']
+            region_end = target['End']
+
+            transcripts_overlapping_start = get_transcripts_overlapping_position(
+                self.enstdb, chrom, region_start
+            )
+
+            transcripts_overlapping_end = get_transcripts_overlapping_position(
+                self.entsdb, chrom, region_end
+            )
+
+            record.extend([
+                transcripts_overlapping_start,
+                transcripts_overlapping_end
+            ])
 
         if not self.config['pass'] is None:
-            if target['PASS']: record.append('PASS')
-            else: record.append('FAIL')
+            if target['PASS']:
+                record.append('PASS')
+            else:
+                record.append('FAIL')
 
-        if str(summary['MAXFLMQ']) == 'nan': summary['MAXFLMQ'] = '.'
-        if str(summary['MAXFLBQ']) == 'nan': summary['MAXFLBQ'] = '.'
+        if str(summary['MAXFLMQ']) == 'nan':
+            summary['MAXFLMQ'] = '.'
 
-        record.extend([str(target['Profiles']['RC']), str(summary['MEDCOV']), str(summary['MINCOV']), str(summary['MEDQCOV']),
-                       str(summary['MINQCOV']), str(summary['MAXFLMQ']), str(summary['MAXFLBQ'])])
+        if str(summary['MAXFLBQ']) == 'nan':
+            summary['MAXFLBQ'] = '.'
+
+        record.extend([
+            str(target['Profiles']['RC']),
+            str(summary['MEDCOV']),
+            str(summary['MINCOV']),
+            str(summary['MEDQCOV']),
+            str(summary['MINQCOV']),
+            str(summary['MAXFLMQ']),
+            str(summary['MAXFLBQ'])
+        ])
 
         if self.config['direction']:
-            if str(summary['MAXFLMQ_f']) == 'nan': summary['MAXFLMQ_f'] = '.'
-            if str(summary['MAXFLBQ_f']) == 'nan': summary['MAXFLBQ_f'] = '.'
-            if str(summary['MAXFLMQ_r']) == 'nan': summary['MAXFLMQ_r'] = '.'
-            if str(summary['MAXFLBQ_r']) == 'nan': summary['MAXFLBQ_r'] = '.'
+            if str(summary['MAXFLMQ_f']) == 'nan':
+                summary['MAXFLMQ_f'] = '.'
 
-            record.extend([str(summary['MEDCOV_f']), str(summary['MINCOV_f']), str(summary['MEDQCOV_f']),
-                           str(summary['MINQCOV_f']), str(summary['MAXFLMQ_f']), str(summary['MAXFLBQ_f'])])
+            if str(summary['MAXFLBQ_f']) == 'nan':
+                summary['MAXFLBQ_f'] = '.'
 
-            record.extend([str(summary['MEDCOV_r']), str(summary['MINCOV_r']), str(summary['MEDQCOV_r']),
-                           str(summary['MINQCOV_r']), str(summary['MAXFLMQ_r']), str(summary['MAXFLBQ_r'])])
+            if str(summary['MAXFLMQ_r']) == 'nan':
+                summary['MAXFLMQ_r'] = '.'
+
+            if str(summary['MAXFLBQ_r']) == 'nan':
+                summary['MAXFLBQ_r'] = '.'
+
+            record.extend([
+                str(summary['MEDCOV_f']),
+                str(summary['MINCOV_f']),
+                str(summary['MEDQCOV_f']),
+                str(summary['MINQCOV_f']),
+                str(summary['MAXFLMQ_f']),
+                str(summary['MAXFLBQ_f'])
+            ])
+
+            record.extend([
+                str(summary['MEDCOV_r']),
+                str(summary['MINCOV_r']),
+                str(summary['MEDQCOV_r']),
+                str(summary['MINQCOV_r']),
+                str(summary['MAXFLMQ_r']),
+                str(summary['MAXFLBQ_r'])
+            ])
 
         self.out_targets.write('\t'.join(record) + '\n')
 
@@ -341,7 +369,7 @@ if __name__ == "__main__":
     if options.bedfile is None:
         logger.info("No input BED file specified. Computing minimal coverage information")
         samfile = pysam.Samfile(options.input, "rb")
-        chromdata = calculateChromdata_minimal(samfile, options)
+        chromdata = calculate_minimal_chromosome_coverage_metrics(samfile, options)
         output.output_summary_minimal(options, chromdata)
         logger.info('CoverView v1.2.0 succesfully finished')
     else:
@@ -373,7 +401,7 @@ if __name__ == "__main__":
         logger.info("{} regions failed the coverage thresholds".format(num_failed_targets))
 
         samfile = pysam.Samfile(options.input, "rb")
-        chromdata = calculateChromData(samfile, ontarget)
+        chromdata = calculate_chromosome_coverage_metrics(samfile, ontarget)
         output.output_summary(options, chromdata)
 
         if config['outputs']['gui']:
