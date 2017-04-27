@@ -2,6 +2,7 @@
 Format and write per-base coverage profile output
 """
 
+import csv
 import datetime
 import json
 import logging
@@ -353,49 +354,60 @@ def output_target_file_header(config, out_poor, out_json, out_targets, out_profi
         if config['outputs']['gui']:
 
 
+def output_chromosome_coverage_metrics(options, chromosome_coverage_metrics):
+    """
+    Write the per-chromosome coverage metrics to a tab-separated file    
+    """
+    num_mapped_reads_in_bam = chromosome_coverage_metrics['Mapped']
+    num_unmapped_reads_in_bam = chromosome_coverage_metrics['Unmapped']
+    num_total_reads_in_bam = chromosome_coverage_metrics['Total']
 
-def output_summary(options, chromdata):
-    out_summary = open(options.output + '_summary.txt', 'w')
-    out_summary.write('#CHROM\tRC\tRCIN\tRCOUT\n')
-    mapped = chromdata['Mapped']
-    unmapped = chromdata['Unmapped']
-    total = chromdata['Total']
-    out_summary.write('Total\t' + str(total) + '\t-\t-\n')
-    out_summary.write('Unmapped\t' + str(unmapped) + '\t-\t-\n')
-    record = 'Mapped' + '\t' + str(mapped['RC']) + '\t' + str(mapped['RCIN']) + '\t' + str(mapped['RCOUT'])
-    out_summary.write(record + '\n')
-    for i in range(len(chromdata['Chroms'])):
-        chromres = chromdata['Chroms'][i]
-        chrom = chromres['CHROM']
-        record = chrom + '\t' + str(chromres['RC']) + '\t' + str(chromres['RCIN']) + '\t' + str(chromres['RCOUT'])
-        out_summary.write(record + '\n')
-    out_summary.close()
+    with open(options.output + '_summary.txt', 'w') as output_file:
+        csv_writer = csv.writer(output_file, delim='\t')
+
+        csv_writer.writerows([
+            ["#CHROM", "RC", "RCIN", "RCOUT"],
+            ["Total", num_total_reads_in_bam, "-", "-"],
+            ["Unmapped", num_unmapped_reads_in_bam, "-", "-"]
+            ["Mapped", num_mapped_reads_in_bam["RC"], num_mapped_reads_in_bam["RCIN"], num_mapped_reads_in_bam["RCOUT"]]
+        ])
+
+        for coverage_metrics in chromosome_coverage_metrics['Chroms']:
+            chromosome = coverage_metrics['CHROM']
+
+            csv_writer.writerow([
+                chromosome,
+                coverage_metrics["RC"],
+                coverage_metrics["RCIN"],
+                coverage_metrics["RCOUT"]
+            ])
 
 
-def output_summary_minimal(options, chromdata):
-    out_summary = open(
-        options.output + '_summary.txt', 'w'
-    )
+def output_minimal_chromosome_coverage_metrics(options, chromosome_coverage_metrics):
+    """
+    Write the minimal (i.e. in/out counts for targeted regions) per-chromosome
+    coverage metrics to a tab-separated file    
+    """
+    num_mapped_reads_in_bam = chromosome_coverage_metrics['Mapped']
+    num_unmapped_reads_in_bam = chromosome_coverage_metrics['Unmapped']
+    num_total_reads_in_bam = chromosome_coverage_metrics['Total']
 
-    out_summary.write('#CHROM\tRC\n')
+    with open(options.output + '_summary.txt', 'w') as output_file:
+        csv_writer = csv.writer(output_file, delim='\t')
 
-    mapped = chromdata['Mapped']
-    unmapped = chromdata['Unmapped']
-    total = chromdata['Total']
+        csv_writer.writerows([
+            ["#CHROM", "RC"],
+            ["Total", num_total_reads_in_bam],
+            ["Unmapped", num_unmapped_reads_in_bam],
+            ["Mapped", num_mapped_reads_in_bam["RC"]]
+        ])
 
-    out_summary.write('Total\t' + str(total) + '\n')
-    out_summary.write('Unmapped\t' + str(unmapped) + '\n')
-    record = 'Mapped' + '\t' + str(mapped['RC'])
-    out_summary.write(record + '\n')
-
-    for i in range(len(chromdata['Chroms'])):
-        chromres = chromdata['Chroms'][i]
-        chrom = chromres['CHROM']
-        record = chrom + '\t' + str(chromres['RC'])
-        out_summary.write(record + '\n')
-
-    out_summary.close()
-
+        for coverage_metrics in chromosome_coverage_metrics['Chroms']:
+            chromosome = coverage_metrics['CHROM']
+            csv_writer.writerow([
+                chromosome,
+                coverage_metrics["RC"]
+            ])
 
 # def output_profiles_with_transcript_coordinates(config, target, enstdb, output_file):
 #     profiles = target['Profiles']

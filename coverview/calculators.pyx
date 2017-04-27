@@ -41,7 +41,7 @@ def compute_coverage_metric(self, coverage_data):
     )
 
     if self.config['pass'] is not None:
-        coverage_data['PASS'] = self.targetPASS(coverage_data)
+        coverage_data['PASS'] = self.does_region_pass_coverage_thresholds(coverage_data)
     else:
         coverage_data['PASS'] = True
 

@@ -39,14 +39,26 @@ class SingleJob(object):
 
         self.first = True
 
-    def targetPASS(self, target):
-        summary = target['Summary']
+    def does_region_pass_coverage_thresholds(self, target):
+        """
+        Returns true if the specified region passes all criteria. The thresholds
+        are specified in a configuration file as a dictionary where the keys are
+        a string of metric name and either MIN or MAX separated by an underscore, e.g.
+        MEDQCOV_MIN and the values are the thresholds.
+        """
+        region_coverage_summary = target['Summary']
+
         for key, value in self.config['pass'].iteritems():
-            [metrics, minmax] = key.split('_')
-            if minmax == 'MIN' and summary[str(metrics)] < float(value):
+            metric_name, min_or_max = key.split('_')
+            metric_value = region_coverage_summary[metric_name]
+            threshold = float(value)
+
+            if min_or_max == 'MIN' and metric_value < threshold:
                 return False
-            if minmax == 'MAX' and summary[str(metrics)] > float(value):
+
+            if min_or_max == 'MAX' and metric_value > threshold:
                 return False
+
         return True
 
     def compute_summaries_of_region_coverage(self, profile):
@@ -130,23 +142,10 @@ class SingleJob(object):
         logger.info("Data was processed in {} clusters".format(num_clusters))
 
     def getReferenceSequence(self, chrom, start, end):
-        goodchrom = chrom
-        if not goodchrom in self.reffile.references:
-            goodchrom = 'chr' + chrom
-            if not goodchrom in self.reffile.references:
-                goodchrom = chrom[3:]
-                if not goodchrom in self.reffile.references:
-                    return None
+        start = max(1, start)
+        end = min(end, self.reffile.getReferenceLength(chrom))
+        seq = self.reffile.fetch(chrom, start - 1, end)
 
-        if start < 0:
-            start = 1
-
-        last = self.reffile.getReferenceLength(goodchrom)
-
-        if end > last:
-            end = last
-
-        seq = self.reffile.fetch(goodchrom, start - 1, end)
         return seq.upper()
 
     def output(self, target):
@@ -342,8 +341,11 @@ def get_input_options():
     return options, config
 
 
-if __name__ == "__main__":
-
+def configure_logging():
+    """
+    Currently just logging to the terminal stderr stream, but this could easily be extended
+    to produce a log file or e.g. email alerts.
+    """
     logger = logging.getLogger("coverview")
 
     formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(pathname)s - Line %(lineno)s - %(message)s")
@@ -355,22 +357,31 @@ if __name__ == "__main__":
     logger.addHandler(stream_handler)
     logger.setLevel(logging.DEBUG)
 
+    # TODO Andy -- I'm not 100% sure why this is necessary.
     numpy.seterr(all='ignore')
     warnings.simplefilter("ignore", RuntimeWarning)
 
     logger.info('CoverView v1.2.0 started running')
 
-    options, config = get_input_options()
 
+if __name__ == "__main__":
+
+    configure_logging()
+    options, config = get_input_options()
     logger.info("Configuration options")
     logger.info(options)
     logger.info(config)
 
     if options.bedfile is None:
         logger.info("No input BED file specified. Computing minimal coverage information")
-        samfile = pysam.Samfile(options.input, "rb")
-        chromdata = calculate_minimal_chromosome_coverage_metrics(samfile, options)
-        output.output_summary_minimal(options, chromdata)
+        bam_file = pysam.Samfile(options.input, "rb")
+
+        chromdata = calculate_minimal_chromosome_coverage_metrics(
+            bam_file,
+            options
+        )
+
+        output.output_minimal_chromosome_coverage_metrics(options, chromdata)
         logger.info('CoverView v1.2.0 succesfully finished')
     else:
         if config['outputs']['gui']:
@@ -400,9 +411,9 @@ if __name__ == "__main__":
 
         logger.info("{} regions failed the coverage thresholds".format(num_failed_targets))
 
-        samfile = pysam.Samfile(options.input, "rb")
-        chromdata = calculate_chromosome_coverage_metrics(samfile, ontarget)
-        output.output_summary(options, chromdata)
+        bam_file = pysam.Samfile(options.input, "rb")
+        chromdata = calculate_chromosome_coverage_metrics(bam_file, ontarget)
+        output.output_chromosome_coverage_metrics(options, chromdata)
 
         if config['outputs']['gui']:
             output.finalizeJSONOutput(
