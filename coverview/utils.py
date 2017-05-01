@@ -2,6 +2,8 @@
 Assorted utility functions that don't belong anywhere else
 """
 
+from collections import defaultdict
+
 
 def min_or_nan(data):
     if len(data) == 0:
@@ -66,27 +68,35 @@ def get_clusters_of_regions_from_bed_file(bed_file_name, size_limit=100000):
     yield current_cluster
 
 
-def makeNames(inputf):
-    ret = []
-    latest = dict()
-    for line in open(inputf):
-        line = line.rstrip()
-        if line == '': continue
-        if line.startswith('#'): continue
-        cols = line.split('\t')
+def get_names_of_target_regions(input_file_name):
+    """
+    Reads a BED file of target regions and returns a list of target
+    names. If there are duplicated names (e.g. multiple exons for the same
+    gene with the gene name as the target name) then a number is appended to the
+    name e.g. BRCA1_1, BRCA1_2 etc.
+    """
+    target_names = []
+    name_counts = defaultdict(int)
 
-        if cols[3] in latest.keys():
-            latest[cols[3]] += 1
-        else:
-            latest[cols[3]] = 1
+    with open(input_file_name, 'r') as bed_file:
+        for line in bed_file:
+            line = line.strip()
 
-        ret.append(cols[3] + '_' + str(latest[cols[3]]))
+            if len(line) == 0 or line.startswith("#"):
+                continue
 
-    for i in range(len(ret)):
-        x = ret[i]
-        if x.endswith('_1'):
-            if not x[:-2] + '_2' in ret:
-                ret[i] = x[:-2]
+            cols = line.split('\t')
+            target_name = cols[3]
+            name_counts[target_name] += 1
 
-    return ret, len(latest.keys())
+        for target_name, count in name_counts.iteritems():
+            if count == 1:
+                target_names.append(target_name)
+            else:
+                for i in xrange(1, count + 1):
+                    target_names.append(
+                        "{}_{}".format(target_name, i)
+                    )
+
+    return target_names, len(name_counts)
 

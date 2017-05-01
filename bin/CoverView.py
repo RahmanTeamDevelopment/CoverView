@@ -12,21 +12,21 @@ import pysam
 import shutil
 import warnings
 
-from coverview import transcript
 from coverview import output
 from coverview.calculators import calculate_chromosome_coverage_metrics, get_profiles\
     calculate_minimal_chromosome_coverage_metrics
 from coverview.utils import *
 
-logger = logging.getLogger("coverview")
+__version = 'v1.2.0'
+__logger = logging.getLogger("coverview")
 
 
-class SingleJob(object):
+class CoverageCalculator(object):
     def __init__(self, options, config):
         self.options = options
         self.config = config
-        self.samfile = pysam.Samfile(options.input, "rb")
-        self.entsdb = None
+        self.bam_file = pysam.Samfile(options.input, "rb")
+        self.transcript_database = None
         self.out_targets = None
         self.out_poor = None
         self.out_json = None
@@ -35,7 +35,7 @@ class SingleJob(object):
         self.ids_of_failed_targets = set()
 
         if not config['transcript_db'] is None:
-            self.enstdb = pysam.Tabixfile(config['transcript_db'])
+            self.transcript_database = pysam.Tabixfile(config['transcript_db'])
 
         self.first = True
 
@@ -103,8 +103,8 @@ class SingleJob(object):
                 self.out_poor.close()
 
     def run(self):
-        logger.info("Coverage metrics will be generated in a single process")
-        logger.info("Writing output headers")
+        __logger.info("Coverage metrics will be generated in a single process")
+        __logger.info("Writing output headers")
 
         output.output_target_file_header(
             self.config,
@@ -118,7 +118,7 @@ class SingleJob(object):
 
         for cluster in get_clusters_of_regions_from_bed_file(options.bedfile):
             num_clusters += 1
-            for target in get_profiles(self.samfile, cluster, self.config):
+            for target in get_profiles(self.bam_file, cluster, self.config):
 
                 if target is None:
                     continue
@@ -138,8 +138,8 @@ class SingleJob(object):
                 self.output(target)
 
         self.close_output_files()
-        logger.info("Finished computing coverage metrics in all regions")
-        logger.info("Data was processed in {} clusters".format(num_clusters))
+        __logger.info("Finished computing coverage metrics in all regions")
+        __logger.info("Data was processed in {} clusters".format(num_clusters))
 
     def getReferenceSequence(self, chrom, start, end):
         start = max(1, start)
@@ -201,11 +201,11 @@ class SingleJob(object):
             region_end = target['End']
 
             transcripts_overlapping_start = get_transcripts_overlapping_position(
-                self.enstdb, chrom, region_start
+                self.transcript_database, chrom, region_start
             )
 
             transcripts_overlapping_end = get_transcripts_overlapping_position(
-                self.entsdb, chrom, region_end
+                self.transcript_database, chrom, region_end
             )
 
             record.extend([
@@ -364,66 +364,82 @@ def configure_logging():
     logger.info('CoverView v1.2.0 started running')
 
 
+def create_gui_output_directory():
+    __logger("Creating output directory structure for GUI")
+    dir = options.output + '_gui'
+
+    if os.path.exists(dir):
+        shutil.rmtree(dir)
+
+    os.makedirs(dir)
+    os.makedirs(dir + '/data')
+    cvdir = os.path.dirname(os.path.realpath(__file__))
+    shutil.copy(cvdir + '/gui.html', dir + '/' + options.output + '_coverview.html')
+    shutil.copytree(cvdir + '/lib', dir + '/lib')
+
+
 if __name__ == "__main__":
 
     configure_logging()
     options, config = get_input_options()
-    logger.info("Configuration options")
-    logger.info(options)
-    logger.info(config)
+
+    __logger.info("Running CoverView {} with options".format(__version))
+    __logger.info(options)
+    __logger.info(config)
+
+    bam_file = pysam.Samfile(options.input, "rb")
 
     if options.bedfile is None:
-        logger.info("No input BED file specified. Computing minimal coverage information")
-        bam_file = pysam.Samfile(options.input, "rb")
+        __logger.info("No input BED file specified. Computing minimal coverage information")
 
-        chromdata = calculate_minimal_chromosome_coverage_metrics(
+        chromosome_coverage_metrics = calculate_minimal_chromosome_coverage_metrics(
             bam_file,
             options
         )
 
-        output.output_minimal_chromosome_coverage_metrics(options, chromdata)
-        logger.info('CoverView v1.2.0 succesfully finished')
+        output.output_minimal_chromosome_coverage_metrics(
+            options,
+            chromosome_coverage_metrics
+        )
+
+        __logger.info('CoverView {} succesfully finished'.format(__version))
     else:
         if config['outputs']['gui']:
-            dir = options.output + '_gui'
+            create_gui_output_directory()
 
-            if os.path.exists(dir):
-                shutil.rmtree(dir)
+        target_names, unique_target_ids = get_names_of_target_regions(options.bedfile)
+        number_of_targets = len(target_names)
+        sample_name = options.input.replace(".bam", "")
 
-            os.makedirs(dir)
-            os.makedirs(dir+'/data')
-            cvdir = os.path.dirname(os.path.realpath(__file__))
-            shutil.copy(cvdir+'/gui.html', dir+'/'+options.output+'_coverview.html')
-            shutil.copytree(cvdir+'/lib', dir+'/lib')
+        __logger.info("There are {} target regions".format(number_of_targets))
 
-        names, uniqueIDs = makeNames(options.bedfile)
-        number_of_targets = len(names)
-        samplename = options.input[:options.input.rfind('.bam')]
-        logger.info("There are {} target regions".format(number_of_targets))
+        coverage_calculator = CoverageCalculator(options, config)
+        coverage_calculator.run()
 
-        process = SingleJob(options, config)
-        process.run()
-
-        ontarget = process.num_reads_on_target
-
-        ids_of_failed_targets = process.ids_of_failed_targets
+        ids_of_failed_targets = coverage_calculator.ids_of_failed_targets
         num_failed_targets = len(ids_of_failed_targets)
 
-        logger.info("{} regions failed the coverage thresholds".format(num_failed_targets))
+        __logger.info("{} regions failed the coverage thresholds".format(num_failed_targets))
 
-        bam_file = pysam.Samfile(options.input, "rb")
-        chromdata = calculate_chromosome_coverage_metrics(bam_file, ontarget)
-        output.output_chromosome_coverage_metrics(options, chromdata)
+        chromosome_coverage_metrics = calculate_chromosome_coverage_metrics(
+            bam_file,
+            coverage_calculator.num_reads_on_target
+        )
+
+        output.output_chromosome_coverage_metrics(
+            options,
+            chromosome_coverage_metrics
+        )
 
         if config['outputs']['gui']:
             output.finalizeJSONOutput(
                 options,
-                chromdata,
+                chromosome_coverage_metrics,
                 config,
                 number_of_targets,
                 num_failed_targets,
-                uniqueIDs,
+                unique_target_ids,
                 ids_of_failed_targets
             )
 
-        logger.info("CoverView v1.2.0 succesfully finished")
+        __logger.info("CoverView {} succesfully finished".format(__version))

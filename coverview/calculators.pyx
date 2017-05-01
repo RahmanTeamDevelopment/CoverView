@@ -32,7 +32,7 @@ cdef extern from "sam.h":
     uint8_t* bam_get_qual(bam1_t* b)
 
 
-logger = logging.getLogger("coverview")
+__logger = logging.getLogger("coverview")
 
 
 def compute_coverage_metric(self, coverage_data):
@@ -51,10 +51,10 @@ def compute_coverage_metric(self, coverage_data):
         coverage_data['Ref'] = ''
 
 
-cdef class SimpleCoverageCalculator(object):
+cdef class RegionCoverageCalculator(object):
     """
-    Utility class for computing coverage summaries for the simple case when we do
-    not care about direction.
+    Utility class for computing coverage summaries for a specified genomic
+    region
     """
     cdef int begin
     cdef int end
@@ -397,48 +397,179 @@ def get_profiles(bam_file, cluster, config):
     cluster_begin = cluster[0][1]
     cluster_end = cluster[-1][2]
 
-    logger.info("Processing cluster of regions spanning {}:{}-{}".format(
+    __logger.info("Processing cluster of regions spanning {}:{}-{}".format(
         cluster_chrom, cluster_begin, cluster_end
     ))
 
-    logger.debug("Loading reads into in-memory array")
+    __logger.debug("Loading reads into in-memory array")
     load_reads_into_array(read_array, bam_file, cluster_chrom, cluster_begin, cluster_end)
+
+    bq_cutoff = float(config['low_bq'])
+    mq_cutoff = float(config['low_mq'])
 
     for chrom, begin, end, region, key in cluster:
 
-        target = {
-            "Name": key,
-            "Chrom": chrom,
-            "Start": begin + 1,
-            "End": end
-        }
-
-        bq_cutoff = float(config['low_bq'])
-        mq_cutoff = float(config['low_mq'])
-
         if config['outputs']['profiles'] or config['outputs']['regions']:
+
             coverage_calc = SimpleCoverageCalculator(cluster_chrom, begin, end, bq_cutoff, mq_cutoff)
             read_array.setWindowPointers(begin, end, &reads_start, &reads_end)
             coverage_calc.add_reads(reads_start, reads_end)
-            target['Profiles'] = coverage_calc.get_coverage_summary()
-            yield target
 
-    logger.debug("Finished processing cluster")
+            yield RegionCoverageSummary(
+                key,
+                chrom,
+                begin+1,
+                end,
+                coverage_calc.get_coverage_summary()
+            )
+
+    __logger.debug("Finished processing cluster")
 
 
-class ChromosomeCoverageCalculator(object):
+class BamFileCoverageSummary(object):
     """
-    Computes coverage metrics at the per-chromosome level
+    Overall coverage summary for one whole BAM file. Stores total numbers of reads,
+    numbers of reads for each chromosome and other overall coverage summary metrics.
     """
-    def __init__(self):
-        pass
+    def __init__(
+            self,
+            num_reads_by_chromosome,
+            num_reads,
+            num_mapped_reads,
+            num_on_target_reads,
+            num_off_target_reads
+    ):
 
-    def compute_coverage():
-        pass
+        self.num_reads_by_chromosome = num_reads_by_chromosome
+        self.num_reads = num_reads
+        self.num_mapped_reads = num_mapped_reads
+        self.num_on_target_reads = num_on_target_reads
+        self.num_off_target_reads = num_off_target_reads
+
+    def __str__(self):
+        """
+        Return a string representation. This makes it possible to call print with
+        instances of this class.
+        """
+        return str({
+            "Chroms": self.num_reads_by_chromosome,
+            "Mapped": {
+                'RC': self.num_mapped_reads,
+                'RCIN': self.num_on_target_reads,
+                'RCOUT': self.num_off_target_reads
+            },
+            "Total": self.num_reads,
+            "Unmapped": self.num_reads - self.num_mapped_reads
+        })
+
+
+class PerBaseCoverageSummary(object):
+    """
+    Stores summary coverage data for each base of a specified
+    region, along with some overall region-level metrics.
+    """
+    def __init__(
+            self,
+            num_reads_in_region,
+            num_forward_reads_in_region,
+            num_reverse_reads_in_region,
+            coverage_at_each_base,
+            high_quality_coverage_at_each_base,
+            median_quality_at_each_base,
+            fraction_of_low_base_qualities_at_each_base,
+            median_mapping_quality_at_each_base,
+            fraction_of_low_mapping_qualities_at_each_base,
+            forward_coverage_at_each_base,
+            forward_high_quality_coverage_at_each_base,
+            forward_median_quality_at_each_base,
+            forward_fraction_of_low_base_qualities_at_each_base,
+            forward_median_mapping_quality_at_each_base,
+            forward_fraction_of_low_mapping_qualities_at_each_base,
+            reverse_coverage_at_each_base,
+            reverse_high_quality_coverage_at_each_base,
+            reverse_median_quality_at_each_base,
+            reverse_fraction_of_low_base_qualities_at_each_base,
+            reverse_median_mapping_quality_at_each_base,
+            reverse_fraction_of_low_mapping_qualities_at_each_base,
+    ):
+        self.num_reads_in_region = num_reads_in_region
+        self.num_forward_reads_in_region = num_forward_reads_in_region
+        self.num_reverse_reads_in_region = num_reverse_reads_in_region
+        self.coverage_at_each_base = coverage_at_each_base
+        self.high_quality_coverage_at_each_base = high_quality_coverage_at_each_base
+        self.median_quality_at_each_base = median_quality_at_each_base
+        self.fraction_of_low_base_qualities_at_each_base = fraction_of_low_base_qualities_at_each_base
+        self.median_mapping_quality_at_each_base = median_mapping_quality_at_each_base
+        self.fraction_of_low_mapping_qualities_at_each_base = fraction_of_low_mapping_qualities_at_each_base
+        self.forward_coverage_at_each_base = forward_coverage_at_each_base
+        self.forward_high_quality_coverage_at_each_base = forward_high_quality_coverage_at_each_base
+        self.forward_median_quality_at_each_base = forward_median_quality_at_each_base
+        self.forward_fraction_of_low_base_qualities_at_each_base = forward_fraction_of_low_base_qualities_at_each_base
+        self.forward_median_mapping_quality_at_each_base = forward_median_mapping_quality_at_each_base
+        self.forward_fraction_of_low_mapping_qualities_at_each_base = forward_fraction_of_low_mapping_qualities_at_each_base
+        self.reverse_coverage_at_each_base = reverse_coverage_at_each_base
+        self.reverse_high_quality_coverage_at_each_base = reverse_high_quality_coverage_at_each_base
+        self.reverse_median_quality_at_each_base = reverse_median_quality_at_each_base
+        self.reverse_fraction_of_low_base_qualities_at_each_base = reverse_fraction_of_low_base_qualities_at_each_base
+        self.reverse_median_mapping_quality_at_each_base = reverse_median_mapping_quality_at_each_base
+        self.reverse_fraction_of_low_mapping_qualities_at_each_base = reverse_fraction_of_low_mapping_qualities_at_each_base
+
+      def __str__(self):
+            return str({
+                "RC": self.num_reads_in_region,
+                "RC_f": self.num_forward_reads_in_region,
+                "RC_r": self.num_reverse_reads_in_region,
+                "COV": self.coverage_at_each_base,
+                "QCOV": self.high_quality_coverage_at_each_base,
+                "MEDBQ": self.median_quality_at_each_base,
+                "FLBQ": self.fraction_of_low_base_qualities_at_each_base,
+                "MEDMQ": self.median_mapping_quality_at_each_base,
+                "FLMQ": self.fraction_of_low_mapping_qualities_at_each_base,
+                "COV_f": self.forward_coverage_at_each_base,
+                "QCOV_f": self.forward_high_quality_coverage_at_each_base,
+                "MEDBQ_f": self.forward_median_quality_at_each_base,
+                "FLBQ_f": self.forward_fraction_of_low_base_qualities_at_each_base
+                "MEDMQ_f": self.forward_median_mapping_quality_at_each_base,
+                "FLMQ_f": self.forward_fraction_of_low_mapping_qualities_at_each_base,
+                "COV_r": self.reverse_coverage_at_each_base,
+                "QCOV_r": self.reverse_high_quality_coverage_at_each_base,
+                "MEDBQ_r": self.reverse_median_quality_at_each_base,
+                "FLBQ_r": self.reverse_fraction_of_low_base_qualities_at_each_base,
+                "MEDMQ_r": self.reverse_median_mapping_quality_at_each_base,
+                "FLMQ_r": self.reverse_fraction_of_low_mapping_qualities_at_each_base
+            })
+
+
+class RegionCoverageSummary(object):
+    """
+    Stores data summarising coverage for a genomic region
+    """
+    def __init__(
+            self,
+            region_name,
+            chromosome,
+            start_position,
+            end_position,
+            per_base_coverage_profile
+    ):
+        self.region_name = region_name
+        self.chromosome = chromosome
+        self.start_position = start_position
+        self.end_position = end_position
+        self.per_base_coverage_profile = per_base_coverage_profile
+
+    def __str__(self):
+        return str({
+            "Name": self.region_name,
+            "Chrom": self.chromosome,
+            "Start": self.start_position,
+            "End": self.end_position,
+            "profiles": self.per_base_coverage_profile
+        })
 
 
 def calculate_chromosome_coverage_metrics(bam_file, on_target):
-    logger.info("Calculating per-chromosome coverage metrics")
+    __logger.info("Calculating per-chromosome coverage metrics")
 
     chromosomes = bam_file.references
     chromosome_lengths = bam_file.lengths
@@ -473,7 +604,7 @@ def calculate_chromosome_coverage_metrics(bam_file, on_target):
         total_on_target_reads += num_on_target_reads
         total_off_target_reads += num_off_target_reads
 
-    logger.info("Finished calculating per-chromosome coverage metrics")
+    __logger.info("Finished calculating per-chromosome coverage metrics")
 
     return {
         "Chroms": number_of_reads_covering_chromosomes,
@@ -488,7 +619,7 @@ def calculate_chromosome_coverage_metrics(bam_file, on_target):
 
 
 def calculate_minimal_chromosome_coverage_metrics(bam_file, options):
-    logger.info("Calculating minimal per-chromosome coverage metrics")
+    __logger.info("Calculating minimal per-chromosome coverage metrics")
 
     number_of_reads_covering_chromosomes = []
     total_reads_in_bam = bam_file.mapped + bam_file.unmapped
@@ -500,7 +631,7 @@ def calculate_minimal_chromosome_coverage_metrics(bam_file, options):
             'CHROM': chrom, 'RC': num_reads
         })
 
-    logger.info("Finished calculating minimal per-chromosome coverage metrics")
+    __logger.info("Finished calculating minimal per-chromosome coverage metrics")
 
     return {
         "Chrom": number_of_reads_covering_chromosomes,
