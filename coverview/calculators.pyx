@@ -32,7 +32,7 @@ cdef extern from "sam.h":
     uint8_t* bam_get_qual(bam1_t* b)
 
 
-__logger = logging.getLogger("coverview")
+_logger = logging.getLogger("coverview")
 
 
 cdef class RegionCoverageCalculator(object):
@@ -381,11 +381,11 @@ def get_region_coverage_summary(bam_file, cluster, config):
     cluster_begin = cluster[0][1]
     cluster_end = cluster[-1][2]
 
-    __logger.info("Processing cluster of regions spanning {}:{}-{}".format(
+    _logger.info("Processing cluster of regions spanning {}:{}-{}".format(
         cluster_chrom, cluster_begin, cluster_end
     ))
 
-    __logger.debug("Loading reads into in-memory array")
+    _logger.debug("Loading reads into in-memory array")
 
     load_reads_into_array(
         read_array,
@@ -421,7 +421,7 @@ def get_region_coverage_summary(bam_file, cluster, config):
                 coverage_calc.get_coverage_summary()
             )
 
-    __logger.debug("Finished processing cluster")
+    _logger.debug("Finished processing cluster")
 
 
 class BamFileCoverageSummary(object):
@@ -567,7 +567,7 @@ class RegionCoverageSummary(object):
 
 
 def calculate_chromosome_coverage_metrics(bam_file, on_target):
-    __logger.info("Calculating per-chromosome coverage metrics")
+    _logger.info("Calculating per-chromosome coverage metrics")
 
     chromosomes = bam_file.references
     chromosome_lengths = bam_file.lengths
@@ -602,7 +602,7 @@ def calculate_chromosome_coverage_metrics(bam_file, on_target):
         total_on_target_reads += num_on_target_reads
         total_off_target_reads += num_off_target_reads
 
-    __logger.info("Finished calculating per-chromosome coverage metrics")
+    _logger.info("Finished calculating per-chromosome coverage metrics")
 
     return {
         "Chroms": number_of_reads_covering_chromosomes,
@@ -617,7 +617,7 @@ def calculate_chromosome_coverage_metrics(bam_file, on_target):
 
 
 def calculate_minimal_chromosome_coverage_metrics(bam_file, options):
-    __logger.info("Calculating minimal per-chromosome coverage metrics")
+    _logger.info("Calculating minimal per-chromosome coverage metrics")
 
     number_of_reads_covering_chromosomes = []
     total_reads_in_bam = bam_file.mapped + bam_file.unmapped
@@ -629,7 +629,7 @@ def calculate_minimal_chromosome_coverage_metrics(bam_file, options):
             'CHROM': chrom, 'RC': num_reads
         })
 
-    __logger.info("Finished calculating minimal per-chromosome coverage metrics")
+    _logger.info("Finished calculating minimal per-chromosome coverage metrics")
 
     return {
         "Chrom": number_of_reads_covering_chromosomes,

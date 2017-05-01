@@ -13,12 +13,12 @@ import shutil
 import warnings
 
 from coverview import output
-from coverview.calculators import calculate_chromosome_coverage_metrics, get_region_coverage_summary\
-    calculate_minimal_chromosome_coverage_metrics
+from coverview.calculators import calculate_chromosome_coverage_metrics, get_region_coverage_summary
+from coverview.calculators import calculate_minimal_chromosome_coverage_metrics
 from coverview.utils import *
 
 __version = 'v1.2.0'
-__logger = logging.getLogger("coverview")
+_logger = logging.getLogger("coverview")
 
 
 class CoverageCalculator(object):
@@ -107,8 +107,8 @@ class CoverageCalculator(object):
                 self.out_poor.close()
 
     def calculate_coverage_summaries(self):
-        __logger.info("Coverage metrics will be generated in a single process")
-        __logger.info("Writing output headers")
+        _logger.info("Coverage metrics will be generated in a single process")
+        _logger.info("Writing output headers")
 
         output.output_target_file_header(
             self.config,
@@ -161,8 +161,8 @@ class CoverageCalculator(object):
                 self.output(target)
         self.close_output_files()
 
-        __logger.info("Finished computing coverage metrics in all regions")
-        __logger.info("Data was processed in {} clusters".format(num_clusters))
+        _logger.info("Finished computing coverage metrics in all regions")
+        _logger.info("Data was processed in {} clusters".format(num_clusters))
 
     def getReferenceSequence(self, chrom, start, end):
         start = max(1, start)
@@ -388,7 +388,7 @@ def configure_logging():
 
 
 def create_gui_output_directory():
-    __logger("Creating output directory structure for GUI")
+    _logger("Creating output directory structure for GUI")
     dir = options.output + '_gui'
 
     if os.path.exists(dir):
@@ -406,14 +406,14 @@ if __name__ == "__main__":
     configure_logging()
     options, config = get_input_options()
 
-    __logger.info("Running CoverView {} with options".format(__version))
-    __logger.info(options)
-    __logger.info(config)
+    _logger.info("Running CoverView {} with options".format(__version))
+    _logger.info(options)
+    _logger.info(config)
 
     bam_file = pysam.Samfile(options.input, "rb")
 
     if options.bedfile is None:
-        __logger.info("No input BED file specified. Computing minimal coverage information")
+        _logger.info("No input BED file specified. Computing minimal coverage information")
 
         chromosome_coverage_metrics = calculate_minimal_chromosome_coverage_metrics(
             bam_file,
@@ -425,7 +425,7 @@ if __name__ == "__main__":
             chromosome_coverage_metrics
         )
 
-        __logger.info('CoverView {} succesfully finished'.format(__version))
+        _logger.info('CoverView {} succesfully finished'.format(__version))
     else:
         if config['outputs']['gui']:
             create_gui_output_directory()
@@ -434,7 +434,7 @@ if __name__ == "__main__":
         number_of_targets = len(target_names)
         sample_name = options.input.replace(".bam", "")
 
-        __logger.info("There are {} target regions".format(number_of_targets))
+        _logger.info("There are {} target regions".format(number_of_targets))
 
         coverage_calculator = CoverageCalculator(options, config)
         coverage_calculator.calculate_coverage_summaries()
@@ -442,7 +442,7 @@ if __name__ == "__main__":
         ids_of_failed_targets = coverage_calculator.ids_of_failed_targets
         num_failed_targets = len(ids_of_failed_targets)
 
-        __logger.info("{} regions failed the coverage thresholds".format(num_failed_targets))
+        _logger.info("{} regions failed the coverage thresholds".format(num_failed_targets))
 
         chromosome_coverage_metrics = calculate_chromosome_coverage_metrics(
             bam_file,
@@ -465,4 +465,4 @@ if __name__ == "__main__":
                 ids_of_failed_targets
             )
 
-        __logger.info("CoverView {} succesfully finished".format(__version))
+        _logger.info("CoverView {} succesfully finished".format(__version))

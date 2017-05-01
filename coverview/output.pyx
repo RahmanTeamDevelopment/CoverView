@@ -15,7 +15,7 @@ import pysam
 cimport cython
 
 
-logger = logging.getLogger("coverview")
+_logger = logging.getLogger("coverview")
 
 
 def get_transcripts_overlapping_position(transcript_database, chrom, pos):
