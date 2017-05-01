@@ -352,6 +352,8 @@ def output_target_file_header(config, out_poor, out_json, out_targets, out_profi
             out_poor.write('#' + '\t'.join(poorheader) + '\n')
 
         if config['outputs']['gui']:
+            out_json.write('function readData() {\n')
+            out_json.write('\tdata={\"targets\":[')
 
 
 def output_chromosome_coverage_metrics(options, chromosome_coverage_metrics):

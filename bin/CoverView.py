@@ -13,7 +13,7 @@ import shutil
 import warnings
 
 from coverview import output
-from coverview.calculators import calculate_chromosome_coverage_metrics, get_profiles\
+from coverview.calculators import calculate_chromosome_coverage_metrics, get_region_coverage_summary\
     calculate_minimal_chromosome_coverage_metrics
 from coverview.utils import *
 
@@ -46,20 +46,24 @@ class CoverageCalculator(object):
         a string of metric name and either MIN or MAX separated by an underscore, e.g.
         MEDQCOV_MIN and the values are the thresholds.
         """
-        region_coverage_summary = target['Summary']
 
-        for key, value in self.config['pass'].iteritems():
-            metric_name, min_or_max = key.split('_')
-            metric_value = region_coverage_summary[metric_name]
-            threshold = float(value)
+        if self.config['pass'] is None:
+            return True
+        else:
+            region_coverage_summary = target['Summary']
 
-            if min_or_max == 'MIN' and metric_value < threshold:
-                return False
+            for key, value in self.config['pass'].iteritems():
+                metric_name, min_or_max = key.split('_')
+                metric_value = region_coverage_summary[metric_name]
+                threshold = float(value)
 
-            if min_or_max == 'MAX' and metric_value > threshold:
-                return False
+                if min_or_max == 'MIN' and metric_value < threshold:
+                    return False
 
-        return True
+                if min_or_max == 'MAX' and metric_value > threshold:
+                    return False
+
+            return True
 
     def compute_summaries_of_region_coverage(self, profile):
         """
@@ -102,7 +106,7 @@ class CoverageCalculator(object):
             if not config['transcript_db'] is None:
                 self.out_poor.close()
 
-    def run(self):
+    def calculate_coverage_summaries(self):
         __logger.info("Coverage metrics will be generated in a single process")
         __logger.info("Writing output headers")
 
@@ -118,12 +122,31 @@ class CoverageCalculator(object):
 
         for cluster in get_clusters_of_regions_from_bed_file(options.bedfile):
             num_clusters += 1
-            for target in get_profiles(self.bam_file, cluster, self.config):
+            for target in get_region_coverage_summary(self.bam_file, cluster, self.config):
 
                 if target is None:
                     continue
 
-                self.num_reads_on_target[target['Name']] = target['Profiles']['RC']
+                region_name = target.region_name
+                per_base_summary = target.per_base_coverage_profile
+                self.num_reads_on_target[region_name] = per_base_summary.num_reads_in_region
+
+                target.summary = self.compute_summaries_of_region_coverage(
+                    target.per_base_coverage_profile
+                )
+
+                target.passes_thresholds = self.does_region_pass_coverage_thresholds(
+                    per_base_summary
+                )
+
+                if self.config['outputs']['gui']:
+                    target.Ref = self.getReferenceSequence(
+                        target.chromosome,
+                        target.start_position,
+                        target.end_position
+                    )
+                else:
+                    coverage_data['Ref'] = None
 
                 for o in self.outputs:
                     o.compute_coverage_metric(target)
@@ -136,8 +159,8 @@ class CoverageCalculator(object):
 
                     self.ids_of_failed_targets.append(ids)
                 self.output(target)
-
         self.close_output_files()
+
         __logger.info("Finished computing coverage metrics in all regions")
         __logger.info("Data was processed in {} clusters".format(num_clusters))
 
@@ -414,7 +437,7 @@ if __name__ == "__main__":
         __logger.info("There are {} target regions".format(number_of_targets))
 
         coverage_calculator = CoverageCalculator(options, config)
-        coverage_calculator.run()
+        coverage_calculator.calculate_coverage_summaries()
 
         ids_of_failed_targets = coverage_calculator.ids_of_failed_targets
         num_failed_targets = len(ids_of_failed_targets)

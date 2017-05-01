@@ -35,22 +35,6 @@ cdef extern from "sam.h":
 __logger = logging.getLogger("coverview")
 
 
-def compute_coverage_metric(self, coverage_data):
-    coverage_data['Summary'] = self.compute_summaries_of_region_coverage(
-        coverage_data['Profiles']
-    )
-
-    if self.config['pass'] is not None:
-        coverage_data['PASS'] = self.does_region_pass_coverage_thresholds(coverage_data)
-    else:
-        coverage_data['PASS'] = True
-
-    if self.config['outputs']['gui']:
-        coverage_data['Ref'] = self.getReferenceSequence(chrom, begin, end)
-    else:
-        coverage_data['Ref'] = ''
-
-
 cdef class RegionCoverageCalculator(object):
     """
     Utility class for computing coverage summaries for a specified genomic
@@ -262,29 +246,29 @@ cdef class RegionCoverageCalculator(object):
             FLMQ_r[i] = self.mq_hists_r.compute_fraction_below_threshold(i, <int>(self.mq_cutoff))
 
     def get_coverage_summary(self):
-        return {
-            "RC": self.n_reads_in_region,
-            "RC_f": self.n_reads_in_region_f,
-            "RC_r": self.n_reads_in_region_r,
-            "COV": self.COV,
-            "QCOV": self.QCOV,
-            "MEDBQ": self.MEDBQ,
-            "FLBQ": self.FLBQ,
-            "MEDMQ": self.MEDMQ,
-            "FLMQ": self.FLMQ,
-            "COV_f": self.COV_f,
-            "QCOV_f": self.QCOV_f,
-            "MEDBQ_f": self.MEDBQ_f,
-            "FLBQ_f": self.FLBQ_f,
-            "MEDMQ_f": self.MEDMQ_f,
-            "FLMQ_f": self.FLMQ_f,
-            "COV_r": self.COV_r,
-            "QCOV_r": self.QCOV_r,
-            "MEDBQ_r": self.MEDBQ_r,
-            "FLBQ_r": self.FLBQ_r,
-            "MEDMQ_r": self.MEDMQ_r,
-            "FLMQ_r": self.FLMQ_r
-        }
+        return PerBaseCoverageSummary(
+            self.n_reads_in_region,
+            self.n_reads_in_region_f,
+            self.n_reads_in_region_r,
+            self.COV,
+            self.QCOV,
+            self.MEDBQ,
+            self.FLBQ,
+            self.MEDMQ,
+            self.FLMQ,
+            self.COV_f,
+            self.QCOV_f,
+            self.MEDBQ_f,
+            self.FLBQ_f,
+            self.MEDMQ_f,
+            self.FLMQ_f,
+            self.COV_r,
+            self.QCOV_r,
+            self.MEDBQ_r,
+            self.FLBQ_r,
+            self.MEDMQ_r,
+            self.FLMQ_r
+        )
 
 
 def get_num_mapped_reads_covering_chromosome(bam_file, chrom):
@@ -378,7 +362,7 @@ cdef void load_reads_into_array(ReadArray read_array, bam_file, chrom, start, en
         read_array.append(read_iterator.b)
 
 
-def get_profiles(bam_file, cluster, config):
+def get_region_coverage_summary(bam_file, cluster, config):
     """
     Calculate and return coverage metrics for a specified region. Metrics include total
     coverage, coverage above the required base-quality and mapping quality threshold, fractions of
@@ -402,7 +386,14 @@ def get_profiles(bam_file, cluster, config):
     ))
 
     __logger.debug("Loading reads into in-memory array")
-    load_reads_into_array(read_array, bam_file, cluster_chrom, cluster_begin, cluster_end)
+
+    load_reads_into_array(
+        read_array,
+        bam_file,
+        cluster_chrom,
+        cluster_begin,
+        cluster_end
+    )
 
     bq_cutoff = float(config['low_bq'])
     mq_cutoff = float(config['low_mq'])
@@ -411,7 +402,14 @@ def get_profiles(bam_file, cluster, config):
 
         if config['outputs']['profiles'] or config['outputs']['regions']:
 
-            coverage_calc = SimpleCoverageCalculator(cluster_chrom, begin, end, bq_cutoff, mq_cutoff)
+            coverage_calc = RegionCoverageCalculator(
+                cluster_chrom,
+                begin,
+                end,
+                bq_cutoff,
+                mq_cutoff
+            )
+
             read_array.setWindowPointers(begin, end, &reads_start, &reads_end)
             coverage_calc.add_reads(reads_start, reads_end)
 
@@ -514,30 +512,30 @@ class PerBaseCoverageSummary(object):
         self.reverse_median_mapping_quality_at_each_base = reverse_median_mapping_quality_at_each_base
         self.reverse_fraction_of_low_mapping_qualities_at_each_base = reverse_fraction_of_low_mapping_qualities_at_each_base
 
-      def __str__(self):
-            return str({
-                "RC": self.num_reads_in_region,
-                "RC_f": self.num_forward_reads_in_region,
-                "RC_r": self.num_reverse_reads_in_region,
-                "COV": self.coverage_at_each_base,
-                "QCOV": self.high_quality_coverage_at_each_base,
-                "MEDBQ": self.median_quality_at_each_base,
-                "FLBQ": self.fraction_of_low_base_qualities_at_each_base,
-                "MEDMQ": self.median_mapping_quality_at_each_base,
-                "FLMQ": self.fraction_of_low_mapping_qualities_at_each_base,
-                "COV_f": self.forward_coverage_at_each_base,
-                "QCOV_f": self.forward_high_quality_coverage_at_each_base,
-                "MEDBQ_f": self.forward_median_quality_at_each_base,
-                "FLBQ_f": self.forward_fraction_of_low_base_qualities_at_each_base
-                "MEDMQ_f": self.forward_median_mapping_quality_at_each_base,
-                "FLMQ_f": self.forward_fraction_of_low_mapping_qualities_at_each_base,
-                "COV_r": self.reverse_coverage_at_each_base,
-                "QCOV_r": self.reverse_high_quality_coverage_at_each_base,
-                "MEDBQ_r": self.reverse_median_quality_at_each_base,
-                "FLBQ_r": self.reverse_fraction_of_low_base_qualities_at_each_base,
-                "MEDMQ_r": self.reverse_median_mapping_quality_at_each_base,
-                "FLMQ_r": self.reverse_fraction_of_low_mapping_qualities_at_each_base
-            })
+    def __str__(self):
+        return str({
+            "RC": self.num_reads_in_region,
+            "RC_f": self.num_forward_reads_in_region,
+            "RC_r": self.num_reverse_reads_in_region,
+            "COV": self.coverage_at_each_base,
+            "QCOV": self.high_quality_coverage_at_each_base,
+            "MEDBQ": self.median_quality_at_each_base,
+            "FLBQ": self.fraction_of_low_base_qualities_at_each_base,
+            "MEDMQ": self.median_mapping_quality_at_each_base,
+            "FLMQ": self.fraction_of_low_mapping_qualities_at_each_base,
+            "COV_f": self.forward_coverage_at_each_base,
+            "QCOV_f": self.forward_high_quality_coverage_at_each_base,
+            "MEDBQ_f": self.forward_median_quality_at_each_base,
+            "FLBQ_f": self.forward_fraction_of_low_base_qualities_at_each_base,
+            "MEDMQ_f": self.forward_median_mapping_quality_at_each_base,
+            "FLMQ_f": self.forward_fraction_of_low_mapping_qualities_at_each_base,
+            "COV_r": self.reverse_coverage_at_each_base,
+            "QCOV_r": self.reverse_high_quality_coverage_at_each_base,
+            "MEDBQ_r": self.reverse_median_quality_at_each_base,
+            "FLBQ_r": self.reverse_fraction_of_low_base_qualities_at_each_base,
+            "MEDMQ_r": self.reverse_median_mapping_quality_at_each_base,
+            "FLMQ_r": self.reverse_fraction_of_low_mapping_qualities_at_each_base
+        })
 
 
 class RegionCoverageSummary(object):
