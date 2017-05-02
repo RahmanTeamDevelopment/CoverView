@@ -12,8 +12,8 @@ clean:
 libs:
 	pip install -e .
 
-test: check
-	./run_unit_tests.bash
-
 profile: libs
 	time python -m cProfile -s cumulative bin/CoverView.py --input ../Data/NA21144.mapped.ILLUMINA.bwa.GIH.exome.20121211.bam -b chrom20_exons.bed > profile.out
+
+test: check libs
+	python bin/CoverView.py --input test/16768_sorted_picard.bam -b test/TSCP_coverviewInput.bed -c test/CoverView_default.json

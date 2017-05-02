@@ -263,7 +263,11 @@ def get_input_options():
         with open(options.config) as config_file:
             input_config = json.load(config_file)
             for key,value in input_config.iteritems():
-                config[key] = value
+                if key in ('outputs', 'transcripts'):
+                    for key_2,value_2 in value.iteritems():
+                        config[key][key_2] = value_2
+                else:
+                    config[key] = value
 
     return options, config
 
