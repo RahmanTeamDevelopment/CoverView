@@ -16,7 +16,7 @@ from coverview.statistics cimport QualityHistogramArray
 from coverview.reads cimport ReadArray
 
 import logging
-
+import output
 
 cdef extern from "hts.h":
     ctypedef struct hts_idx_t
@@ -536,6 +536,162 @@ class PerBaseCoverageSummary(object):
             "MEDMQ_r": self.reverse_median_mapping_quality_at_each_base,
             "FLMQ_r": self.reverse_fraction_of_low_mapping_qualities_at_each_base
         })
+
+    def print_to_file(
+            self,
+            bytes region_name,
+            bytes chromosome,
+            int start_position,
+            int end_position,
+            object transcript_database,
+            int write_directional_summaries,
+            object output_file,
+            object low_quality_runs_output_file
+    ):
+        """
+        Output the contents of this class to a text file.        
+        """
+        cdef array.array coverage_at_each_base = self.coverage_at_each_base
+        cdef array.array high_quality_coverage_at_each_base = self.high_quality_coverage_at_each_base
+        cdef array.array median_quality_at_each_base = self.median_quality_at_each_base
+        cdef array.array fraction_of_low_base_qualities_at_each_base = self.fraction_of_low_base_qualities_at_each_base
+        cdef array.array median_mapping_quality_at_each_base = self.median_mapping_quality_at_each_base
+        cdef array.array fraction_of_low_mapping_qualities_at_each_base = self.fraction_of_low_mapping_qualities_at_each_base
+        cdef array.array forward_coverage_at_each_base = self.forward_coverage_at_each_base
+        cdef array.array forward_high_quality_coverage_at_each_base = self.forward_high_quality_coverage_at_each_base
+        cdef array.array forward_median_quality_at_each_base = self.forward_median_quality_at_each_base
+        cdef array.array forward_fraction_of_low_base_qualities_at_each_base = self.orward_fraction_of_low_base_qualities_at_each_base
+        cdef array.array forward_median_mapping_quality_at_each_base = self.forward_median_mapping_quality_at_each_base
+        cdef array.array forward_fraction_of_low_mapping_qualities_at_each_base = self.forward_fraction_of_low_mapping_qualities_at_each_base
+        cdef array.array reverse_coverage_at_each_base = self.reverse_coverage_at_each_base
+        cdef array.array reverse_high_quality_coverage_at_each_base = self.reverse_high_quality_coverage_at_each_base
+        cdef array.array reverse_median_quality_at_each_base = self.reverse_median_quality_at_each_base
+        cdef array.array reverse_fraction_of_low_base_qualities_at_each_base = self.reverse_fraction_of_low_base_qualities_at_each_base
+        cdef array.array reverse_median_mapping_quality_at_each_base = self.reverse_median_mapping_quality_at_each_base
+        cdef array.array reverse_fraction_of_low_mapping_qualities_at_each_base = self.reverse_fraction_of_low_mapping_qualities_at_each_base
+        
+        cdef long* COV_array = coverage_at_each_base.data.as_longs
+        cdef long* QCOV_array = high_quality_coverage_at_each_base.data.as_longs
+        cdef float* MEDBQ_array = median_quality_at_each_base.data.as_floats
+        cdef float* FLBQ_array = fraction_of_low_base_qualities_at_each_base.data.as_floats
+        cdef float* MEDMQ_array = median_mapping_quality_at_each_base.data.as_floats
+        cdef float* FLMQ_array = fraction_of_low_mapping_qualities_at_each_base.data.as_floats
+        cdef long* COV_f_array = forward_coverage_at_each_base.data.as_longs
+        cdef long* QCOV_f_array = forward_high_quality_coverage_at_each_base.data.as_longs
+        cdef float* MEDBQ_f_array = forward_median_quality_at_each_base.data.as_floats
+        cdef float* FLBQ_f_array = forward_fraction_of_low_base_qualities_at_each_base.data.as_floats
+        cdef float* MEDMQ_f_array = forward_median_mapping_quality_at_each_base.data.as_floats
+        cdef float* FLMQ_f_array = forward_fraction_of_low_mapping_qualities_at_each_base.data.as_floats
+        cdef long* COV_r_array = reverse_coverage_at_each_base.data.as_longs
+        cdef long* QCOV_r_array = reverse_high_quality_coverage_at_each_base.data.as_longs
+        cdef float* MEDBQ_r_array = reverse_median_quality_at_each_base.data.as_floats
+        cdef float* FLBQ_r_array = reverse_fraction_of_low_base_qualities_at_each_base.data.as_floats
+        cdef float* MEDMQ_r_array = reverse_median_mapping_quality_at_each_base.data.as_floats
+        cdef float* FLMQ_r_array = reverse_fraction_of_low_mapping_qualities_at_each_base.data.as_floats
+
+        cdef int num_bases = len(self.coverage_at_each_base)
+        cdef int i, cov, qcov, cov_f, qcov_f, cov_r, qcov_r
+        cdef float medbq, flbq, medmq, flmq
+        cdef float medbq_f, flbq_f, medmq_f, flmq_f
+        cdef float medbq_r, flbq_r, medmq_r, flmq_r
+        cdef bytes output_line
+
+        cdef int low_qual_window_start = -1
+        cdef int low_qual_window_end = -1
+        cdef bytes transcripts_overlapping_start_of_low_qual_window = None
+        cdef bytes transcripts_overlapping_end_of_low_qual_window = None
+
+        output_file.write('\n')
+        output_file.write('[{}]\n'.format(region_name))
+
+        for i from 0 <= i < num_bases:
+            cov = COV_array[i]
+            qcov = QCOV_array[i]
+            medbq = MEDBQ_array[i]
+            flbq = FLBQ_array[i]
+            medmq = MEDMQ_array[i]
+            flmq = FLMQ_array[i]
+            cov_f = COV_f_array[i]
+            qcov_f = QCOV_f_array[i]
+            medbq_f = MEDBQ_f_array[i]
+            flbq_f = FLBQ_f_array[i]
+            medmq_f = MEDMQ_f_array[i]
+            flmq_f = FLMQ_f_array[i]
+            cov_r = COV_r_array[i]
+            qcov_r = QCOV_r_array[i]
+            medbq_r = MEDBQ_r_array[i]
+            flbq_r = FLBQ_r_array[i]
+            medmq_r = MEDMQ_r_array[i]
+            flmq_r = FLMQ_r_array[i]
+
+            if write_directional_summaries == 0:
+                output_line = "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(
+                    chromosome,
+                    start_position + 1,
+                    cov,
+                    qcov,
+                    medbq,
+                    flbq,
+                    medmq,
+                    flmq
+                )
+
+                output_line = output_line.replace("nan", ".")
+                output_file.write(output_line)
+            else:
+                output_line = "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t[}\t{}\t[]\t{}\t{}\n".format(
+                    chromosome,
+                    start_position + 1,
+                    cov,
+                    qcov,
+                    medbq,
+                    flbq,
+                    medmq,
+                    flmq,
+                    cov_f,
+                    qcov_f,
+                    medbq_f,
+                    flbq_f,
+                    medmq_f,
+                    flmq_f,
+                    cov_r,
+                    qcov_r,
+                    medbq_r,
+                    flbq_r,
+                    medmq_r,
+                    flmq_r
+                )
+
+                output_line = output_line.replace("nan", ".")
+                output_file.write(output_line)
+
+            if transcript_database is not None:
+                if qcov < 15:
+                    if low_qual_window_start == -1:
+                        low_qual_window_start = start_position + i
+                        transcripts_overlapping_start_of_low_qual_window = output.get_transcripts_overlapping_position(
+                            transcript_database,
+                            chromosome,
+                            start_position + i
+                        )
+                else:
+                    if low_qual_window_start != -1:
+                        transcripts_overlapping_end_of_low_qual_window = output.get_transcripts_overlapping_position(
+                            transcript_database,
+                            chromosome,
+                            start_position + i - 1
+                        )
+
+                    low_quality_runs_output_file.write(
+                        "{}\t{]\t{}\t{}\t{}\t{}\n".format(
+                            region_name,
+                            chromosome,
+                            low_qual_window_start,
+                            low_qual_window_end,
+                            transcripts_overlapping_start_of_low_qual_window,
+                            transcripts_overlapping_end_of_low_qual_window
+                        )
+                    )
 
 
 class RegionCoverageSummary(object):
