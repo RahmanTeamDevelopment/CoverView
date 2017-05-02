@@ -560,7 +560,7 @@ class PerBaseCoverageSummary(object):
         cdef array.array forward_coverage_at_each_base = self.forward_coverage_at_each_base
         cdef array.array forward_high_quality_coverage_at_each_base = self.forward_high_quality_coverage_at_each_base
         cdef array.array forward_median_quality_at_each_base = self.forward_median_quality_at_each_base
-        cdef array.array forward_fraction_of_low_base_qualities_at_each_base = self.orward_fraction_of_low_base_qualities_at_each_base
+        cdef array.array forward_fraction_of_low_base_qualities_at_each_base = self.forward_fraction_of_low_base_qualities_at_each_base
         cdef array.array forward_median_mapping_quality_at_each_base = self.forward_median_mapping_quality_at_each_base
         cdef array.array forward_fraction_of_low_mapping_qualities_at_each_base = self.forward_fraction_of_low_mapping_qualities_at_each_base
         cdef array.array reverse_coverage_at_each_base = self.reverse_coverage_at_each_base

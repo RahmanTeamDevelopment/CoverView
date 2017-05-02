@@ -43,10 +43,6 @@ def get_clusters_of_regions_from_bed_file(bed_file_name, size_limit=100000):
             begin = int(row[1])
             end = int(row[2])
             key = row[3]
-
-            if not chrom.startswith('chr'):
-                chrom = 'chr' + chrom
-
             region = "{}:{}-{}".format(chrom, begin, end)
             all_regions.append((chrom, begin, end, region, key))
 

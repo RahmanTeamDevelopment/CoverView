@@ -137,10 +137,10 @@ class CoverageCalculator(object):
         if self.regions_output:
             self.regions_output.write_output(region_coverage_data)
 
-        if self.per_base_output is not None:
+        if self.per_base_output:
             self.per_base_output.write_output(region_coverage_data)
 
-        if self.gui_output is not None:
+        if self.gui_output:
             self.gui_output.write_output(region_coverage_data)
 
     def calculate_coverage_summaries(self):
@@ -155,6 +155,7 @@ class CoverageCalculator(object):
                 if target is None:
                     continue
 
+                _logger.info(target)
                 region_name = target.region_name
                 per_base_summary = target.per_base_coverage_profile
                 self.num_reads_on_target[region_name] = per_base_summary.num_reads_in_region
@@ -183,6 +184,7 @@ class CoverageCalculator(object):
                         ids = target.region_name
 
                     self.ids_of_failed_targets.append(ids)
+                self.write_outputs_for_region(target)
 
         _logger.info("Finished computing coverage metrics in all regions")
         _logger.info("Data was processed in {} clusters".format(num_clusters))

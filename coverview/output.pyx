@@ -36,6 +36,8 @@ class PerBaseCoverageOutput(object):
     each base across a region.
     """
     def __init__(self, options, config):
+        self.options = options
+        self.config = config
         self.out_profiles = open(options.output + '_profiles.txt', 'w')
         self.out_poor = None
         self.only_output_profiles_for_failed_regions = False
@@ -107,16 +109,18 @@ class PerBaseCoverageOutput(object):
             self.out_poor.write('#' + '\t'.join(poorheader) + '\n')
 
     def write_output(self, coverage_data):
-        if self.only_write_profiles_for_failed_regions and coverage_data.passes_thresholds:
+        if self.only_output_profiles_for_failed_regions and coverage_data.passes_thresholds:
             pass
         else:
-            per_base_summary = coverage_data.per_base_coverage_summary
+            per_base_summary = coverage_data.per_base_coverage_profile
 
             per_base_summary.print_to_file(
                 coverage_data.region_name,
                 coverage_data.chromosome,
                 coverage_data.start_position,
                 coverage_data.end_position,
+                self.config['transcript_db'],
+                self.output_directional_coverage_information,
                 self.out_profiles,
                 self.out_poor
             )
@@ -149,7 +153,7 @@ class RegionsOutput(object):
             self.output_directional_coverage_information = False
 
     def __del__(self):
-        self.out_targets.close()
+        self.output_file.close()
 
     def write_header(self):
         """
@@ -207,11 +211,11 @@ class RegionsOutput(object):
 
     def write_output(self, coverage_data):
 
-        region_name = coverage_data['Name']
-        chrom = coverage_data['Chrom']
-        region_start = coverage_data['Start']
-        region_end = coverage_data['End']
-        coverage_summary = coverage_data['Summary']
+        region_name = coverage_data.region_name
+        chrom = coverage_data.chromosome
+        region_start = coverage_data.start_position
+        region_end = coverage_data.end_position
+        coverage_summary = coverage_data.summary
 
         output_record = [
             region_name,
@@ -236,13 +240,13 @@ class RegionsOutput(object):
             ])
 
         if self.output_region_pass_fail:
-            if coverage_data['PASS']:
+            if coverage_data.passes_thresholds:
                 output_record.append('PASS')
             else:
                 output_record.append('FAIL')
 
         output_record.extend([
-            coverage_data['Profiles']['RC'],
+            coverage_data.per_base_coverage_profile.num_reads_in_region,
             coverage_summary['MEDCOV'],
             coverage_summary['MINCOV'],
             coverage_summary['MEDQCOV'],
@@ -267,7 +271,7 @@ class RegionsOutput(object):
                 coverage_summary['MAXFLBQ_r']
             ])
 
-        self.out_targets.write(
+        self.output_file.write(
             ('\t'.join(str(x) for x in output_record) + '\n').replace("nan", ".")
         )
 
@@ -413,13 +417,17 @@ def output_chromosome_coverage_metrics(options, chromosome_coverage_metrics):
     num_unmapped_reads_in_bam = chromosome_coverage_metrics['Unmapped']
     num_total_reads_in_bam = chromosome_coverage_metrics['Total']
 
+    _logger.info(num_mapped_reads_in_bam)
+    _logger.info(num_unmapped_reads_in_bam)
+    _logger.info(num_total_reads_in_bam)
+
     with open(options.output + '_summary.txt', 'w') as output_file:
-        csv_writer = csv.writer(output_file, delim='\t')
+        csv_writer = csv.writer(output_file, delimiter='\t')
 
         csv_writer.writerows([
             ["#CHROM", "RC", "RCIN", "RCOUT"],
             ["Total", num_total_reads_in_bam, "-", "-"],
-            ["Unmapped", num_unmapped_reads_in_bam, "-", "-"]
+            ["Unmapped", num_unmapped_reads_in_bam, "-", "-"],
             ["Mapped", num_mapped_reads_in_bam["RC"], num_mapped_reads_in_bam["RCIN"], num_mapped_reads_in_bam["RCOUT"]]
         ])
 
@@ -444,7 +452,7 @@ def output_minimal_chromosome_coverage_metrics(options, chromosome_coverage_metr
     num_total_reads_in_bam = chromosome_coverage_metrics['Total']
 
     with open(options.output + '_summary.txt', 'w') as output_file:
-        csv_writer = csv.writer(output_file, delim='\t')
+        csv_writer = csv.writer(output_file, delimiter='\t')
 
         csv_writer.writerows([
             ["#CHROM", "RC"],
@@ -459,114 +467,4 @@ def output_minimal_chromosome_coverage_metrics(options, chromosome_coverage_metr
                 chromosome,
                 coverage_metrics["RC"]
             ])
-
-# def output_profiles_with_transcript_coordinates(config, target, enstdb, output_file):
-#     profiles = target['Profiles']
-#
-#     output_file.write('\n')
-#     output_file.write('[{}]\n'.format(target['Name']))
-#
-#     if config['transcript_db'] is not None:
-#         window_qcov = {
-#             "targetname": None,
-#             "chrom": None,
-#             "start": None,
-#             "transcriptstart": None
-#         }
-#
-#     num_bases = len(profiles['COV'])
-#
-#     COV = profiles['COV']
-#     QCOV = profiles['QCOV']
-#     MEDBQ = profiles['MEDBQ']
-#     FLBQ = profiles['FLBQ']
-#     MEDMQ = profiles['MEDMQ']
-#     FLMQ = profiles['FLMQ']
-#
-#     chrom = target['Chrom']
-#     target_start_pos = target['Start']
-#
-#     for i in xrange(num_bases):
-#         transcoordstr = ''
-#
-#         if config['transcript']['profiles'] and not config['transcript_db'] is None:
-#
-#             transcoords = transcript.getTranscriptCoordinates(
-#                 enstdb,
-#                 chrom,
-#                 target_start_pos + i
-#             )
-#
-#             v = []
-#
-#             for key, value in transcoords.iteritems():
-#                 v.append(key.geneSymbol + ':' + key.ENST + ':' + value)
-#
-#             transcoordstr = ','.join(v)
-#
-#         if config['transcript']['profiles'] and not config['transcript_db'] is None:
-#             record.append(transcoordstr)
-#
-#         if config['transcript_db'] is not None:
-#             if profiles['QCOV'][i] < 15:
-#                 if window_qcov['transcriptstart'] is None:
-#                     window_qcov['targetname'] = target['Name']
-#                     window_qcov['chrom'] = target['Chrom']
-#                     window_qcov['start'] = target['Start'] + i
-#
-#                     if transcoordstr == '':
-#                         transcoords = transcript.getTranscriptCoordinates(
-#                             enstdb,
-#                             target['Chrom'],
-#                             target['Start'] + i
-#                         )
-#
-#                         v = []
-#                         for key, value in transcoords.iteritems():
-#                             v.append(key.geneSymbol + ':' + key.ENST + ':' + value)
-#
-#                         transcoordstr = ','.join(v)
-#                     window_qcov['transcriptstart'] = transcoordstr
-#             else:
-#                 if not window_qcov['transcriptstart'] is None:
-#
-#                     transcoords = transcript.getTranscriptCoordinates(
-#                         enstdb,
-#                         target['Chrom'],
-#                         target['Start'] + i - 1
-#                     )
-#                     v = []
-#
-#                     for key, value in transcoords.iteritems():
-#                         v.append(
-#                             key.geneSymbol + ':' + key.ENST + ':' + value
-#                         )
-#
-#                     transcoordstr_end = ','.join(v)
-#
-#                     record = [
-#                         window_qcov['targetname'],
-#                         window_qcov['chrom'],
-#                         str(window_qcov['start']),
-#                         str(target['Start'] + i - 1),
-#                         window_qcov['transcriptstart'],
-#                         transcoordstr_end
-#                     ]
-#
-#                     if record[4] == '':
-#                         record[4] = 'None'
-#
-#                     if record[5] == '':
-#                         record[5] = 'None'
-#
-#                     if not (record[4] == 'None' and record[5] == 'None'):
-#                         out_poor.write('\t'.join(record) + '\n')
-#
-#                     window_qcov = {
-#                         "targetname": None,
-#                         "chrom": None,
-#                         "start": None,
-#                         "transcriptstart": None
-#                     }
-
 

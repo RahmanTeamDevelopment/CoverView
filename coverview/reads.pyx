@@ -158,6 +158,3 @@ cdef class ReadArray:
             window_end = min(self.reads + endPosOfReads, self.reads + self.__size)
 
             assert startPosOfReads <= endPosOfReads
-
-
-
