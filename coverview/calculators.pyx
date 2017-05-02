@@ -92,7 +92,7 @@ cdef class RegionCoverageCalculator(object):
         self.mq_hists_f = QualityHistogramArray(bases_in_region)
         self.mq_hists_r = QualityHistogramArray(bases_in_region)
 
-    cdef void add_reads(self, bam1_t* reads_start, bam1_t* reads_end):
+    cdef void add_reads(self, bam1_t** reads_start, bam1_t** reads_end):
         """
         """
         cdef int region_size = self.end - self.begin
@@ -120,7 +120,7 @@ cdef class RegionCoverageCalculator(object):
 
         while reads_start != reads_end:
 
-            src = reads_start
+            src = reads_start[0]
 
             # Skip duplicate reads
             #if src.core.flag & BAM_FDUP != 0:
@@ -374,8 +374,8 @@ def get_region_coverage_summary(bam_file, cluster, config):
     
     """
     cdef ReadArray read_array = ReadArray(100)
-    cdef bam1_t* reads_start
-    cdef bam1_t* reads_end
+    cdef bam1_t** reads_start
+    cdef bam1_t** reads_end
 
     cluster_chrom = get_valid_chromosome_name(cluster[0][0], bam_file)
     cluster_begin = cluster[0][1]
@@ -444,6 +444,9 @@ class BamFileCoverageSummary(object):
         self.num_on_target_reads = num_on_target_reads
         self.num_off_target_reads = num_off_target_reads
 
+    def __repr__(self):
+        return self.__str__()
+
     def __str__(self):
         """
         Return a string representation. This makes it possible to call print with
@@ -511,6 +514,9 @@ class PerBaseCoverageSummary(object):
         self.reverse_fraction_of_low_base_qualities_at_each_base = reverse_fraction_of_low_base_qualities_at_each_base
         self.reverse_median_mapping_quality_at_each_base = reverse_median_mapping_quality_at_each_base
         self.reverse_fraction_of_low_mapping_qualities_at_each_base = reverse_fraction_of_low_mapping_qualities_at_each_base
+
+    def __repr__(self):
+        return self.__str__()
 
     def __str__(self):
         return str({

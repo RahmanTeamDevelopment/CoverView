@@ -32,6 +32,12 @@ cdef extern from "string.h":
   int memcmp( void * s1, void *s2, size_t len )
 
 
+import logging
+
+
+_logger = logging.getLogger("coverview")
+
+
 cdef int bisectReadsLeft(bam1_t** reads, int testPos, int nReads):
     """
     Specialisation of bisection algorithm for array of
@@ -133,7 +139,7 @@ cdef class ReadArray:
         if read_length > self.__longest_read:
             self.__longest_read = read_length
 
-    cdef void setWindowPointers(self, int start, int end, bam1_t** window_start, bam1_t** window_end):
+    cdef void setWindowPointers(self, int start, int end, bam1_t*** window_start, bam1_t*** window_end):
         """
         Set the pointers 'windowStart' and 'windowEnd' to
         point to the relevant first and last +1 reads as specified by
@@ -144,8 +150,8 @@ cdef class ReadArray:
         cdef int endPosOfReads = -1
 
         if self.__size == 0:
-            window_start = self.reads
-            window_end = self.reads
+            window_start[0] = self.reads
+            window_end[0] = self.reads
         else:
             firstOverlapStart = max(1, start - self.__longest_read)
             startPosOfReads = bisectReadsLeft(self.reads, firstOverlapStart, self.__size)
@@ -154,7 +160,9 @@ cdef class ReadArray:
             while startPosOfReads < self.__size and bam_endpos(self.reads[startPosOfReads]) <= start:
                 startPosOfReads += 1
 
-            window_start = self.reads + startPosOfReads
-            window_end = min(self.reads + endPosOfReads, self.reads + self.__size)
+            window_start[0] = self.reads + startPosOfReads
+            window_end[0] = min(self.reads + endPosOfReads, self.reads + self.__size)
+
+            #_logger.debug("Num reads in region = {}".format(window_end[0] - window_start[0]))
 
             assert startPosOfReads <= endPosOfReads

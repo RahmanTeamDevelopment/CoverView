@@ -155,7 +155,6 @@ class CoverageCalculator(object):
                 if target is None:
                     continue
 
-                _logger.info(target)
                 region_name = target.region_name
                 per_base_summary = target.per_base_coverage_profile
                 self.num_reads_on_target[region_name] = per_base_summary.num_reads_in_region
