@@ -59,10 +59,10 @@ class CoverageCalculator(object):
         if self.config['pass'] is None:
             return True
         else:
-            region_coverage_summary = target['Summary']
+            region_coverage_summary = target.summary
 
             for key, value in self.config['pass'].iteritems():
-                metric_name, min_or_max = key.split('_')
+                min_or_max, metric_name = key.split('_')
                 metric_value = region_coverage_summary[metric_name]
                 threshold = float(value)
 
@@ -164,7 +164,7 @@ class CoverageCalculator(object):
                 )
 
                 target.passes_thresholds = self.does_region_pass_coverage_thresholds(
-                    per_base_summary
+                    target
                 )
 
                 if self.gui_output is not None:
@@ -182,7 +182,7 @@ class CoverageCalculator(object):
                     else:
                         ids = target.region_name
 
-                    self.ids_of_failed_targets.append(ids)
+                    self.ids_of_failed_targets.add(ids)
                 self.write_outputs_for_region(target)
 
         _logger.info("Finished computing coverage metrics in all regions")

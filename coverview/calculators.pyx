@@ -45,13 +45,14 @@ cdef class RegionCoverageCalculator(object):
     cdef int bq_cutoff
     cdef int mq_cutoff
     cdef int n_reads_in_region, n_reads_in_region_f, n_reads_in_region_r
+    cdef int count_duplicates
     cdef array.array COV, QCOV, MEDBQ, FLBQ, MEDMQ, FLMQ
     cdef array.array COV_f, QCOV_f, MEDBQ_f, FLBQ_f, MEDMQ_f, FLMQ_f
     cdef array.array COV_r, QCOV_r, MEDBQ_r, FLBQ_r, MEDMQ_r, FLMQ_r
     cdef QualityHistogramArray bq_hists, bq_hists_f, bq_hists_r
     cdef QualityHistogramArray mq_hists, mq_hists_f, mq_hists_r
 
-    def __init__(self, chrom, begin, end, bq_cutoff, mq_cutoff):
+    def __init__(self, chrom, begin, end, bq_cutoff, mq_cutoff, count_duplicates):
         cdef int bases_in_region = end - begin
         self.begin = begin
         self.end = end
@@ -92,6 +93,13 @@ cdef class RegionCoverageCalculator(object):
         self.mq_hists_f = QualityHistogramArray(bases_in_region)
         self.mq_hists_r = QualityHistogramArray(bases_in_region)
 
+        if count_duplicates is True:
+            _logger.info("Duplicate reads will be counted")
+            self.count_duplicates = 1
+        else:
+            _logger.info("Duplicate reads will not be counted")
+            self.count_duplicates = 0
+
     cdef void add_reads(self, bam1_t** reads_start, bam1_t** reads_end):
         """
         """
@@ -123,8 +131,8 @@ cdef class RegionCoverageCalculator(object):
             src = reads_start[0]
 
             # Skip duplicate reads
-            #if src.core.flag & BAM_FDUP != 0:
-            #    continue
+            if self.count_duplicates == 0 and src.core.flag & BAM_FDUP != 0:
+                continue
 
             # Reverse bit is set, so read is reverse
             if src.core.flag & BAM_FREVERSE != 0:
@@ -158,9 +166,8 @@ cdef class RegionCoverageCalculator(object):
                     index += l
                 elif op == BAM_CMATCH:
                     for i from pos <= i < pos + l:
-                        # TODO: add 1 to cov for deletions and 1 to qco for high map qual deletions
-                        if begin < i <= end:
-                            offset = i - (begin + 1)
+                        if begin <= i < end:
+                            offset = i - begin
                             base_quality = base_qualities[index + (i-pos)]
 
                             self.bq_hists.add_data(offset, base_quality)
@@ -407,7 +414,8 @@ def get_region_coverage_summary(bam_file, cluster, config):
                 begin,
                 end,
                 bq_cutoff,
-                mq_cutoff
+                mq_cutoff,
+                config['duplicates']
             )
 
             read_array.setWindowPointers(begin, end, &reads_start, &reads_end)
