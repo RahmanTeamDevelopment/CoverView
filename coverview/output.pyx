@@ -32,25 +32,96 @@ def get_transcripts_overlapping_position(transcript_database, chrom, pos):
     return ','.join(transcripts)
 
 
-class ProfilesOutput(object):
+class PerBaseCoverageOutput(object):
     """
     Data and functions needed for producing summary coverage output for
     each base across a region.
     """
     def __init__(self, options, config):
         self.out_profiles = open(options.output + '_profiles.txt', 'w')
+        self.out_poor = None
+        self.only_output_profiles_for_failed_regions = False
+        self.output_directional_coverage_summaries = config['direction']
 
-        if not config['transcript_db'] is None:
+        if config['only_fail_profiles']:
+            self.only_output_profiles_for_failed_regions = True
+
+        if config['transcript_db'] is not None:
             self.out_poor = open(options.output + '_poor.txt', 'w')
 
     def __del__(self):
-        pass
+        self.out_profiles.close()
+
+        if self.out_poor is not None:
+            self.out_poor.close()
 
     def write_header(self):
-        pass
 
-    def compute_coverage_metric(self, coverage_data):
-        pass
+        profheader = [
+            'Chromosome',
+            'Position'
+        ]
+
+        if self.out_poor is not None:
+            profheader.append('Transcript_coordinate')
+
+        profheader.extend([
+            'COV',
+            'QCOV',
+            'MEDBQ',
+            'FLBQ',
+            'MEDMQ',
+            'FLMQ'
+        ])
+
+        if self.output_directional_coverage_information:
+            profheader.extend([
+                'COV+',
+                'QCOV+',
+                'MEDBQ+',
+                'FLBQ+',
+                'MEDMQ+',
+                'FLMQ+',
+                'COV-',
+                'QCOV-',
+                'MEDBQ-',
+                'FLBQ-',
+                'MEDMQ-',
+                'FLMQ-'
+            ])
+
+        self.out_profiles.write('#' + '\t'.join(profheader) + '\n')
+
+        if self.out_poor is not None:
+            poorheader = [
+                'Region',
+                'Chromosome',
+                'Start_position',
+                'End_position',
+                'Start_transcript',
+                'End_transcript'
+            ]
+
+            self.out_poor.write('#' + '\t'.join(poorheader) + '\n')
+
+    def write_output(self):
+        if not self.only_write_profiles_for_failed_regions:
+            output.output_profiles(
+                target,
+                self.out_profiles
+            )
+        else:
+            if not self.config['pass'] is None:
+                if not target['PASS']:
+                    coverage.output.output_profiles(
+                        target,
+                        self.out_profiles
+                    )
+            else:
+                coverage.output.output_profiles(
+                    target,
+                    self.out_profiles
+                )
 
 
 class RegionsOutput(object):
@@ -211,6 +282,7 @@ class GuiOutput(object):
     def __init__(self, options, config):
         self.output_file = open(options.output  + '_gui/data/results.js', 'w')
         self.ref_file = pysam.Fastafile(config["reference"])
+        self.have_written_first_line = False
 
     def __del__(self):
         self.output_file.write(']')
@@ -220,6 +292,21 @@ class GuiOutput(object):
     def write_header(self):
         self.output_file.write('function readData() {\n')
         self.output_file.write('\tdata={\"targets\":[')
+
+    def write_output(self):
+
+        self.output_json(target)
+
+        if not self.have_written_first_line:
+            self.have_written_first_line = True
+
+    def output_json(self, target):
+        if self.have_written_first_line:
+            self.out_json.write(',')
+
+        self.output_file.write(
+            json.dumps(target, separators=(',', ':'))
+        )
 
     def finalize_output(self, options, chromdata, config,
                         numOfTargets, failedtargets, uniqueIDs, uniqueids):
@@ -318,42 +405,6 @@ class GuiOutput(object):
         self.output_file.write('}\n')
         self.output_file.write('\treturn data\n')
         self.output_file.write('}\n')
-
-
-def output_target_file_header(config, out_poor, out_json, out_targets, out_profiles):
-
-    if config['outputs']['profiles']:
-        profheader = ['Chromosome', 'Position']
-
-        if config['transcript']['profiles'] and not config['transcript_db'] is None:
-            profheader.append('Transcript_coordinate')
-
-        profheader.extend(
-            ['COV', 'QCOV', 'MEDBQ', 'FLBQ', 'MEDMQ', 'FLMQ']
-        )
-
-        if config['direction']:
-            profheader.extend(
-                ['COV+', 'QCOV+', 'MEDBQ+', 'FLBQ+', 'MEDMQ+', 'FLMQ+']
-            )
-            profheader.extend(
-                ['COV-', 'QCOV-', 'MEDBQ-', 'FLBQ-', 'MEDMQ-', 'FLMQ-']
-            )
-
-        out_profiles.write('#' + '\t'.join(profheader) + '\n')
-
-        if not config['transcript_db'] is None and config['outputs']['profiles']:
-            poorheader = [
-                'Region', 'Chromosome', 'Start_position',
-                'End_position', 'Start_transcript',
-                'End_transcript'
-            ]
-
-            out_poor.write('#' + '\t'.join(poorheader) + '\n')
-
-        if config['outputs']['gui']:
-            out_json.write('function readData() {\n')
-            out_json.write('\tdata={\"targets\":[')
 
 
 def output_chromosome_coverage_metrics(options, chromosome_coverage_metrics):

@@ -27,17 +27,26 @@ class CoverageCalculator(object):
         self.config = config
         self.bam_file = pysam.Samfile(options.input, "rb")
         self.transcript_database = None
-        self.out_targets = None
         self.out_poor = None
-        self.out_json = None
-        self.out_profiles = None
         self.num_reads_on_target = {}
         self.ids_of_failed_targets = set()
+        self.regions_output = None
+        self.per_base_output = None
+        self.gui_output = None
 
-        if not config['transcript_db'] is None:
+        if config['transcript_db'] is not None:
             self.transcript_database = pysam.Tabixfile(config['transcript_db'])
 
         self.first = True
+
+        if config['outputs']['regions']:
+            self.regions_output = output.RegionsOutput(options, config)
+
+        if config['outputs']['profiles']:
+            self.per_base_output = output.PerBaseCoverageOutput(options, config)
+
+        if config['outputs']['gui']:
+            self.gui_output = output.GuiOutput(options, config)
 
     def does_region_pass_coverage_thresholds(self, target):
         """
@@ -72,26 +81,26 @@ class CoverageCalculator(object):
         """
         summary = {}
 
-        summary['MEDCOV'] = numpy.median(profile['COV'])
-        summary['MEDQCOV'] = numpy.median(profile['QCOV'])
-        summary['MINCOV'] = min_or_nan(profile['COV'])
-        summary['MINQCOV'] = min_or_nan(profile['QCOV'])
-        summary['MAXFLBQ'] = max_or_nan(profile['FLBQ'])
-        summary['MAXFLMQ'] = max_or_nan(profile['FLMQ'])
+        summary['MEDCOV'] = numpy.median(profile.coverage_at_each_base)
+        summary['MEDQCOV'] = numpy.median(profile.high_quality_coverage_at_each_base)
+        summary['MINCOV'] = min_or_nan(profile.coverage_at_each_base)
+        summary['MINQCOV'] = min_or_nan(profile.high_quality_coverage_at_each_base)
+        summary['MAXFLBQ'] = max_or_nan(profile.fraction_of_low_base_qualities_at_each_base)
+        summary['MAXFLMQ'] = max_or_nan(profile.fraction_of_low_mapping_qualities_at_each_base)
 
         if self.config['direction']:
-            summary['MEDCOV_f'] = numpy.median(profile['COV_f'])
-            summary['MEDQCOV_r'] = numpy.median(profile['QCOV_r'])
-            summary['MEDQCOV_f'] = numpy.median(profile['QCOV_f'])
-            summary['MEDCOV_r'] = numpy.median(profile['COV_r'])
-            summary['MINCOV_f'] = min_or_nan(profile['COV_f'])
-            summary['MINQCOV_f'] = min_or_nan(profile['QCOV_f'])
-            summary['MAXFLBQ_f'] = max_or_nan(profile['FLBQ_f'])
-            summary['MAXFLMQ_f'] = max_or_nan(profile['FLMQ_f'])
-            summary['MINCOV_r'] = min_or_nan(profile['COV_r'])
-            summary['MINQCOV_r'] = min_or_nan(profile['QCOV_r'])
-            summary['MAXFLBQ_r'] = max_or_nan(profile['FLBQ_r'])
-            summary['MAXFLMQ_r'] = max_or_nan(profile['FLMQ_r'])
+            summary['MEDCOV_f'] = numpy.median(profile.forward_coverage_at_each_base)
+            summary['MEDQCOV_r'] = numpy.median(profile.reverse_high_quality_coverage_at_each_base)
+            summary['MEDQCOV_f'] = numpy.median(profile.forward_high_quality_coverage_at_each_base)
+            summary['MEDCOV_r'] = numpy.median(profile.reverse_coverage_at_each_base)
+            summary['MINCOV_f'] = min_or_nan(profile.forward_coverage_at_each_base)
+            summary['MINQCOV_f'] = min_or_nan(profile.forward_high_quality_coverage_at_each_base)
+            summary['MAXFLBQ_f'] = max_or_nan(profile.forward_fraction_of_low_base_qualities_at_each_base)
+            summary['MAXFLMQ_f'] = max_or_nan(profile.forward_fraction_of_low_mapping_qualities_at_each_base)
+            summary['MINCOV_r'] = min_or_nan(profile.reverse_coverage_at_each_base)
+            summary['MINQCOV_r'] = min_or_nan(profile.reverse_high_quality_coverage_at_each_base)
+            summary['MAXFLBQ_r'] = max_or_nan(profile.reverse_fraction_of_low_base_qualities_at_each_base)
+            summary['MAXFLMQ_r'] = max_or_nan(profile.reverse_fraction_of_low_mapping_qualities_at_each_base)
 
         return summary
 
@@ -106,18 +115,37 @@ class CoverageCalculator(object):
             if not config['transcript_db'] is None:
                 self.out_poor.close()
 
-    def calculate_coverage_summaries(self):
-        _logger.info("Coverage metrics will be generated in a single process")
+    def write_output_file_headers(self):
+        """
+        Write the header rows for each output file, if required.        
+        """
         _logger.info("Writing output headers")
 
-        output.output_target_file_header(
-            self.config,
-            self.out_poor,
-            self.out_json,
-            self.out_targets,
-            self.out_profiles
-        )
+        if self.regions_output is not None:
+            self.regions_output.write_header()
 
+        if self.per_base_output is not None:
+            self.per_base_output.write_header()
+
+        if self.gui_output is not None:
+            self.gui_output.write_header()
+
+    def write_outputs_for_region(self, region_coverage_data):
+        """
+        Write various summaries for each targeted region, if required.      
+        """
+        if self.regions_output:
+            self.regions_output.write_output(region_coverage_data)
+
+        if self.per_base_output is not None:
+            self.per_base_output.write_output(region_coverage_data)
+
+        if self.gui_output is not None:
+            self.gui_output.write_output(region_coverage_data)
+
+    def calculate_coverage_summaries(self):
+        _logger.info("Coverage metrics will be generated in a single process")
+        self.write_output_file_headers()
         num_clusters = 0
 
         for cluster in get_clusters_of_regions_from_bed_file(options.bedfile):
@@ -139,27 +167,22 @@ class CoverageCalculator(object):
                     per_base_summary
                 )
 
-                if self.config['outputs']['gui']:
+                if self.gui_output is not None:
                     target.Ref = self.getReferenceSequence(
                         target.chromosome,
                         target.start_position,
                         target.end_position
                     )
                 else:
-                    coverage_data['Ref'] = None
+                    target.Ref = None
 
-                for o in self.outputs:
-                    o.compute_coverage_metric(target)
-
-                if not target['PASS']:
-                    if '_' in target['Name']:
-                        ids = target['Name'][:target['Name'].find('_')]
+                if not target.passes_thresholds:
+                    if '_' in target.region_name:
+                        ids = target.region_name[:target.region_name.find('_')]
                     else:
-                        ids = target['Name']
+                        ids = target.region_name
 
                     self.ids_of_failed_targets.append(ids)
-                self.output(target)
-        self.close_output_files()
 
         _logger.info("Finished computing coverage metrics in all regions")
         _logger.info("Data was processed in {} clusters".format(num_clusters))
@@ -170,126 +193,6 @@ class CoverageCalculator(object):
         seq = self.reffile.fetch(chrom, start - 1, end)
 
         return seq.upper()
-
-    def output(self, target):
-        if self.config['outputs']['regions']:
-            self.output_target(target)
-
-        if self.config['outputs']['profiles']:
-            if not self.config['only_fail_profiles']:
-                output.output_profiles(
-                    target,
-                    self.out_profiles
-                )
-            else:
-                if not self.config['pass'] is None:
-                    if not target['PASS']:
-                        coverage.output.output_profiles(
-                            target,
-                            self.out_profiles
-                        )
-                else:
-                    coverage.output.output_profiles(
-                        target,
-                        self.out_profiles
-                    )
-
-        if self.config['outputs']['gui']:
-            self.output_json(target)
-
-        if self.first:
-            self.first = False
-
-    def output_json(self, target):
-        if not self.first:
-            self.out_json.write(',')
-
-        self.out_json.write(json.dumps(target, separators=(',', ':')))
-
-    def output_target(self, target):
-
-        summary = target['Summary']
-
-        record = [
-            target['Name'],
-            target['Chrom'],
-            str(target['Start']),
-            str(target['End'])
-        ]
-
-        if self.config['transcript']['regions'] and not self.config['transcript_db'] is None:
-
-            chrom = target['Chrom']
-            region_start = target['Start']
-            region_end = target['End']
-
-            transcripts_overlapping_start = get_transcripts_overlapping_position(
-                self.transcript_database, chrom, region_start
-            )
-
-            transcripts_overlapping_end = get_transcripts_overlapping_position(
-                self.transcript_database, chrom, region_end
-            )
-
-            record.extend([
-                transcripts_overlapping_start,
-                transcripts_overlapping_end
-            ])
-
-        if not self.config['pass'] is None:
-            if target['PASS']:
-                record.append('PASS')
-            else:
-                record.append('FAIL')
-
-        if str(summary['MAXFLMQ']) == 'nan':
-            summary['MAXFLMQ'] = '.'
-
-        if str(summary['MAXFLBQ']) == 'nan':
-            summary['MAXFLBQ'] = '.'
-
-        record.extend([
-            str(target['Profiles']['RC']),
-            str(summary['MEDCOV']),
-            str(summary['MINCOV']),
-            str(summary['MEDQCOV']),
-            str(summary['MINQCOV']),
-            str(summary['MAXFLMQ']),
-            str(summary['MAXFLBQ'])
-        ])
-
-        if self.config['direction']:
-            if str(summary['MAXFLMQ_f']) == 'nan':
-                summary['MAXFLMQ_f'] = '.'
-
-            if str(summary['MAXFLBQ_f']) == 'nan':
-                summary['MAXFLBQ_f'] = '.'
-
-            if str(summary['MAXFLMQ_r']) == 'nan':
-                summary['MAXFLMQ_r'] = '.'
-
-            if str(summary['MAXFLBQ_r']) == 'nan':
-                summary['MAXFLBQ_r'] = '.'
-
-            record.extend([
-                str(summary['MEDCOV_f']),
-                str(summary['MINCOV_f']),
-                str(summary['MEDQCOV_f']),
-                str(summary['MINQCOV_f']),
-                str(summary['MAXFLMQ_f']),
-                str(summary['MAXFLBQ_f'])
-            ])
-
-            record.extend([
-                str(summary['MEDCOV_r']),
-                str(summary['MINCOV_r']),
-                str(summary['MEDQCOV_r']),
-                str(summary['MINQCOV_r']),
-                str(summary['MAXFLMQ_r']),
-                str(summary['MAXFLBQ_r'])
-            ])
-
-        self.out_targets.write('\t'.join(record) + '\n')
 
 
 def get_default_config():
