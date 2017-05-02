@@ -104,24 +104,18 @@ class PerBaseCoverageOutput(object):
 
             self.out_poor.write('#' + '\t'.join(poorheader) + '\n')
 
-    def write_output(self):
-        if not self.only_write_profiles_for_failed_regions:
-            output.output_profiles(
-                target,
-                self.out_profiles
-            )
-        else:
-            if not self.config['pass'] is None:
-                if not target['PASS']:
-                    coverage.output.output_profiles(
-                        target,
-                        self.out_profiles
-                    )
-            else:
-                coverage.output.output_profiles(
-                    target,
+    def write_output(self, coverage_data):
+        if self.only_write_profiles_for_failed_regions:
+            if not coverage_data.passes_thresholds:
+                output_profiles(
+                    coverage_data,
                     self.out_profiles
                 )
+        else:
+            output_profiles(
+                coverage_data,
+                self.out_profiles
+            )
 
 
 class RegionsOutput(object):
@@ -293,19 +287,19 @@ class GuiOutput(object):
         self.output_file.write('function readData() {\n')
         self.output_file.write('\tdata={\"targets\":[')
 
-    def write_output(self):
+    def write_output(self, coverage_data):
 
-        self.output_json(target)
+        self.output_json(coverage_data)
 
         if not self.have_written_first_line:
             self.have_written_first_line = True
 
-    def output_json(self, target):
+    def output_json(self, coverage_data):
         if self.have_written_first_line:
             self.out_json.write(',')
 
         self.output_file.write(
-            json.dumps(target, separators=(',', ':'))
+            json.dumps(coverage_data, separators=(',', ':'))
         )
 
     def finalize_output(self, options, chromdata, config,
