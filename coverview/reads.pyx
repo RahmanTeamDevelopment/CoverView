@@ -163,6 +163,4 @@ cdef class ReadArray:
             window_start[0] = self.reads + startPosOfReads
             window_end[0] = min(self.reads + endPosOfReads, self.reads + self.__size)
 
-            #_logger.debug("Num reads in region = {}".format(window_end[0] - window_start[0]))
-
             assert startPosOfReads <= endPosOfReads

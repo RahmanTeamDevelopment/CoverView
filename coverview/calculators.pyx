@@ -17,13 +17,13 @@ from coverview.reads cimport ReadArray
 
 import logging
 import output
+import pysam
 
 cdef extern from "hts.h":
     ctypedef struct hts_idx_t
     ctypedef struct hts_itr_t
     ctypedef struct BGZF
     ctypedef struct htsFile
-    int hts_idx_get_stat(const hts_idx_t* idx, int tid, uint64_t* mapped, uint64_t* unmapped)
     BGZF *hts_get_bgzfp(htsFile *fp)
     int hts_itr_next(BGZF *fp, hts_itr_t *iter, void *r, void *data)
 
@@ -94,10 +94,8 @@ cdef class RegionCoverageCalculator(object):
         self.mq_hists_r = QualityHistogramArray(bases_in_region)
 
         if count_duplicates is True:
-            _logger.info("Duplicate reads will be counted")
             self.count_duplicates = 1
         else:
-            _logger.info("Duplicate reads will not be counted")
             self.count_duplicates = 0
 
     cdef void add_reads(self, bam1_t** reads_start, bam1_t** reads_end):
@@ -286,14 +284,20 @@ def get_num_mapped_reads_covering_chromosome(bam_file, chrom):
     an O(1) operation rather than the O(N) operation of looping through all reads in the
     file with read.tid == chromID.
     """
-    cdef AlignmentFile the_file = bam_file
-    cdef hts_idx_t* index = the_file.index
-    cdef uint64_t n_mapped = 0
-    cdef uint64_t n_unmapped = 0
-    cdef int tid = the_file.get_tid(chrom)
+    index_stats = pysam.idxstats(bam_file.filename).splitlines()
 
-    hts_idx_get_stat(index, tid, &n_mapped, &n_unmapped)
-    return n_mapped
+    for line in index_stats:
+        if not line.startswith("#"):
+            the_chrom, length, num_reads, num_unmapped_reads = line.split("\t")
+            num_reads = int(num_reads)
+            num_unmapped_reads = int(num_unmapped_reads)
+
+            if the_chrom == chrom:
+                return num_reads - num_unmapped_reads
+    else:
+        raise StandardError("Could not find chromosome {} in pysam index stats".format(
+            chrom
+        ))
 
 
 def get_num_unmapped_reads_covering_chromosome(bam_file, chrom):
@@ -304,14 +308,20 @@ def get_num_unmapped_reads_covering_chromosome(bam_file, chrom):
     an O(1) operation rather than the O(N) operation of looping through all reads in the
     file with read.tid == chromID.
     """
-    cdef AlignmentFile the_file = bam_file
-    cdef hts_idx_t* index = the_file.index
-    cdef uint64_t n_mapped = 0
-    cdef uint64_t n_unmapped = 0
-    cdef int tid = the_file.get_tid(chrom)
+    index_stats = pysam.idxstats(bam_file.filename).splitlines()
 
-    hts_idx_get_stat(index, tid, &n_mapped, &n_unmapped)
-    return n_unmapped
+    for line in index_stats:
+        if not line.startswith("#"):
+            the_chrom, length, num_reads, num_unmapped_reads = line.split("\t")
+            num_reads = int(num_reads)
+            num_unmapped_reads = int(num_unmapped_reads)
+
+            if the_chrom == chrom:
+                return num_unmapped_reads
+    else:
+        raise StandardError("Could not find chromosome {} in pysam index stats".format(
+            chrom
+        ))
 
 
 def get_total_num_reads_covering_chromosome(bam_file, chrom):
@@ -322,14 +332,20 @@ def get_total_num_reads_covering_chromosome(bam_file, chrom):
     an O(1) operation rather than the O(N) operation of looping through all reads in the
     file with read.tid == chromID.
     """
-    cdef AlignmentFile the_file = bam_file
-    cdef hts_idx_t* index = the_file.index
-    cdef uint64_t n_mapped = 0
-    cdef uint64_t n_unmapped = 0
-    cdef int tid = the_file.get_tid(chrom)
+    index_stats = pysam.idxstats(bam_file.filename).splitlines()
 
-    hts_idx_get_stat(index, tid, &n_mapped, &n_unmapped)
-    return n_unmapped + n_mapped
+    for line in index_stats:
+        if not line.startswith("#"):
+            the_chrom, length, num_reads, num_unmapped_reads = line.split("\t")
+            num_reads = int(num_reads)
+            num_unmapped_reads = int(num_unmapped_reads)
+
+            if the_chrom == chrom:
+                return num_reads
+    else:
+        raise StandardError("Could not find chromosome {} in pysam index stats".format(
+            chrom
+        ))
 
 
 def get_valid_chromosome_name(chrom, bam_file):
@@ -641,7 +657,7 @@ class PerBaseCoverageSummary(object):
             if write_directional_summaries == 0:
                 output_line = "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(
                     chromosome,
-                    start_position + 1,
+                    start_position + i,
                     cov,
                     qcov,
                     medbq,
@@ -655,7 +671,7 @@ class PerBaseCoverageSummary(object):
             else:
                 output_line = "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t[}\t{}\t[]\t{}\t{}\n".format(
                     chromosome,
-                    start_position + 1,
+                    start_position + i,
                     cov,
                     qcov,
                     medbq,

@@ -83,24 +83,24 @@ class CoverageCalculator(object):
 
         summary['MEDCOV'] = numpy.median(profile.coverage_at_each_base)
         summary['MEDQCOV'] = numpy.median(profile.high_quality_coverage_at_each_base)
-        summary['MINCOV'] = min_or_nan(profile.coverage_at_each_base)
-        summary['MINQCOV'] = min_or_nan(profile.high_quality_coverage_at_each_base)
-        summary['MAXFLBQ'] = max_or_nan(profile.fraction_of_low_base_qualities_at_each_base)
-        summary['MAXFLMQ'] = max_or_nan(profile.fraction_of_low_mapping_qualities_at_each_base)
+        summary['MINCOV'] = int(min_or_nan(profile.coverage_at_each_base))
+        summary['MINQCOV'] = int(min_or_nan(profile.high_quality_coverage_at_each_base))
+        summary['MAXFLBQ'] = round(max_or_nan(profile.fraction_of_low_base_qualities_at_each_base), 3)
+        summary['MAXFLMQ'] = round(max_or_nan(profile.fraction_of_low_mapping_qualities_at_each_base), 3)
 
         if self.config['direction']:
             summary['MEDCOV_f'] = numpy.median(profile.forward_coverage_at_each_base)
             summary['MEDQCOV_r'] = numpy.median(profile.reverse_high_quality_coverage_at_each_base)
             summary['MEDQCOV_f'] = numpy.median(profile.forward_high_quality_coverage_at_each_base)
             summary['MEDCOV_r'] = numpy.median(profile.reverse_coverage_at_each_base)
-            summary['MINCOV_f'] = min_or_nan(profile.forward_coverage_at_each_base)
-            summary['MINQCOV_f'] = min_or_nan(profile.forward_high_quality_coverage_at_each_base)
-            summary['MAXFLBQ_f'] = max_or_nan(profile.forward_fraction_of_low_base_qualities_at_each_base)
-            summary['MAXFLMQ_f'] = max_or_nan(profile.forward_fraction_of_low_mapping_qualities_at_each_base)
-            summary['MINCOV_r'] = min_or_nan(profile.reverse_coverage_at_each_base)
-            summary['MINQCOV_r'] = min_or_nan(profile.reverse_high_quality_coverage_at_each_base)
-            summary['MAXFLBQ_r'] = max_or_nan(profile.reverse_fraction_of_low_base_qualities_at_each_base)
-            summary['MAXFLMQ_r'] = max_or_nan(profile.reverse_fraction_of_low_mapping_qualities_at_each_base)
+            summary['MINCOV_f'] = int(min_or_nan(profile.forward_coverage_at_each_base))
+            summary['MINQCOV_f'] = int(min_or_nan(profile.forward_high_quality_coverage_at_each_base))
+            summary['MAXFLBQ_f'] = round(max_or_nan(profile.forward_fraction_of_low_base_qualities_at_each_base), 3)
+            summary['MAXFLMQ_f'] = round(max_or_nan(profile.forward_fraction_of_low_mapping_qualities_at_each_base), 3)
+            summary['MINCOV_r'] = int(min_or_nan(profile.reverse_coverage_at_each_base))
+            summary['MINQCOV_r'] = int(min_or_nan(profile.reverse_high_quality_coverage_at_each_base))
+            summary['MAXFLBQ_r'] = round(max_or_nan(profile.reverse_fraction_of_low_base_qualities_at_each_base), 3)
+            summary['MAXFLMQ_r'] = round(max_or_nan(profile.reverse_fraction_of_low_mapping_qualities_at_each_base), 3)
 
         return summary
 

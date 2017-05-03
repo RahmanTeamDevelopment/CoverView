@@ -6,14 +6,12 @@ import csv
 import datetime
 import json
 import logging
-import transcript
-
-from cpython cimport array
-
 import pysam
+import transcript
 
 
 _logger = logging.getLogger("coverview")
+_canonical_chromosomes = set( range(1, 23) + ["X", "Y", "MT"] )
 
 
 def get_transcripts_overlapping_position(transcript_database, chrom, pos):
@@ -216,6 +214,9 @@ class RegionsOutput(object):
         region_start = coverage_data.start_position
         region_end = coverage_data.end_position
         coverage_summary = coverage_data.summary
+
+        if not chrom.startswith("chr") and chrom in _canonical_chromosomes:
+            chrom = "chr{}".format(chrom)
 
         output_record = [
             region_name,
