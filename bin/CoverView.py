@@ -2,8 +2,7 @@
 
 from __future__ import division
 
-from optparse import OptionParser
-
+import argparse
 import json
 import logging
 import numpy
@@ -218,45 +217,45 @@ def get_default_config():
 
 
 def get_input_options():
-    parser = OptionParser(usage='usage: python %prog [options]')
+    parser = argparse.ArgumentParser()
 
-    parser.add_option(
+    parser.add_argument(
         "-i",
         "--input",
-        default='input.bam',
         dest='input',
         action='store',
-        help="Input (BAM) filename [default value: %default]"
+        help="Input (BAM) filename",
+        required=True
     )
 
-    parser.add_option(
+    parser.add_argument(
         "-o",
         "--output",
         default='output',
         dest='output',
         action='store',
-        help="Output filename [default value: %default]"
+        help="Output filename"
     )
 
-    parser.add_option(
+    parser.add_argument(
         "-b",
         "--bed",
         default=None,
         dest='bedfile',
         action='store',
-        help="Input BED filename [default value: %default]"
+        help="Input BED filename"
     )
 
-    parser.add_option(
+    parser.add_argument(
         "-c",
         "--config",
         default=None,
         dest='config',
         action='store',
-        help="Configuration file [default value: %default]"
+        help="Configuration file"
     )
 
-    options, args = parser.parse_args()
+    options = parser.parse_args()
     config = get_default_config()
 
     if options.config is not None:
