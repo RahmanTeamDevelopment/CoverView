@@ -10,19 +10,11 @@ include_dirs = [
     "coverview"
 ]
 
-library_dirs = [
-    "/usr/local/lib"
-]
-
-libraries = [
-    "hts"
-]
-
 cython_directives = {
     "boundscheck": False,
     "nonecheck" : False,
     "cdivision" : True,
-    "profile" : True,
+    "profile" : False,
     "initializedcheck" : False,
     "wraparound" : True
 }
@@ -37,8 +29,6 @@ modules = [
         name="coverview.calculators",
         sources=["coverview/calculators.pyx"],
         include_dirs=include_dirs,
-        libraries=libraries,
-        library_dirs=library_dirs,
     ),
     Extension(
         name="coverview.output",
@@ -69,22 +59,3 @@ setup(
     zip_safe=False
 )
 
-
-# from setuptools import setup
-#
-# setup(
-#     name='Cava',
-#     version='1.2',
-#     description='Annotation of genetic variants',
-#     url='https://github.com/RahmanTeamDevelopment/CAVA',
-#     author='Marton Munz',
-#     author_email='munzmarci@gmail.com',
-#     license='MIT',
-#     packages=['cava'],
-#     scripts=[
-#         'bin/cava.py',
-#         'bin/dbsnp_prep.py',
-#         'bin/ensembl_prep.py'
-#     ],
-#     zip_safe=False
-# )
