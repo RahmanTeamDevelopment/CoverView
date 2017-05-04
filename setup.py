@@ -23,21 +23,25 @@ modules = [
         name="coverview.statistics",
         sources=["coverview/statistics.pyx"],
         include_dirs=include_dirs,
+        extra_compile_args = ["-std=gnu89"]
     ),
     Extension(
         name="coverview.calculators",
         sources=["coverview/calculators.pyx"],
         include_dirs=include_dirs,
+        extra_compile_args=["-std=gnu89"]
     ),
     Extension(
         name="coverview.output",
         sources=["coverview/output.pyx"],
         include_dirs=include_dirs,
+        extra_compile_args=["-std=gnu89"]
     ),
     Extension(
         "coverview.reads",
         ["coverview/reads.pyx"],
         include_dirs=include_dirs,
+        extra_compile_args=["-std=gnu89"]
     )
 ]
 

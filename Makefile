@@ -9,6 +9,7 @@ clean:
 	rm -f coverview/*.pyc
 	rm -rf build
 	rm -rf dist
+	rm -rf CoverView.egg-info
 
 libs:
 	pip install -e .
