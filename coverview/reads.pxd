@@ -1,5 +1,5 @@
-cdef extern from "htslib/sam.h":
-    ctypedef struct bam1_t
+
+from pysam.libchtslib cimport bam1_t
 
 
 cdef class ReadArray:

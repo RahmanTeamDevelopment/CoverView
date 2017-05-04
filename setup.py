@@ -5,7 +5,9 @@ from Cython.Build import cythonize
 include_dirs = [
     "env/lib/python2.7/site-packages",
     "env/lib/python2.7/site-packages/pysam",
+    "env/lib/python2.7/site-packages/pysam/include",
     "env/lib/python2.7/site-packages/pysam/include/htslib",
+    "env/lib/python2.7/site-packages/pysam/include/htslib/htslib",
     "coverview"
 ]
 
@@ -22,26 +24,22 @@ modules = [
     Extension(
         name="coverview.statistics",
         sources=["coverview/statistics.pyx"],
-        include_dirs=include_dirs,
-        extra_compile_args = ["-std=gnu89"]
+        include_dirs=include_dirs
     ),
     Extension(
         name="coverview.calculators",
         sources=["coverview/calculators.pyx"],
-        include_dirs=include_dirs,
-        extra_compile_args=["-std=gnu89"]
+        include_dirs=include_dirs
     ),
     Extension(
         name="coverview.output",
         sources=["coverview/output.pyx"],
-        include_dirs=include_dirs,
-        extra_compile_args=["-std=gnu89"]
+        include_dirs=include_dirs
     ),
     Extension(
         "coverview.reads",
         ["coverview/reads.pyx"],
-        include_dirs=include_dirs,
-        extra_compile_args=["-std=gnu89"]
+        include_dirs=include_dirs
     )
 ]
 

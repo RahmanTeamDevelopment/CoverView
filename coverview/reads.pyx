@@ -5,10 +5,7 @@ Utility classes and functions for efficient processing of read data
 from libc.stdint cimport int32_t
 from pysam.libcalignmentfile cimport bam1_t
 
-cdef extern from "htslib/sam.h":
-    bam1_t *bam_dup1(const bam1_t *bsrc)
-    void bam_destroy1(bam1_t *b)
-    int32_t bam_endpos(const bam1_t *b)
+from pysam.libchtslib cimport bam_dup1, bam_destroy1, bam_endpos
 
 cdef extern from "stdlib.h":
     void free(void *)

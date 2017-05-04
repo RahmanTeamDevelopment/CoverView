@@ -8,6 +8,7 @@ from cpython cimport array
 from libc.stdint cimport uint32_t, uint64_t, uint8_t
 
 from pysam.libcalignmentfile cimport IteratorRowRegion
+
 from pysam.libcalignmentfile cimport AlignmentFile, AlignedSegment, bam1_t, BAM_CIGAR_MASK,\
     BAM_CIGAR_SHIFT, BAM_CINS, BAM_CSOFT_CLIP, BAM_CREF_SKIP, BAM_CMATCH, BAM_CDEL, BAM_FDUP,\
     BAM_FREVERSE
@@ -19,21 +20,7 @@ import logging
 import output
 import pysam
 
-cdef extern from "htslib/bgzf.h":
-    ctypedef struct BGZF
-
-cdef extern from 'htslib/tbx.h':
-    BGZF *hts_get_bgzfp(htsFile *fp)
-
-cdef extern from "htslib/hts.h":
-    ctypedef struct hts_idx_t
-    ctypedef struct hts_itr_t
-    ctypedef struct htsFile
-    int hts_itr_next(BGZF *fp, hts_itr_t *iter, void *r, void *data)
-
-
-cdef extern from "htslib/sam.h":
-    uint8_t* bam_get_qual(bam1_t* b)
+from pysam.libchtslib cimport BGZF, hts_get_bgzfp, hts_itr_t, hts_idx_t, htsFile, hts_itr_next, bam_get_qual
 
 
 _logger = logging.getLogger("coverview")
