@@ -19,16 +19,20 @@ import logging
 import output
 import pysam
 
-cdef extern from "hts.h":
+cdef extern from "htslib/bgzf.h":
+    ctypedef struct BGZF
+
+cdef extern from 'htslib/tbx.h':
+    BGZF *hts_get_bgzfp(htsFile *fp)
+
+cdef extern from "htslib/hts.h":
     ctypedef struct hts_idx_t
     ctypedef struct hts_itr_t
-    ctypedef struct BGZF
     ctypedef struct htsFile
-    BGZF *hts_get_bgzfp(htsFile *fp)
     int hts_itr_next(BGZF *fp, hts_itr_t *iter, void *r, void *data)
 
 
-cdef extern from "sam.h":
+cdef extern from "htslib/sam.h":
     uint8_t* bam_get_qual(bam1_t* b)
 
 

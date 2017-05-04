@@ -1,4 +1,4 @@
-cdef extern from "sam.h":
+cdef extern from "htslib/sam.h":
     ctypedef struct bam1_t
 
 

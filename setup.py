@@ -6,7 +6,6 @@ include_dirs = [
     "env/lib/python2.7/site-packages",
     "env/lib/python2.7/site-packages/pysam",
     "env/lib/python2.7/site-packages/pysam/include/htslib",
-    "env/lib/python2.7/site-packages/pysam/include/htslib/htslib",
     "coverview"
 ]
 

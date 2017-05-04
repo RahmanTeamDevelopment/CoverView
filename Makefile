@@ -6,6 +6,7 @@ clean:
 	rm -f *.bai
 	rm -f coverview/*.c
 	rm -f coverview/*.so
+	rm -f coverview/*.pyc
 	rm -rf build
 	rm -rf dist
 
