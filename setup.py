@@ -57,6 +57,10 @@ setup(
     scripts=[
         "bin/CoverView.py"
     ],
-    zip_safe=False
+    zip_safe=False,
+    install_requires = [
+        "pysam==0.10.0",
+        "numpy==1.12.1"
+    ]
 )
 

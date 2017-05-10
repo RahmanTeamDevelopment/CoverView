@@ -92,3 +92,46 @@ cdef class QualityHistogramArray:
                     return current_bin
 
                 current_bin += 1
+
+
+class pyQualityHistogramArray(object):
+    """
+    Wrapper for the above class. This exists to a) allow us to test the QualityHistogramArray class
+    using the python unit-test module and b) expose the functionality of the QualityHistogramArray
+    class to pure Python code.
+    """
+    def __init__(self, int num_hists):
+        self._hist_array = QualityHistogramArray(num_hists)
+
+    def add_data(self, int index, int quality_score):
+        cdef QualityHistogramArray hist_array = self._hist_array
+        return hist_array.add_data(index, quality_score)
+
+    def compute_fraction_below_threshold(self, int index, int threshold):
+        cdef QualityHistogramArray hist_array = self._hist_array
+        return hist_array.compute_fraction_below_threshold(index, threshold)
+
+    def compute_median(self, int index):
+        cdef QualityHistogramArray hist_array = self._hist_array
+        return hist_array.compute_median(index)
+
+
+class pyQualityHistogram(object):
+    """
+    Simplified wrapper for the QualityHistogramArray class, which specialises the interface for
+    the case when there is only a single histogram
+    """
+    def __init__(self):
+        self._hist_array = QualityHistogramArray(1)
+
+    def add_data(self, int quality_score):
+        cdef QualityHistogramArray hist_array = self._hist_array
+        hist_array.add_data(0, quality_score)
+
+    def compute_fraction_below_threshold(self, int threshold):
+        cdef QualityHistogramArray hist_array = self._hist_array
+        return hist_array.compute_fraction_below_threshold(0, threshold)
+
+    def compute_median(self):
+        cdef QualityHistogramArray hist_array = self._hist_array
+        return hist_array.compute_median(0)

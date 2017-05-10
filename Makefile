@@ -11,8 +11,11 @@ clean:
 	rm -rf dist
 	rm -rf CoverView.egg-info
 
+wheels:
+	pip wheel .
+
 libs:
-	pip install -e .
+	pip install .
 
 profile: libs
 	time python -m cProfile -s cumulative bin/CoverView.py --input ../Data/NA21144.mapped.ILLUMINA.bwa.GIH.exome.20121211.bam -b chrom20_exons.bed > profile.out
