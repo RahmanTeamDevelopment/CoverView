@@ -3,7 +3,14 @@ import math
 import unittest
 
 
-class TestMedianCalculation(unittest.TestCase):
+class TestSimpleMedianCalculation(unittest.TestCase):
+
+    def test_empty_list_has_median_of_nan(selfs):
+        x = []
+        assert math.isnan(coverview.statistics.median(x))
+
+
+class TestQualityHistogramMedianCalculation(unittest.TestCase):
 
     def test_empty_histogram_has_median_of_nan(self):
         hist = coverview.statistics.pyQualityHistogram()
@@ -46,7 +53,7 @@ class TestMedianCalculation(unittest.TestCase):
         assert hist.compute_median() == 50.0
 
 
-class TestFractionBelowThresholdCalculation(object):
+class TestQualityHistogramFractionBelowThresholdCalculation(object):
 
     def test_fraction_is_nan_for_empty_histogram(self):
         hist = coverview.statistics.pyQualityHistogram()
