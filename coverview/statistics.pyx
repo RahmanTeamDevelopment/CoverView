@@ -145,10 +145,14 @@ def median(list x):
 
     if list_length == 0:
         return float('NaN')
-    
+
     sorted_list = sorted(x)
 
     if list_length % 2 == 0:
-        return sorted_list[list_length // 2]
+        lower_index = (list_length // 2) - 1
+        upper_index = list_length // 2
+        return 0.5 * (
+            sorted_list[lower_index] + sorted_list[upper_index]
+        )
     else:
         return sorted_list[list_length // 2]
