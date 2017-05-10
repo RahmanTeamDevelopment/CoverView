@@ -137,7 +137,7 @@ class pyQualityHistogram(object):
         return hist_array.compute_median(0)
 
 
-def median(list x):
+def median(x):
     """
     Calculate and return the median value of an input list. The median is the central value.    
     """

@@ -13,16 +13,16 @@ import logging
 _logger = logging.getLogger("coverview_test")
 
 _value_type_map = {
-    "Region": str,
+    "#Region": str,
     "Chromosome": str,
     "Start_position": int,
     "End_position": int,
     "Pass_or_fail": str,
     "RC": int,
-    "MEDCOV": int,
-    "MINCOV": int,
-    "MEDQCOV": int,
-    "MINQCOV": int,
+    "MEDCOV": float,
+    "MINCOV": float,
+    "MEDQCOV": float,
+    "MINQCOV": float,
     "MAXFLMQ": float,
     "MAXFLBQ": float
 }
@@ -46,20 +46,22 @@ def configure_logging():
 
 
 def parse_command_line_arguments():
-    parser = argparse.ArgumentParser(usage='usage: python %prog [options]')
+    parser = argparse.ArgumentParser()
 
     parser.add_argument(
         "--new_file",
         dest='new_file',
         action='store',
-        help="File containing new 'regions' output, to be checked against the old output"
+        help="File containing new 'regions' output, to be checked against the old output",
+        required=True
     )
 
     parser.add_argument(
         "--old_file",
         dest='old_file',
         action='store',
-        help="File containing old 'regions' output. This will be used as the benchmark for testing"
+        help="File containing old 'regions' output. This will be used as the benchmark for testing",
+        required=True
     )
 
     options = parser.parse_args()
@@ -92,7 +94,10 @@ def compare_regions_file_contents(old_file, new_file):
             else:
                 new_value = new_record[key]
 
-                if old_value != new_value:
+                typed_old_value = _value_type_map[key](old_value)
+                typed_new_value = _value_type_map[key](new_value)
+
+                if typed_old_value != typed_new_value:
                     _logger.error("New value for data point {}:{} ({}) != old value ({})".format(
                         region_name,
                         key,

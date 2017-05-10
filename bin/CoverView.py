@@ -5,7 +5,6 @@ from __future__ import division
 import argparse
 import json
 import logging
-import numpy
 import os
 import pysam
 import shutil
@@ -14,6 +13,7 @@ import warnings
 from coverview import output
 from coverview.calculators import calculate_chromosome_coverage_metrics, get_region_coverage_summary
 from coverview.calculators import calculate_minimal_chromosome_coverage_metrics
+from coverview.statistics import median
 from coverview.utils import *
 
 __version = 'v1.2.0'
@@ -80,18 +80,18 @@ class CoverageCalculator(object):
         """
         summary = {}
 
-        summary['MEDCOV'] = numpy.median(profile.coverage_at_each_base)
-        summary['MEDQCOV'] = numpy.median(profile.high_quality_coverage_at_each_base)
+        summary['MEDCOV'] = median(profile.coverage_at_each_base)
+        summary['MEDQCOV'] = median(profile.high_quality_coverage_at_each_base)
         summary['MINCOV'] = int(min_or_nan(profile.coverage_at_each_base))
         summary['MINQCOV'] = int(min_or_nan(profile.high_quality_coverage_at_each_base))
         summary['MAXFLBQ'] = round(max_or_nan(profile.fraction_of_low_base_qualities_at_each_base), 3)
         summary['MAXFLMQ'] = round(max_or_nan(profile.fraction_of_low_mapping_qualities_at_each_base), 3)
 
         if self.config['direction']:
-            summary['MEDCOV_f'] = numpy.median(profile.forward_coverage_at_each_base)
-            summary['MEDQCOV_r'] = numpy.median(profile.reverse_high_quality_coverage_at_each_base)
-            summary['MEDQCOV_f'] = numpy.median(profile.forward_high_quality_coverage_at_each_base)
-            summary['MEDCOV_r'] = numpy.median(profile.reverse_coverage_at_each_base)
+            summary['MEDCOV_f'] = median(profile.forward_coverage_at_each_base)
+            summary['MEDQCOV_r'] = median(profile.reverse_high_quality_coverage_at_each_base)
+            summary['MEDQCOV_f'] = median(profile.forward_high_quality_coverage_at_each_base)
+            summary['MEDCOV_r'] = median(profile.reverse_coverage_at_each_base)
             summary['MINCOV_f'] = int(min_or_nan(profile.forward_coverage_at_each_base))
             summary['MINQCOV_f'] = int(min_or_nan(profile.forward_high_quality_coverage_at_each_base))
             summary['MAXFLBQ_f'] = round(max_or_nan(profile.forward_fraction_of_low_base_qualities_at_each_base), 3)
@@ -287,8 +287,6 @@ def configure_logging():
     logger.addHandler(stream_handler)
     logger.setLevel(logging.DEBUG)
 
-    # TODO Andy -- I'm not 100% sure why this is necessary.
-    numpy.seterr(all='ignore')
     warnings.simplefilter("ignore", RuntimeWarning)
 
     logger.info('CoverView v1.2.0 started running')
