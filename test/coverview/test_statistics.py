@@ -5,7 +5,7 @@ import unittest
 
 class TestMedianCalculation(unittest.TestCase):
 
-    def test_empty_histogram_has_median_of_None(self):
+    def test_empty_histogram_has_median_of_nan(self):
         hist = coverview.statistics.pyQualityHistogram()
         assert math.isnan(hist.compute_median())
 
