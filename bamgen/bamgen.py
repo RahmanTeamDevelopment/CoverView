@@ -4,6 +4,22 @@ import pysam
 import sys
 
 
+class MockReferenceFile(object):
+    """
+    This class is used in place of a real FASTA reference file, when we want to
+    generate test BAM files, but don't care too much about the reads having a
+    realistic sequence, and also don't want to have a large reference FASTA file
+    lying around.
+    """
+    def __init__(self, references, lengths):
+        self.references = references
+        self.lengths = lengths
+
+    def fetch(self, chrom, start_pos, end_pos):
+        assert chrom in self.references
+        return 'A' * (end_pos - start_pos)
+
+
 class PerfectReadGenerator(object):
     """
     Instances of this class can be used to generate 'perfect' reads. These

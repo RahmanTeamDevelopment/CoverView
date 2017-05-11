@@ -425,7 +425,7 @@ def get_region_coverage_summary(bam_file, cluster, config):
                 config['duplicates']
             )
 
-            read_array.setWindowPointers(begin, end, &reads_start, &reads_end)
+            read_array.set_pointers_to_start_and_end_of_interval(begin, end, &reads_start, &reads_end)
             coverage_calc.add_reads(reads_start, reads_end)
 
             yield RegionCoverageSummary(

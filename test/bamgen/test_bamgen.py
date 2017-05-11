@@ -4,6 +4,13 @@ import pysam
 import unittest
 
 
+class TestMockFastaFile(unittest.TestCase):
+
+    def test_returns_A_for_single_base_fetch(self):
+        fasta_file = bamgen.MockReferenceFile(["1"], [1000000])
+        assert fasta_file.fetch("1", 0, 1) == "A"
+
+
 class TestSimpleBamFileGeneration(unittest.TestCase):
 
     def tearDown(self):

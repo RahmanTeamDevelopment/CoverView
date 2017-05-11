@@ -59,8 +59,7 @@ setup(
     ],
     zip_safe=False,
     install_requires = [
-        "pysam==0.10.0",
-        "numpy==1.12.1"
+        "pysam==0.10.0"
     ]
 )
 
