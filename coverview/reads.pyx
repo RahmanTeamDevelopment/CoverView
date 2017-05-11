@@ -199,13 +199,14 @@ class pyReadArray:
 
         read_array.append(bam_record)
 
-    def int count_reads_in_interval(self, int start_pos, int end_pos):
+    def count_reads_in_interval(self, int start_pos, int end_pos):
         """
         Utility function for returning the number of reads in a specified genomic interval.        
         """
         cdef bam1_t** start
         cdef bam1_t** end
+        cdef ReadArray read_array = self._read_array
 
-        self.set_pointers_to_start_and_end_of_interval(start_pos, end_pos, &start, &end)
+        read_array.set_pointers_to_start_and_end_of_interval(start_pos, end_pos, &start, &end)
 
         return end - start
