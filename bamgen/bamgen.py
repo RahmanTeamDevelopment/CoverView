@@ -62,45 +62,27 @@ class PerfectReadGenerator(object):
             yield read
 
 
-def generate_bam_files(config):
-    for bam_file_config in config['bam_files']:
-        ref_file_name = bam_file_config['reference']
-        ref_file = pysam.FastaFile(ref_file_name)
-        bam_file_name = bam_file_config['file_name']
-        read_gen = PerfectReadGenerator(ref_file)
+def generate_bam_files(bam_file_name, ref_file, regions):
+    read_gen = PerfectReadGenerator(ref_file)
 
-        with pysam.AlignmentFile(
-            bam_file_name,
-            'wb',
-            reference_names=ref_file.references,
-            reference_lengths=ref_file.lengths
-        ) as bam_file:
+    with pysam.AlignmentFile(
+        bam_file_name,
+        'wb',
+        reference_names=ref_file.references,
+        reference_lengths=ref_file.lengths
+    ) as bam_file:
 
-            regions = bam_file_config['reads']
+        for chrom, start_pos, read_length, num_reads in regions:
+            chrom_id = bam_file.get_tid(chrom)
 
-            for region in regions:
-                chrom = region['chrom']
-                start_pos = region['start_pos']
-                read_length = region['read_length']
-                num_reads = region['num_reads']
-                chrom_id = bam_file.get_tid(chrom)
+            for read in read_gen.generate_unpaired_reads(
+                    chrom,
+                    chrom_id,
+                    start_pos,
+                    read_length,
+                    num_reads,
+                    read_id=0
+            ):
+                bam_file.write(read)
 
-                for read in read_gen.generate_unpaired_reads(
-                        chrom,
-                        chrom_id,
-                        start_pos,
-                        read_length,
-                        num_reads,
-                        read_id=0
-                ):
-                    bam_file.write(read)
-
-        pysam.index(bam_file_name)
-
-
-if __name__ == "__main__":
-    config_file_name = sys.argv[1]
-
-    with open(config_file_name, 'r') as config_file:
-        config = json.load(config_file)
-        generate_bam_files(config)
+    pysam.index(bam_file_name)
