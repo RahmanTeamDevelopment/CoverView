@@ -55,7 +55,8 @@ setup(
     ext_modules = cythonize(modules, compiler_directives=cython_directives),
     packages=['coverview'],
     scripts=[
-        "bin/CoverView.py"
+        "bin/CoverView.py",
+        "bin/coverview"
     ],
     zip_safe=False,
     install_requires = [

@@ -10,11 +10,12 @@ clean:
 	rm -rf build
 	rm -rf dist
 	rm -rf CoverView.egg-info
+	pip uninstall -y CoverView
 
 wheels:
 	pip wheel .
 
-libs:
+install:
 	pip install .
 
 profile: libs
