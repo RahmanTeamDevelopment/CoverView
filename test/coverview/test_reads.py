@@ -1,37 +1,46 @@
+import bamgen
 import coverview
-import math
+import os
+import pysam
 import unittest
+import uuid
 
 
 class TestReadArray(unittest.TestCase):
+    """
+    Here we are testing the ability to read a large set of reads into
+    memory using the ReadArray class, and to query sub-regions of the
+    data.
+    """
+    def setUp(self):
+        self.unique_bam_file_name = str(uuid.uuid4())
+        self.unique_index_file_name = self.unique_bam_file_name + ".bai"
 
-    def test_empty_list_has_median_of_nan(selfs):
-        x = []
-        assert math.isnan(coverview.statistics.median(x))
+    def tearDown(self):
+        os.remove(self.unique_bam_file_name)
+        os.remove(self.unique_index_file_name)
 
-    def test_median_of_single_value_is_that_value(self):
-        x = [5]
-        assert coverview.statistics.median(x) == 5
+    def test_empty_read_array_has_zero_reads_in_interval(self):
+        references = ["1"]
+        reference_lengths = [1000]
+        ref_file = bamgen.MockReferenceFile(references, reference_lengths)
+        regions = [
+            ("1", 32, 100, 0)
+        ]
 
-    def test_median_of_two_values_is_the_mean_of_those_values(self):
-        x = [10, 20]
-        assert coverview.statistics.median(x) == 15
+        bamgen.generate_bam_file(
+            self.unique_bam_file_name,
+            ref_file,
+            regions
+        )
 
-    def test_median_of_two_identical_values_is_the_value(self):
-        x = [10, 10]
-        assert coverview.statistics.median(x) == 10
+        read_array = coverview.reads.pyReadArray()
 
-    def test_median_of_three_values_is_the_middle_value(self):
-        x = [10, 20, 30]
-        assert coverview.statistics.median(x) == 20
+        with pysam.AlignmentFile(self.unique_bam_file_name, 'rb') as bam_file:
+            for read in bam_file:
+                read_array.append(read)
 
-    def test_median_of_0_to_99_is_49_and_a_half(self):
-        x = range(0, 100)
-        assert coverview.statistics.median(x) == 49.5
-
-    def test_median_of_0_to_100_is_50(self):
-        x = range(0, 101)
-        assert coverview.statistics.median(x) == 50.0
+        assert read_array.count_reads_in_interval(0, 1000) == 0
 
 
 if __name__ == "__main__":

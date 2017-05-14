@@ -183,7 +183,7 @@ class pyReadArray:
     """
     Expose the ReadArray class to Python. For testing and general utility.
     """
-    def __init__(self, int size):
+    def __init__(self, int size=1):
         """
         Allocate an array of size 'size', with initial values
         'init'.

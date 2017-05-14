@@ -1,7 +1,9 @@
 import array
-import json
 import pysam
-import sys
+import uuid
+
+
+_high_quality = 60
 
 
 class MockReferenceFile(object):
@@ -20,69 +22,82 @@ class MockReferenceFile(object):
         return 'A' * (end_pos - start_pos)
 
 
-class PerfectReadGenerator(object):
+def create_unpaired_read(
+        sequence,
+        qualities,
+        reference_id,
+        start_position,
+        mapping_quality,
+        cigar,
+        is_unmapped,
+        is_duplicate
+):
+    read = pysam.AlignedRead()
+    read.query_name = "simulated_read_{}".format(
+        str(uuid.uuid4())
+    )
+    read.query_sequence = sequence
+    read.query_qualities = qualities
+    read.reference_id = reference_id
+    read.reference_start = start_position
+    read.mapping_quality = mapping_quality
+    read.cigar = cigar
+    read.next_reference_id = -1
+    read.next_reference_start = -1
+    read.is_unmapped = is_unmapped
+    read.is_duplicate = is_duplicate
+    read.is_paired = 0
+    return read
+
+
+def create_perfect_unpaired_read(
+        reference_file,
+        reference_id,
+        chromosome,
+        start_position,
+        read_length
+):
+    mapping_quality = _high_quality
+    sequence = reference_file.fetch(chromosome, start_position, start_position + read_length)
+    qualities = array.array('b', [_high_quality] * read_length)
+    cigar = ((0, read_length),)  # Perfect match
+
+    return create_unpaired_read(
+        sequence,
+        qualities,
+        reference_id,
+        start_position,
+        mapping_quality,
+        cigar,
+        is_unmapped=0,
+        is_duplicate=0
+    )
+
+
+def generate_bam_file(bam_file_name, reference_file, regions):
     """
-    Instances of this class can be used to generate 'perfect' reads. These
-    reads will all have sequences matching the reference exactly, and will have
-    no alignment gaps. All bases will be high quality, mapping quality will be
-    high, and the reads will not be marked as duplicates.
+    Create a new BAM file and write reads to that file. The number and details
+    of the reads are specified in the 'regions' parameter.
     """
-    HIGH_QUAL = 60  # Used for all base and mapping qualities
-
-    def __init__(self, ref_file):
-        """
-        """
-        self.ref = ref_file
-
-    def generate_unpaired_reads(self, chrom, chrom_id, pos, length, n,
-                                read_id=0):
-        """
-        Generate n perfect (i.e. no mis-matches or alignment gaps, not
-        duplicates, all bases are high quality, and the mapping quality
-        is high) un-paired reads.
-        """
-        seq = self.ref.fetch(chrom, pos, pos+length)
-        qual = array.array('b', [self.HIGH_QUAL]*len(seq))
-        cigar = ((0, len(seq)),)  # Perfect match
-
-        for i in xrange(n):
-            read = pysam.AlignedRead()
-            read.query_name = "simulated_read_{}".format(read_id + i)
-            read.query_sequence = seq
-            read.query_qualities = qual
-            read.reference_id = chrom_id
-            read.reference_start = pos
-            read.mapping_quality = self.HIGH_QUAL
-            read.cigar = cigar
-            read.next_reference_id = -1
-            read.next_reference_start = -1
-            read.is_unmapped = 0
-            read.is_duplicate = 0
-            read.is_paired = 0
-            yield read
-
-
-def generate_bam_files(bam_file_name, ref_file, regions):
-    read_gen = PerfectReadGenerator(ref_file)
-
     with pysam.AlignmentFile(
         bam_file_name,
         'wb',
-        reference_names=ref_file.references,
-        reference_lengths=ref_file.lengths
+        reference_names=reference_file.references,
+        reference_lengths=reference_file.lengths
     ) as bam_file:
 
-        for chrom, start_pos, read_length, num_reads in regions:
-            chrom_id = bam_file.get_tid(chrom)
+        for chromosome, start_position, read_length, num_reads in regions:
+            reference_id = bam_file.get_tid(chromosome)
 
-            for read in read_gen.generate_unpaired_reads(
-                    chrom,
-                    chrom_id,
-                    start_pos,
-                    read_length,
-                    num_reads,
-                    read_id=0
-            ):
-                bam_file.write(read)
+            for read_index in xrange(num_reads):
+                new_read = create_perfect_unpaired_read(
+                    reference_file,
+                    reference_id,
+                    chromosome,
+                    start_position,
+                    read_length
+                )
+
+                bam_file.write(new_read)
 
     pysam.index(bam_file_name)

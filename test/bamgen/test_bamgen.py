@@ -34,6 +34,23 @@ class TestSimpleBamFileGeneration(unittest.TestCase):
         os.remove(self.unique_bam_file_name)
         os.remove(self.unique_index_file_name)
 
+    def test_can_generate_empty_bam_file(self):
+        references = ["1"]
+        reference_lengths = [1000]
+        ref_file = bamgen.MockReferenceFile(references, reference_lengths)
+        regions = [
+            ("1", 32, 100, 0)
+        ]
+
+        bamgen.generate_bam_file(
+            self.unique_bam_file_name,
+            ref_file,
+            regions
+        )
+
+        with pysam.AlignmentFile(self.unique_bam_file_name, 'rb') as bam_file:
+            assert bam_file.count("1", 0, 100) == 0
+
     def test_can_generate_bam_file_with_single_read(self):
         references = ["1"]
         reference_lengths = [1000]
@@ -42,7 +59,7 @@ class TestSimpleBamFileGeneration(unittest.TestCase):
             ("1", 32, 100, 1)
         ]
 
-        bamgen.generate_bam_files(
+        bamgen.generate_bam_file(
             self.unique_bam_file_name,
             ref_file,
             regions
@@ -59,7 +76,7 @@ class TestSimpleBamFileGeneration(unittest.TestCase):
             ("1", 32, 100, 2)
         ]
 
-        bamgen.generate_bam_files(
+        bamgen.generate_bam_file(
             self.unique_bam_file_name,
             ref_file,
             regions
@@ -76,7 +93,7 @@ class TestSimpleBamFileGeneration(unittest.TestCase):
             ("1", 32, 100, 1000)
         ]
 
-        bamgen.generate_bam_files(
+        bamgen.generate_bam_file(
             self.unique_bam_file_name,
             ref_file,
             regions
