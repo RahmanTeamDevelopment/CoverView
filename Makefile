@@ -7,9 +7,6 @@ pep8:
 	${PEP8} ${PY}
 
 clean:
-	rm -rf build
-	rm -rf dist
-	rm -rf CoverView.egg-info
 	pip uninstall -y CoverView
 
 wheels:
