@@ -26,7 +26,10 @@ class Transcript(object):
         else:
             ret = '-/'
         cds = 0
-        for exon in self.exons: cds += exon.length
+
+        for exon in self.exons:
+            cds += exon.length
+
         return ret + str(round((self.transcriptEnd - self.transcriptStart + 1) / 1000, 1)) + 'kb' + '/' + str(
             len(self.exons)) + '/' + str(round(cds / 1000, 1)) + 'kb'
 
@@ -70,7 +73,8 @@ class Transcript(object):
         # Translating coding sequence
         ret = Sequence(self.getCodingSequence(reference, variant)).translate(1)
         stop = ret.find('X')
-        if stop != -1: ret = ret[:stop + 1]
+        if stop != -1:
+            ret = ret[:stop + 1]
         return ret
 
     # Checking if a given position is within the UTR of the transcript
@@ -84,50 +88,69 @@ class Transcript(object):
     def isOutsideTranslatedRegion(self, variant):
         if self.strand == 1:
             if variant.isInsertion():
-                if variant.pos <= self.codingStartGenomic: return True
-                if variant.pos - 1 >= self.codingEndGenomic: return True
+                if variant.pos <= self.codingStartGenomic:
+                    return True
+                if variant.pos - 1 >= self.codingEndGenomic:
+                    return True
                 return False
             else:
-                if variant.pos + len(variant.ref) - 1 < self.codingStartGenomic: return True
-                if variant.pos > self.codingEndGenomic: return True
+                if variant.pos + len(variant.ref) - 1 < self.codingStartGenomic:
+                    return True
+                if variant.pos > self.codingEndGenomic:
+                    return True
                 return False
         else:
             if variant.isInsertion():
-                if variant.pos <= self.codingEndGenomic: return True
-                if variant.pos - 1 >= self.codingStartGenomic: return True
+                if variant.pos <= self.codingEndGenomic:
+                    return True
+                if variant.pos - 1 >= self.codingStartGenomic:
+                    return True
                 return False
             else:
-                if variant.pos + len(variant.ref) - 1 < self.codingEndGenomic: return True
-                if variant.pos > self.codingStartGenomic: return True
+                if variant.pos + len(variant.ref) - 1 < self.codingEndGenomic:
+                    return True
+                if variant.pos > self.codingStartGenomic:
+                    return True
                 return False
 
-    # Checking if the given variant is outside of the translated region of the transcript, +/- the first and last 3 bases of the coding sequence
+    # Checking if the given variant is outside of the translated region of the
+    # transcript, +/- the first and last 3 bases of the coding sequence
     def isOutsideTranslatedRegionPlus3(self, variant):
         if self.strand == 1:
             if variant.isInsertion():
-                if variant.pos <= self.codingStartGenomic + 3: return True
-                if variant.pos - 1 >= self.codingEndGenomic - 3: return True
+                if variant.pos <= self.codingStartGenomic + 3:
+                    return True
+                if variant.pos - 1 >= self.codingEndGenomic - 3:
+                    return True
                 return False
             else:
-                if variant.pos + len(variant.ref) - 1 < self.codingStartGenomic + 3: return True
-                if variant.pos > self.codingEndGenomic - 3: return True
+                if variant.pos + len(variant.ref) - 1 < self.codingStartGenomic + 3:
+                    return True
+                if variant.pos > self.codingEndGenomic - 3:
+                    return True
                 return False
         else:
             if variant.isInsertion():
-                if variant.pos <= self.codingEndGenomic + 3: return True
-                if variant.pos - 1 >= self.codingStartGenomic - 3: return True
+                if variant.pos <= self.codingEndGenomic + 3:
+                    return True
+                if variant.pos - 1 >= self.codingStartGenomic - 3:
+                    return True
                 return False
             else:
-                if variant.pos + len(variant.ref) - 1 < self.codingEndGenomic + 3: return True
-                if variant.pos > self.codingStartGenomic - 3: return True
+                if variant.pos + len(variant.ref) - 1 < self.codingEndGenomic + 3:
+                    return True
+                if variant.pos > self.codingStartGenomic - 3:
+                    return True
                 return False
 
     # Checking if the given variant overlaps with splicing region
     def isInSplicingRegion(self, variant, ssrange):
         if not self.isOutsideTranslatedRegion(variant):
             for exon in self.exons:
-                if variant.overlap(exon.end + 1, exon.end + ssrange): return True
-                if variant.overlap(exon.start - (ssrange - 1), exon.start): return True
+                if variant.overlap(exon.end + 1, exon.end + ssrange):
+                    return True
+                if variant.overlap(exon.start - (ssrange - 1), exon.start):
+                    return True
             return False
         else:
             return False
@@ -136,8 +159,10 @@ class Transcript(object):
     def isInEssentialSpliceSite(self, variant):
         if not self.isOutsideTranslatedRegion(variant):
             for exon in self.exons:
-                if variant.overlap(exon.end + 1, exon.end + 2): return True
-                if variant.overlap(exon.start - 1, exon.start): return True
+                if variant.overlap(exon.end + 1, exon.end + 2):
+                    return True
+                if variant.overlap(exon.start - 1, exon.start):
+                    return True
             return False
         else:
             return False
@@ -149,19 +174,21 @@ class Transcript(object):
                 for exon in self.exons:
                     if variant.overlap(exon.end + 1, exon.end + 5):
                         if not variant.isSNP():
-                            if not (variant.pos == exon.end + 3 and len(variant.ref) == 2 and len(
-                                variant.alt) == 2): return True
+                            if not (variant.pos == exon.end + 3 and len(variant.ref) == 2 and len(variant.alt) == 2):
+                                return True
                         else:
-                            if variant.pos == exon.end + 5: return True
+                            if variant.pos == exon.end + 5:
+                                return True
                 return False
             else:
                 for exon in self.exons:
                     if variant.overlap(exon.start - 4, exon.start):
                         if not variant.isSNP():
-                            if not (variant.pos == exon.start - 3 and len(variant.ref) == 2 and len(
-                                variant.alt) == 2): return True
+                            if not (variant.pos == exon.start - 3 and len(variant.ref) == 2 and len(variant.alt) == 2):
+                                return True
                         else:
-                            if variant.pos == exon.start - 4: return True
+                            if variant.pos == exon.start - 4:
+                                return True
                 return False
         else:
             return False
@@ -170,28 +197,37 @@ class Transcript(object):
     def isInFirstOrLast3BaseOfExon(self, variant):
         if not self.isOutsideTranslatedRegionPlus3(variant):
             for exon in self.exons:
-                if variant.overlap(exon.start + 1, exon.start + 3): return True
-                if variant.overlap(exon.end - 2, exon.end): return True
+                if variant.overlap(exon.start + 1, exon.start + 3):
+                    return True
+                if variant.overlap(exon.end - 2, exon.end):
+                    return True
             return False
         else:
             return False
 
     # Checking where a given genomic position is located in the transcript
     def whereIsThisPosition(self, pos):
-        if (self.strand == 1 and pos < self.codingStartGenomic) or (
-                self.strand == -1 and pos > self.codingStartGenomic): return '5UTR'
-        if (self.strand == 1 and pos > self.codingEndGenomic) or (
-                self.strand == -1 and pos < self.codingEndGenomic): return '3UTR'
+
+        if ((self.strand == 1 and pos < self.codingStartGenomic) or
+                (self.strand == -1 and pos > self.codingStartGenomic)):
+            return '5UTR'
+
+        if ((self.strand == 1 and pos > self.codingEndGenomic) or
+                (self.strand == -1 and pos < self.codingEndGenomic)):
+            return '3UTR'
+
         # Iterating through exons and introns and checking if genomic position is located within
         for exon in self.exons:
-            if exon.index > 1 and ((self.strand == 1 and prevexonend < pos <= exon.start) or (
-                    self.strand == -1 and exon.end < pos <= prevexonend)):
-                if self.intronLength(exon.index) > 5:
-                    return 'In' + str(exon.index - 1) + '/' + str(exon.index)
-                else:
-                    return 'fsIn' + str(exon.index - 1) + '/' + str(exon.index)
+            if exon.index > 1:
+                if ((self.strand == 1 and prevexonend < pos <= exon.start) or
+                        (self.strand == -1 and exon.end < pos <= prevexonend)):
+                    if self.intronLength(exon.index) > 5:
+                        return 'In' + str(exon.index - 1) + '/' + str(exon.index)
+                    else:
+                        return 'fsIn' + str(exon.index - 1) + '/' + str(exon.index)
             if exon.start < pos <= exon.end:
                 return 'Ex' + str(exon.index)
+
             prevexonend = exon.end if self.strand == 1 else exon.start
 
     # Checking where a given variant is located in the transcript
@@ -203,7 +239,8 @@ class Transcript(object):
         else:
             first = self.whereIsThisPosition(variant.pos)
             second = self.whereIsThisPosition(variant.pos + len(variant.ref) - 1)
-        if first == second: return first
+        if first == second:
+            return first
         if self.strand == 1:
             return first + '-' + second
         else:
@@ -266,7 +303,8 @@ def findTranscripts(enstdb, chrom, pos):
 
     for line in hits:
         transcript = Transcript(line)
-        if not (transcript.transcriptStart + 1 <= pos <= transcript.transcriptEnd): continue
+        if not (transcript.transcriptStart + 1 <= pos <= transcript.transcriptEnd):
+            continue
         ret[transcript.ENST] = transcript
 
     return ret
@@ -315,8 +353,12 @@ def transformToCSNCoordinate(pos, transcript):
     # If genomic position is within UTR
     else:
         if transcript.strand == 1:
-            if pos < transcript.codingStartGenomic: return pos - transcript.codingStartGenomic, 0
-            if pos > transcript.codingEndGenomic: return '+' + str(pos - transcript.codingEndGenomic), 0
+            if pos < transcript.codingStartGenomic:
+                return pos - transcript.codingStartGenomic, 0
+            if pos > transcript.codingEndGenomic:
+                return '+' + str(pos - transcript.codingEndGenomic), 0
         else:
-            if pos > transcript.codingStartGenomic: return transcript.codingStartGenomic - pos, 0
-            if pos < transcript.codingEndGenomic: return '+' + str(transcript.codingEndGenomic - pos), 0
+            if pos > transcript.codingStartGenomic:
+                return transcript.codingStartGenomic - pos, 0
+            if pos < transcript.codingEndGenomic:
+                return '+' + str(transcript.codingEndGenomic - pos), 0

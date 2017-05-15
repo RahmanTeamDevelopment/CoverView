@@ -1,12 +1,12 @@
-check:
-	pep8 bamgen/bamgen.py
+HEADERS=coverview/*.pxd
+PYX=coverview/*.pyx
+PY=coverview/*.py bamgen/*.py
+PEP8=pep8 --max-line-length=120
+
+pep8:
+	${PEP8} ${PY}
 
 clean:
-	rm -f *.bam
-	rm -f *.bai
-	rm -f coverview/*.c
-	rm -f coverview/*.so
-	rm -f coverview/*.pyc
 	rm -rf build
 	rm -rf dist
 	rm -rf CoverView.egg-info
@@ -15,11 +15,16 @@ clean:
 wheels:
 	pip wheel .
 
-install:
+env/bin/coverview: ${HEADERS} ${PYX} ${PY}
 	pip install .
+
+install: env/bin/coverview
 
 profile: libs
 	source env/bin/activate; time python -m cProfile -s cumulative env/bin/CoverView.py --input ../Data/NA21144.mapped.ILLUMINA.bwa.GIH.exome.20121211.bam -b chrom20_exons.bed > profile.out
 
 test: check libs
 	source env/bin/activate; CoverView.py --input test/16768_sorted_picard.bam -b test/TSCP_coverviewInput.bed -c test/CoverView_default.json
+
+unittest: pep8 install
+	pytest test

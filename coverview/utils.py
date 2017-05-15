@@ -95,4 +95,3 @@ def get_names_of_target_regions(input_file_name):
                     )
 
     return target_names, len(name_counts)
-

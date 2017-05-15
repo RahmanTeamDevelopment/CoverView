@@ -53,7 +53,10 @@ setup(
     license='MIT',
     cmdclass = {'build_ext': build_ext},
     ext_modules = cythonize(modules, compiler_directives=cython_directives),
-    packages=['coverview'],
+    packages=[
+        'coverview',
+        'bamgen'
+    ],
     scripts=[
         "bin/CoverView.py",
         "bin/coverview"
