@@ -1,7 +1,11 @@
 HEADERS=coverview/*.pxd
 PYX=coverview/*.pyx
-PY=coverview/*.py bamgen/*.py
+PY=coverview/*.py bamgen/*.py bin/CoverView.py
 PEP8=pep8 --max-line-length=120
+SCRIPTS=bin/coverview
+
+env:
+	virtualenv -p python2.7 --no-site-packages --always-copy env
 
 pep8:
 	${PEP8} ${PY}
@@ -12,8 +16,9 @@ clean:
 wheels:
 	pip wheel .
 
-env/bin/coverview: ${HEADERS} ${PYX} ${PY}
+env/bin/coverview: ${HEADERS} ${PYX} ${PY} ${SCRIPTS}
 	pip install .
+	touch env/bin/coverview
 
 install: env/bin/coverview
 

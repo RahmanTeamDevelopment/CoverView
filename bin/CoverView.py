@@ -116,7 +116,7 @@ class CoverageCalculator(object):
 
     def write_output_file_headers(self):
         """
-        Write the header rows for each output file, if required.        
+        Write the header rows for each output file, if required.
         """
         _logger.info("Writing output headers")
 
@@ -131,7 +131,7 @@ class CoverageCalculator(object):
 
     def write_outputs_for_region(self, region_coverage_data):
         """
-        Write various summaries for each targeted region, if required.      
+        Write various summaries for each targeted region, if required.
         """
         if self.regions_output:
             self.regions_output.write_output(region_coverage_data)
@@ -261,9 +261,9 @@ def get_input_options():
     if options.config is not None:
         with open(options.config) as config_file:
             input_config = json.load(config_file)
-            for key,value in input_config.iteritems():
+            for key, value in input_config.iteritems():
                 if key in ('outputs', 'transcripts'):
-                    for key_2,value_2 in value.iteritems():
+                    for key_2, value_2 in value.iteritems():
                         config[key][key_2] = value_2
                 else:
                     config[key] = value
