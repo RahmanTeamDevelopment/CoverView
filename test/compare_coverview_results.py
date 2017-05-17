@@ -14,7 +14,7 @@ _logger = logging.getLogger("coverview_test")
 
 _value_type_map = {
     "#Region": str,
-    "Chromosome": str,
+    "Chromosome": lambda x: str(x).replace("chr", "").replace("CHR", ""),
     "Start_position": int,
     "End_position": int,
     "Pass_or_fail": str,
