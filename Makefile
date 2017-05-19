@@ -17,6 +17,7 @@ pep8:
 .ONESHELL:
 clean:
 	pip uninstall -y CoverView
+	find . -name __pycache__ | xargs rm -rf
 
 .ONESHELL:
 wheels: env
