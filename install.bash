@@ -5,4 +5,4 @@ source env/bin/activate
 pip install --no-cache-dir --ignore-installed --force-reinstall --upgrade pip
 source env/bin/activate
 pip install -r requirements.txt --no-cache-dir --ignore-installed --force-reinstall
-pip install . --no-cache-dir --ignore-installed --force-reinstall
+pip install .
