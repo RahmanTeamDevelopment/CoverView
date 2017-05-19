@@ -42,4 +42,4 @@ regression_test: install pep8
 
 .ONESHELL:
 unittest: pep8 install
-	pytest test
+	pytest test/unit
