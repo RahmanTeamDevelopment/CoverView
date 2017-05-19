@@ -2,7 +2,16 @@ from setuptools import setup, Extension
 from Cython.Distutils import build_ext
 from Cython.Build import cythonize
 
+compile_flags=[
+    '-fgnu89-inline'
+]
+
 include_dirs = [
+    "env/lib64/python2.7/site-packages",
+    "env/lib64/python2.7/site-packages/pysam",
+    "env/lib64/python2.7/site-packages/pysam/include",
+    "env/lib64/python2.7/site-packages/pysam/include/htslib",
+    "env/lib64/python2.7/site-packages/pysam/include/htslib/htslib",
     "env/lib/python2.7/site-packages",
     "env/lib/python2.7/site-packages/pysam",
     "env/lib/python2.7/site-packages/pysam/include",
@@ -24,22 +33,26 @@ modules = [
     Extension(
         name="coverview.statistics",
         sources=["coverview/statistics.pyx"],
-        include_dirs=include_dirs
+        include_dirs=include_dirs,
+        extra_compile_args=compile_flags
     ),
     Extension(
         name="coverview.calculators",
         sources=["coverview/calculators.pyx"],
-        include_dirs=include_dirs
+        include_dirs=include_dirs,
+        extra_compile_args=compile_flags
     ),
     Extension(
         name="coverview.output",
         sources=["coverview/output.pyx"],
-        include_dirs=include_dirs
+        include_dirs=include_dirs,
+        extra_compile_args=compile_flags
     ),
     Extension(
         "coverview.reads",
         ["coverview/reads.pyx"],
-        include_dirs=include_dirs
+        include_dirs=include_dirs,
+        extra_compile_args=compile_flags
     )
 ]
 

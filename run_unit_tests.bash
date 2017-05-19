@@ -1,3 +1,4 @@
 #!/bin/bash
-pip install .
+source env/bin/activate
+unset PYTHONPATH
 pytest test

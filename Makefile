@@ -7,7 +7,6 @@ SCRIPTS=bin/coverview
 .ONESHELL:
 env:
 	virtualenv -p python2.7 --no-site-packages --always-copy env
-	source env/bin/activate
 	pip install -U pip
 	pip install -r requirements.txt --no-cache-dir --ignore-installed
 
@@ -17,18 +16,15 @@ pep8:
 
 .ONESHELL:
 clean:
-	source env/bin/activate
 	pip uninstall -y CoverView
 
 .ONESHELL:
 wheels: env
-	source env/bin/activate
 	pip wheel .
 
 .ONESHELL:
 env/bin/coverview: ${HEADERS} ${PYX} ${PY} ${SCRIPTS} env
-	source env/bin/activate
-	pip install . --no-cache-dir --ignore-installed
+	pip install .
 	touch env/bin/coverview
 
 install: env/bin/coverview
