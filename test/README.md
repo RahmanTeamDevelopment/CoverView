@@ -1,7 +1,3 @@
-# Test Suites
-Tests for the BAM generation utilities. These should be run (and should pass) before any changes to the code are pushed to Github. To
-run all tests use the Makefile and run
-
-    make test
-
-in the top-level bamgen directory
+# Test Suites For CoverView 
+The CoverView tests consist of unit tests, regression tests, acceptance tests, and smoke tests. Each
+is described in the README in the relevant folder.
