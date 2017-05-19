@@ -42,4 +42,20 @@ regression_test: install pep8
 
 .ONESHELL:
 unittest: pep8 install
-	pytest test/unit
+	@echo ''
+	@echo 'Running unit tests'
+	@echo ''
+	@pytest test/unit
+
+.ONESHELL:
+acceptancetest: pep8 install
+	@echo ''
+	@echo 'Running acceptance tests'
+	@echo ''
+	@pytest test/acceptance
+
+.ONESHELL:
+test: unittest acceptancetest
+	@echo ''
+	@echo 'Finished running all tests'
+	@echo ''
