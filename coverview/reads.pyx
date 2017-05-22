@@ -3,7 +3,6 @@ Utility classes and functions for efficient processing of read data
 """
 
 from pysam.libcalignmentfile cimport bam1_t
-
 from pysam.libchtslib cimport bam_dup1, bam_destroy1, bam_endpos
 from pysam.libcalignedsegment cimport AlignedSegment
 

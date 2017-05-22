@@ -1,5 +1,6 @@
 import bamgen
-import coverview
+import coverview.statistics
+import coverview.reads
 import os
 import pysam
 import unittest

@@ -1,4 +1,4 @@
 #!/bin/bash
-source env/bin/activate
 unset PYTHONPATH
-CoverView.py $*
+source env/bin/activate
+env/bin/CoverView.py $*

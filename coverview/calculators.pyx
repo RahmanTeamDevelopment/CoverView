@@ -4,6 +4,10 @@ Utilities for calculating coverage summaries from a BAM file
 
 from __future__ import division
 
+import logging
+import output
+import pysam
+
 from cpython cimport array
 from libc.stdint cimport uint32_t, uint64_t, uint8_t
 
@@ -13,15 +17,10 @@ from pysam.libcalignmentfile cimport AlignmentFile, AlignedSegment, bam1_t, BAM_
     BAM_CIGAR_SHIFT, BAM_CINS, BAM_CSOFT_CLIP, BAM_CREF_SKIP, BAM_CMATCH, BAM_CDEL, BAM_FDUP,\
     BAM_FREVERSE
 
-from coverview.statistics cimport QualityHistogramArray
-from coverview.reads cimport ReadArray
-
-import logging
-import output
-import pysam
-
 from pysam.libchtslib cimport BGZF, hts_get_bgzfp, hts_itr_t, hts_idx_t, htsFile, hts_itr_next, bam_get_qual
 
+from .reads cimport ReadArray
+from .statistics cimport QualityHistogramArray
 
 _logger = logging.getLogger("coverview")
 

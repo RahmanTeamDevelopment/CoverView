@@ -7,7 +7,8 @@ import datetime
 import json
 import logging
 import pysam
-import transcript
+
+from . import transcript
 
 
 _logger = logging.getLogger("coverview")
