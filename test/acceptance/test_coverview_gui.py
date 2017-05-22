@@ -109,7 +109,21 @@ class TestCoverViewWithGuiOutput(unittest.TestCase):
             ( "1", 32, 132, "Region_1")
         ]
 
-        config = {"outputs": {"gui": True}}
+        coverview_dir = os.getcwd()
+        gui_dir = os.path.join(coverview_dir, "gui")
+
+        config = \
+            {
+                "outputs": {
+                    "gui": True,
+                    "gui_output_directory": os.path.join(coverview_dir, "output_gui")
+                },
+                "gui": {
+                    "template_gui_html_file": os.path.join(gui_dir, "gui.html"),
+                    "javascript_directory": os.path.join(gui_dir, "lib")
+                }
+            }
+
 
         make_bam_file(self.unique_bam_file_name, read_sets)
         make_bed_file(self.unique_bed_file_name, regions)

@@ -292,18 +292,23 @@ def configure_logging():
     logger.info('CoverView v1.2.0 started running')
 
 
-def create_gui_output_directory():
-    _logger("Creating output directory structure for GUI")
-    dir = options.output + '_gui'
+def create_gui_output_directory(options, config):
 
-    if os.path.exists(dir):
-        shutil.rmtree(dir)
+    _logger.info("Creating output directory structure for GUI in directory".format(
+        config['outputs']['gui_output_directory']
+    ))
 
-    os.makedirs(dir)
-    os.makedirs(dir + '/data')
-    cvdir = os.path.dirname(os.path.realpath(__file__))
-    shutil.copy(cvdir + '/gui.html', dir + '/' + options.output + '_coverview.html')
-    shutil.copytree(cvdir + '/lib', dir + '/lib')
+    template_gui_html_file = config['gui']['template_gui_html_file']
+    javascript_directory = config['gui']['javascript_directory']
+    gui_output_direcory = config['outputs']['gui_output_directory']
+
+    os.makedirs(os.path.join(
+        gui_output_direcory,
+        'data'
+    ))
+
+    shutil.copy(template_gui_html_file, options.output + '_coverview.html')
+    shutil.copytree(javascript_directory, gui_output_direcory)
 
 
 def main(command_line_args):
@@ -333,7 +338,7 @@ def main(command_line_args):
         _logger.info('CoverView {} succesfully finished'.format(_version))
     else:
         if config['outputs']['gui']:
-            create_gui_output_directory()
+            create_gui_output_directory(options, config)
 
         target_names, unique_target_ids = get_names_of_target_regions(options.bedfile)
         number_of_targets = len(target_names)
