@@ -3,6 +3,7 @@ import coverview.main
 import json
 import os
 import pysam
+import shutil
 import unittest
 import uuid
 
@@ -39,14 +40,7 @@ def make_bam_file(file_name, read_sets):
     at least as long as the max(2 * (start_position + read_length)), which is longer than we need but
     that's ok.
     """
-    references = sorted(
-        set([x[0] for x in read_sets])
-    )
-
-    num_read_sets = len(read_sets)
-    longest_ref = max(2* (x[1] + x[2]) for x in read_sets)
-    reference_lengths = [longest_ref] * num_read_sets
-    ref_file = bamgen.MockReferenceFile(references, reference_lengths)
+    ref_file = bamgen.MockReferenceFile()
 
     bamgen.generate_bam_file(
         file_name,
@@ -99,6 +93,10 @@ class TestCoverViewWithGuiOutput(unittest.TestCase):
         os.remove(self.unique_index_file_name)
         os.remove(self.unique_bed_file_name)
         os.remove(self.unique_config_file_name)
+        os.remove("output_regions.txt")
+        os.remove("output_profiles.txt")
+        os.remove("output_summary.txt")
+        shutil.rmtree("output_gui")
 
     def test_coverview_runs_and_returns_0_exit_code(self):
         read_sets = [
@@ -118,14 +116,17 @@ class TestCoverViewWithGuiOutput(unittest.TestCase):
                     "gui": True,
                     "gui_output_directory": os.path.join(coverview_dir, "output_gui")
                 },
+
                 "gui": {
                     "template_gui_html_file": os.path.join(gui_dir, "gui.html"),
                     "javascript_directory": os.path.join(gui_dir, "lib")
-                }
+                },
+
+                "reference_file": "__MOCK__"
             }
 
 
-        make_bam_file(self.unique_bam_file_name, read_sets)
+        bamgen.make_bam_file(self.unique_bam_file_name, read_sets)
         make_bed_file(self.unique_bed_file_name, regions)
         make_config_file(self.unique_config_file_name, config)
 

@@ -7,29 +7,6 @@ import unittest
 import uuid
 
 
-def make_bam_file(file_name, read_sets):
-    """
-    Utility function to create a BAM file with the specified configuration. We create a mock
-    reference with the union of all references in the read_sets and each reference sequence is
-    at least as long as the max(2 * (start_position + read_length)), which is longer than we need but
-    that's ok.
-    """
-    references = sorted(
-        set([x[0] for x in read_sets])
-    )
-
-    num_read_sets = len(read_sets)
-    longest_ref = max(2* (x[1] + x[2]) for x in read_sets)
-    reference_lengths = [longest_ref] * num_read_sets
-    ref_file = bamgen.MockReferenceFile(references, reference_lengths)
-
-    bamgen.generate_bam_file(
-        file_name,
-        ref_file,
-        read_sets
-    )
-
-
 def load_bam_into_read_array(file_name):
     """
     Utility function for creating a read array from the contents of a sorted BAM file    
@@ -62,7 +39,7 @@ class TestReadArray(unittest.TestCase):
             ("1", 32, 100, 0)
         ]
 
-        make_bam_file(self.unique_bam_file_name, read_sets)
+        bamgen.make_bam_file(self.unique_bam_file_name, read_sets)
         read_array = load_bam_into_read_array(self.unique_bam_file_name)
 
         assert read_array.count_reads_in_interval(32, 132) == 0
@@ -72,7 +49,7 @@ class TestReadArray(unittest.TestCase):
             ("1", 32, 100, 1)
         ]
 
-        make_bam_file(self.unique_bam_file_name, read_sets)
+        bamgen.make_bam_file(self.unique_bam_file_name, read_sets)
         read_array = load_bam_into_read_array(self.unique_bam_file_name)
 
         assert read_array.count_reads_in_interval(32, 132) == 1
@@ -82,7 +59,7 @@ class TestReadArray(unittest.TestCase):
             ("1", 32, 100, 1)
         ]
 
-        make_bam_file(self.unique_bam_file_name, read_sets)
+        bamgen.make_bam_file(self.unique_bam_file_name, read_sets)
         read_array = load_bam_into_read_array(self.unique_bam_file_name)
 
         assert read_array.count_reads_in_interval(0, 31) == 0

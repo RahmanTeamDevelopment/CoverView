@@ -532,30 +532,33 @@ class PerBaseCoverageSummary(object):
     def __repr__(self):
         return self.__str__()
 
-    def __str__(self):
-        return str({
+    def as_dict(self):
+        return {
             "RC": self.num_reads_in_region,
             "RC_f": self.num_forward_reads_in_region,
             "RC_r": self.num_reverse_reads_in_region,
-            "COV": self.coverage_at_each_base,
-            "QCOV": self.high_quality_coverage_at_each_base,
-            "MEDBQ": self.median_quality_at_each_base,
-            "FLBQ": self.fraction_of_low_base_qualities_at_each_base,
-            "MEDMQ": self.median_mapping_quality_at_each_base,
-            "FLMQ": self.fraction_of_low_mapping_qualities_at_each_base,
-            "COV_f": self.forward_coverage_at_each_base,
-            "QCOV_f": self.forward_high_quality_coverage_at_each_base,
-            "MEDBQ_f": self.forward_median_quality_at_each_base,
-            "FLBQ_f": self.forward_fraction_of_low_base_qualities_at_each_base,
-            "MEDMQ_f": self.forward_median_mapping_quality_at_each_base,
-            "FLMQ_f": self.forward_fraction_of_low_mapping_qualities_at_each_base,
-            "COV_r": self.reverse_coverage_at_each_base,
-            "QCOV_r": self.reverse_high_quality_coverage_at_each_base,
-            "MEDBQ_r": self.reverse_median_quality_at_each_base,
-            "FLBQ_r": self.reverse_fraction_of_low_base_qualities_at_each_base,
-            "MEDMQ_r": self.reverse_median_mapping_quality_at_each_base,
-            "FLMQ_r": self.reverse_fraction_of_low_mapping_qualities_at_each_base
-        })
+            "COV": list(self.coverage_at_each_base),
+            "QCOV": list(self.high_quality_coverage_at_each_base),
+            "MEDBQ": list(self.median_quality_at_each_base),
+            "FLBQ":list( self.fraction_of_low_base_qualities_at_each_base),
+            "MEDMQ": list(self.median_mapping_quality_at_each_base),
+            "FLMQ": list(self.fraction_of_low_mapping_qualities_at_each_base),
+            "COV_f": list(self.forward_coverage_at_each_base),
+            "QCOV_f": list(self.forward_high_quality_coverage_at_each_base),
+            "MEDBQ_f": list(self.forward_median_quality_at_each_base),
+            "FLBQ_f": list(self.forward_fraction_of_low_base_qualities_at_each_base),
+            "MEDMQ_f": list(self.forward_median_mapping_quality_at_each_base),
+            "FLMQ_f": list(self.forward_fraction_of_low_mapping_qualities_at_each_base),
+            "COV_r": list(self.reverse_coverage_at_each_base),
+            "QCOV_r": list(self.reverse_high_quality_coverage_at_each_base),
+            "MEDBQ_r": list(self.reverse_median_quality_at_each_base),
+            "FLBQ_r": list(self.reverse_fraction_of_low_base_qualities_at_each_base),
+            "MEDMQ_r": list(self.reverse_median_mapping_quality_at_each_base),
+            "FLMQ_r": list(self.reverse_fraction_of_low_mapping_qualities_at_each_base)
+        }
+
+    def __str__(self):
+        return str(self.as_dict())
 
     def print_to_file(
             self,
@@ -732,14 +735,17 @@ class RegionCoverageSummary(object):
         self.end_position = end_position
         self.per_base_coverage_profile = per_base_coverage_profile
 
-    def __str__(self):
-        return str({
+    def as_dict(self):
+        return {
             "Name": self.region_name,
             "Chrom": self.chromosome,
             "Start": self.start_position,
             "End": self.end_position,
-            "profiles": self.per_base_coverage_profile
-        })
+            "profiles": self.per_base_coverage_profile.as_dict()
+        }
+
+    def __str__(self):
+        return str(self.as_dict)
 
 
 def calculate_chromosome_coverage_metrics(bam_file, on_target):

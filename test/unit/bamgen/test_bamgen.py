@@ -8,16 +8,12 @@ import uuid
 class TestMockFastaFile(unittest.TestCase):
 
     def test_returns_A_for_single_base_fetch(self):
-        fasta_file = bamgen.MockReferenceFile(["1"], [1000000])
+        fasta_file = bamgen.MockReferenceFile()
         assert fasta_file.fetch("1", 0, 1) == "A"
 
     def test_returns_AA_for_two_base_fetch(self):
-        fasta_file = bamgen.MockReferenceFile(["1"], [1000000])
+        fasta_file = bamgen.MockReferenceFile()
         assert fasta_file.fetch("1", 0, 2) == "AA"
-
-    def test_raises_assertion_if_incorrect_chromosome_is_used(self):
-        fasta_file = bamgen.MockReferenceFile(["1"], [1000000])
-        self.assertRaises(AssertionError, fasta_file.fetch, "2", 0, 2)
 
 
 class TestSimpleBamFileGeneration(unittest.TestCase):
@@ -35,9 +31,7 @@ class TestSimpleBamFileGeneration(unittest.TestCase):
         os.remove(self.unique_index_file_name)
 
     def test_can_generate_empty_bam_file(self):
-        references = ["1"]
-        reference_lengths = [1000]
-        ref_file = bamgen.MockReferenceFile(references, reference_lengths)
+        ref_file = bamgen.MockReferenceFile()
         regions = [
             ("1", 32, 100, 0)
         ]
@@ -52,9 +46,7 @@ class TestSimpleBamFileGeneration(unittest.TestCase):
             assert bam_file.count("1", 0, 100) == 0
 
     def test_can_generate_bam_file_with_single_read(self):
-        references = ["1"]
-        reference_lengths = [1000]
-        ref_file = bamgen.MockReferenceFile(references, reference_lengths)
+        ref_file = bamgen.MockReferenceFile()
         regions = [
             ("1", 32, 100, 1)
         ]
@@ -69,9 +61,7 @@ class TestSimpleBamFileGeneration(unittest.TestCase):
             assert bam_file.count("1", 0, 100) == 1
 
     def test_can_generate_bam_file_with_two_reads(self):
-        references = ["1"]
-        reference_lengths = [1000]
-        ref_file = bamgen.MockReferenceFile(references, reference_lengths)
+        ref_file = bamgen.MockReferenceFile()
         regions = [
             ("1", 32, 100, 2)
         ]
@@ -86,9 +76,7 @@ class TestSimpleBamFileGeneration(unittest.TestCase):
             assert bam_file.count("1", 0, 100) == 2
 
     def test_can_generate_bam_file_with_many_reads(self):
-        references = ["1"]
-        reference_lengths = [1000]
-        ref_file = bamgen.MockReferenceFile(references, reference_lengths)
+        ref_file = bamgen.MockReferenceFile()
         regions = [
             ("1", 32, 100, 1000)
         ]

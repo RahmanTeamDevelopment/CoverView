@@ -285,13 +285,11 @@ class GuiOutput(object):
     """
     def __init__(self, options, config):
         self.output_file = open(options.output  + '_gui/data/results.js', 'w')
-        self.ref_file = pysam.Fastafile(config["reference"])
         self.have_written_first_line = False
 
     def __del__(self):
         self.output_file.write(']')
         self.output_file.close()
-        self.ref_file.close()
 
     def write_header(self):
         self.output_file.write('function readData() {\n')
@@ -309,7 +307,7 @@ class GuiOutput(object):
             self.out_json.write(',')
 
         self.output_file.write(
-            json.dumps(coverage_data, separators=(',', ':'))
+            json.dumps(coverage_data.as_dict(), separators=(',', ':'))
         )
 
     def finalize_output(self, options, chromdata, config,
@@ -379,33 +377,34 @@ class GuiOutput(object):
         now = datetime.datetime.now()
         self.output_file.write(',\"date\":\"' + now.strftime("%d-%m-%Y, %H:%M") + "\"")
 
-        passdef = []
+        if config['pass'] is not None:
+            passdef = []
 
-        for k, v in config['pass'].iteritems():
-            [met,minmax] = k.split('_')
-            if minmax == 'MIN':
-                passdef.append(met + '>' + str(v))
-            else:
-                passdef.append(met + '<' + str(v))
+            for k, v in config['pass'].iteritems():
+                [met,minmax] = k.split('_')
+                if minmax == 'MIN':
+                    passdef.append(met + '>' + str(v))
+                else:
+                    passdef.append(met + '<' + str(v))
 
-        passdefstr = ', '.join(passdef)
-        self.output_file.write(',\"passdef\":\"' + passdefstr + '\"')
+            passdefstr = ', '.join(passdef)
+            self.output_file.write(',\"passdef\":\"' + passdefstr + '\"')
 
-        passmets = dict()
+            passmets = dict()
 
-        for k, v in config['pass'].iteritems():
-            [met, minmax] = k.split('_')
-            if met.endswith('QCOV'):
-                passmets['QCOV'] = v
-            elif met.endswith('COV'):
-                passmets['COV'] = v
-            elif met.endswith('FLMQ'):
-                passmets['FLMQ'] = v
-            elif met.endswith('FLBQ'):
-                passmets['FLBQ'] = v
-            passmets[met] = v
+            for k, v in config['pass'].iteritems():
+                [met, minmax] = k.split('_')
+                if met.endswith('QCOV'):
+                    passmets['QCOV'] = v
+                elif met.endswith('COV'):
+                    passmets['COV'] = v
+                elif met.endswith('FLMQ'):
+                    passmets['FLMQ'] = v
+                elif met.endswith('FLBQ'):
+                    passmets['FLBQ'] = v
+                passmets[met] = v
 
-        self.output_file.write(',\"passmets\":' + json.dumps(passmets, separators=(',', ':')))
+            self.output_file.write(',\"passmets\":' + json.dumps(passmets, separators=(',', ':')))
         self.output_file.write('}\n')
         self.output_file.write('\treturn data\n')
         self.output_file.write('}\n')

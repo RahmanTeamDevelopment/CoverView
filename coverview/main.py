@@ -1,6 +1,7 @@
 from __future__ import division
 
 import argparse
+import bamgen
 import json
 import logging
 import os
@@ -32,6 +33,18 @@ class CoverageCalculator(object):
         self.regions_output = None
         self.per_base_output = None
         self.gui_output = None
+
+        if config['reference_file'] is not None:
+            ref_file_name = config['reference_file']
+
+            if ref_file_name == "__MOCK__":
+                _logger.info("Using Mock reference file. This should only be used for testing")
+                self.ref_file = bamgen.MockReferenceFile()
+            else:
+                _logger.info("Using file {} to retrieve reference sequence".format(
+                    ref_file_name
+                ))
+                self.ref_file = pysam.Fastafile(ref_file_name)
 
         if config['transcript_db'] is not None:
             self.transcript_database = pysam.Tabixfile(config['transcript_db'])
@@ -189,8 +202,8 @@ class CoverageCalculator(object):
 
     def getReferenceSequence(self, chrom, start, end):
         start = max(1, start)
-        end = min(end, self.reffile.getReferenceLength(chrom))
-        seq = self.reffile.fetch(chrom, start - 1, end)
+        end = min(end, self.ref_file.getReferenceLength(chrom))
+        seq = self.ref_file.fetch(chrom, start - 1, end)
 
         return seq.upper()
 
@@ -292,6 +305,14 @@ def configure_logging():
     logger.info('CoverView v1.2.0 started running')
 
 
+def clean_up_old_gui_output(gui_output_html_file, gui_data_directory):
+    if os.path.exists(gui_output_html_file):
+        os.remove(gui_output_html_file)
+
+    if os.path.exists(gui_data_directory):
+        os.removedirs(gui_data_directory)
+
+
 def create_gui_output_directory(options, config):
 
     _logger.info("Creating output directory structure for GUI in directory".format(
@@ -301,12 +322,14 @@ def create_gui_output_directory(options, config):
     template_gui_html_file = config['gui']['template_gui_html_file']
     javascript_directory = config['gui']['javascript_directory']
     gui_output_direcory = config['outputs']['gui_output_directory']
+    gui_data_directory = os.path.join(gui_output_direcory, "data")
+    gui_output_html_file = os.path.join(gui_output_direcory, "_coverview.html")
+    gui_output_javascript_directory = os.path.join(gui_output_direcory, "lib")
 
-    os.mkdir(gui_output_direcory)
-    os.mkdir(os.path.join(gui_output_direcory, 'data'))
-
-    shutil.copy(template_gui_html_file, options.output + '_coverview.html')
-    shutil.copytree(javascript_directory, gui_output_direcory)
+    clean_up_old_gui_output(gui_output_html_file, gui_data_directory)
+    os.makedirs(os.path.join(gui_output_direcory, 'data'))
+    shutil.copy(template_gui_html_file, gui_output_html_file)
+    shutil.copytree(javascript_directory, gui_output_javascript_directory)
 
 
 def main(command_line_args):
@@ -362,7 +385,7 @@ def main(command_line_args):
         )
 
         if config['outputs']['gui']:
-            output.finalizeJSONOutput(
+            coverage_calculator.gui_output.finalize_output(
                 options,
                 chromosome_coverage_metrics,
                 config,

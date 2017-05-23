@@ -6,6 +6,22 @@ import uuid
 _high_quality = 60
 
 
+def make_bam_file(file_name, read_sets):
+    """
+    Utility function to create a BAM file with the specified configuration. We create a mock
+    reference with the union of all references in the read_sets and each reference sequence is
+    at least as long as the max(2 * (start_position + read_length)), which is longer than we need but
+    that's ok.
+    """
+    ref_file = MockReferenceFile()
+
+    generate_bam_file(
+        file_name,
+        ref_file,
+        read_sets
+    )
+
+
 class MockReferenceFile(object):
     """
     This class is used in place of a real FASTA reference file, when we want to
@@ -13,13 +29,17 @@ class MockReferenceFile(object):
     realistic sequence, and also don't want to have a large reference FASTA file
     lying around.
     """
-    def __init__(self, references, lengths):
-        self.references = references
-        self.lengths = lengths
+    def __init__(self):
+        pass
 
     def fetch(self, chrom, start_pos, end_pos):
-        assert chrom in self.references
         return 'A' * (end_pos - start_pos)
+
+    def getReferenceLength(self, chrom):
+        """
+        The name of this function matches the one in pysam.Fastafile
+        """
+        return 2**64  # A very, very large number.
 
 
 def create_unpaired_read(
@@ -79,11 +99,14 @@ def generate_bam_file(bam_file_name, reference_file, regions):
     Create a new BAM file and write reads to that file. The number and details
     of the reads are specified in the 'regions' parameter.
     """
+    references = sorted(set(x[0] for x in regions))
+    lengths = [max(2 * (x[1] + x[2]) for x in regions)] * len(references)
+
     with pysam.AlignmentFile(
         bam_file_name,
         'wb',
-        reference_names=reference_file.references,
-        reference_lengths=reference_file.lengths
+        reference_names=references,
+        reference_lengths=lengths
     ) as bam_file:
 
         for chromosome, start_position, read_length, num_reads in regions:
