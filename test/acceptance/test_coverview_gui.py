@@ -1,5 +1,5 @@
 import bamgen
-import coverview.coverview
+import coverview.main
 import json
 import os
 import pysam
@@ -135,7 +135,7 @@ class TestCoverViewWithGuiOutput(unittest.TestCase):
             self.unique_config_file_name
         )
 
-        assert coverview.coverview.main(command_line_args) == 0
+        assert coverview.main.main(command_line_args) == 0
 
 
 if __name__ == "__main__":

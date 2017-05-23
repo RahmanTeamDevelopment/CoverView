@@ -302,10 +302,8 @@ def create_gui_output_directory(options, config):
     javascript_directory = config['gui']['javascript_directory']
     gui_output_direcory = config['outputs']['gui_output_directory']
 
-    os.makedirs(os.path.join(
-        gui_output_direcory,
-        'data'
-    ))
+    os.mkdir(gui_output_direcory)
+    os.mkdir(os.path.join(gui_output_direcory, 'data'))
 
     shutil.copy(template_gui_html_file, options.output + '_coverview.html')
     shutil.copytree(javascript_directory, gui_output_direcory)
