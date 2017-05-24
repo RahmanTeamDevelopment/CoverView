@@ -1,4 +1,5 @@
 #!/bin/bash
 unset PYTHONPATH
-source env/bin/activate
-env/bin/CoverView.py $*
+ABSOLUTE_PATH=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+source $ABSOLUTE_PATH/activate
+$ABSOLUTE_PATH/CoverView.py $*

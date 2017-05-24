@@ -72,7 +72,8 @@ setup(
     ],
     scripts=[
         "bin/CoverView.py",
-        "bin/coverview"
+        "bin/coverview",
+        "test/smoke/check_installation_succeeded.bash"
     ],
     zip_safe=False,
     install_requires = [

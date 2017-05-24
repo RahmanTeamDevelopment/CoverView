@@ -32,19 +32,25 @@ profile: install
 regression_test: install pep8
 	coverview --input test/16768_sorted_picard.bam -b test/TSCP_coverviewInput.bed -c ../regression_test_data_for_coverview/CoverView_default.json
 
-unittest: pep8 install
+unittest: install
 	@echo ''
 	@echo 'Running unit tests'
 	@echo ''
 	@pytest test/unit
 
-acceptancetest: pep8 install
+acceptancetest: install
 	@echo ''
 	@echo 'Running acceptance tests'
 	@echo ''
 	@pytest test/acceptance
 
-test: unittest acceptancetest
+smoketest: install
+	@echo ''
+	@echo 'Running smoke tests'
+	@echo ''
+	./test/smoke/check_installation_succeeded.bash
+
+test: pep8 smoketest unittest acceptancetest
 	@echo ''
 	@echo 'Finished running all tests'
 	@echo ''
