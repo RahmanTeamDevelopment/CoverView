@@ -41,9 +41,10 @@ class TestCoverViewWithPassCriteria(unittest.TestCase):
 
                 "pass": {
                     "MINQCOV_MIN": 15
-                }
+                },
 
-                "duplicates:" True,
+                "reference_file": "__MOCK__",
+                "duplicates": True,
                 "direction": True
             }
 

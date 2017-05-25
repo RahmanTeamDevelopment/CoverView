@@ -67,14 +67,13 @@ class CoverageCalculator(object):
         a string of metric name and either MIN or MAX separated by an underscore, e.g.
         MEDQCOV_MIN and the values are the thresholds.
         """
-
         if self.config['pass'] is None:
             return True
         else:
             region_coverage_summary = target.summary
 
             for key, value in self.config['pass'].iteritems():
-                min_or_max, metric_name = key.split('_')
+                metric_name, min_or_max = key.split('_')
                 metric_value = region_coverage_summary[metric_name]
                 threshold = float(value)
 

@@ -662,7 +662,7 @@ class PerBaseCoverageSummary(object):
                 output_line = output_line.replace("nan", ".")
                 output_file.write(output_line)
             else:
-                output_line = "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t[}\t{}\t[]\t{}\t{}\n".format(
+                output_line = "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(
                     chromosome,
                     start_position + i,
                     cov,
