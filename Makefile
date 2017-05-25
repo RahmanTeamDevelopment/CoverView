@@ -16,6 +16,9 @@ clean:
 	pip uninstall -y CoverView
 	find . -name __pycache__ | xargs rm -rf
 
+cleanAll:
+	rm -rf env
+
 wheels: env
 	pip wheel .
 

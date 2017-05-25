@@ -1,3 +1,6 @@
+import os
+import pysam
+
 from setuptools import setup, Extension
 from Cython.Distutils import build_ext
 from Cython.Build import cythonize
@@ -7,18 +10,12 @@ compile_flags=[
 ]
 
 include_dirs = [
-    "env/lib64/python2.7/site-packages",
-    "env/lib64/python2.7/site-packages/pysam",
-    "env/lib64/python2.7/site-packages/pysam/include",
-    "env/lib64/python2.7/site-packages/pysam/include/htslib",
-    "env/lib64/python2.7/site-packages/pysam/include/htslib/htslib",
-    "env/lib/python2.7/site-packages",
-    "env/lib/python2.7/site-packages/pysam",
-    "env/lib/python2.7/site-packages/pysam/include",
-    "env/lib/python2.7/site-packages/pysam/include/htslib",
-    "env/lib/python2.7/site-packages/pysam/include/htslib/htslib",
     "coverview"
 ]
+
+include_dirs.extend(
+    pysam.get_include()
+)
 
 cython_directives = {
     "boundscheck": False,
@@ -29,30 +26,44 @@ cython_directives = {
     "wraparound" : True
 }
 
+pysam_library_dirs= list(set(os.path.dirname(x) for x in pysam.get_libraries()))
+
 modules = [
     Extension(
         name="coverview.statistics",
         sources=["coverview/statistics.pyx"],
         include_dirs=include_dirs,
-        extra_compile_args=compile_flags
+        extra_compile_args=compile_flags,
+        libraries=['chtslib'],
+        library_dirs=pysam_library_dirs,
+        runtime_library_dirs=pysam_library_dirs
     ),
     Extension(
         name="coverview.calculators",
         sources=["coverview/calculators.pyx"],
         include_dirs=include_dirs,
-        extra_compile_args=compile_flags
+        extra_compile_args=compile_flags,
+        libraries=['chtslib'],
+        library_dirs=pysam_library_dirs,
+        runtime_library_dirs=pysam_library_dirs
     ),
     Extension(
         name="coverview.output",
         sources=["coverview/output.pyx"],
         include_dirs=include_dirs,
-        extra_compile_args=compile_flags
+        extra_compile_args=compile_flags,
+        libraries=['chtslib'],
+        library_dirs=pysam_library_dirs,
+        runtime_library_dirs=pysam_library_dirs
     ),
     Extension(
         "coverview.reads",
         ["coverview/reads.pyx"],
         include_dirs=include_dirs,
-        extra_compile_args=compile_flags
+        extra_compile_args=compile_flags,
+        libraries=['chtslib'],
+        library_dirs=pysam_library_dirs,
+        runtime_library_dirs=pysam_library_dirs
     )
 ]
 
