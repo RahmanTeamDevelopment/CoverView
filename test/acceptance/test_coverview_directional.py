@@ -6,7 +6,7 @@ import unittest
 import uuid
 
 
-class TestCoverViewWithGuiOutput(unittest.TestCase):
+class TestCoverViewWithDirectionalOutput(unittest.TestCase):
 
     def setUp(self):
         self.unique_bam_file_name = str(uuid.uuid4()) + ".bam"
@@ -22,7 +22,6 @@ class TestCoverViewWithGuiOutput(unittest.TestCase):
         os.remove("output_regions.txt")
         os.remove("output_profiles.txt")
         os.remove("output_summary.txt")
-        shutil.rmtree("output_gui")
 
     def test_coverview_runs_and_returns_0_exit_code(self):
         read_sets = [
@@ -33,22 +32,15 @@ class TestCoverViewWithGuiOutput(unittest.TestCase):
             ( "1", 32, 132, "Region_1")
         ]
 
-        coverview_dir = os.getcwd()
-        gui_dir = os.path.join(coverview_dir, "gui")
-
         config = \
             {
                 "outputs": {
-                    "gui": True,
-                    "gui_output_directory": os.path.join(coverview_dir, "output_gui")
+                    "profiles": True,
                 },
 
-                "gui": {
-                    "template_gui_html_file": os.path.join(gui_dir, "gui.html"),
-                    "javascript_directory": os.path.join(gui_dir, "lib")
-                },
-
-                "reference_file": "__MOCK__"
+                "reference_file": "__MOCK__",
+                "duplicates": True,
+                "direction": True
             }
 
         testutils.coverview.bamgen.make_bam_file(self.unique_bam_file_name, read_sets)

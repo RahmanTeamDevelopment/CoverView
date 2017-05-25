@@ -6,9 +6,7 @@ import uuid
 
 
 class TestCoverViewWithPassCriteria(unittest.TestCase):
-    """
-    Testing that we can run CoverView and generate the GUI output correctly.
-    """
+
     def setUp(self):
         self.unique_bam_file_name = str(uuid.uuid4()) + ".bam"
         self.unique_index_file_name = self.unique_bam_file_name + ".bai"
