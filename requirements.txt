@@ -1,6 +1,7 @@
 Cython==0.25.2
 appdirs==1.4.3
 packaging==16.8
+pep8==1.7.0
 py==1.4.32
 pyparsing==2.2.0
 pysam==0.10.0
