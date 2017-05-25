@@ -68,7 +68,8 @@ setup(
     ext_modules = cythonize(modules, compiler_directives=cython_directives),
     packages=[
         'coverview',
-        'bamgen'
+        'bamgen',
+        'testutils'
     ],
     scripts=[
         "bin/CoverView.py",
