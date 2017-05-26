@@ -46,9 +46,7 @@ class TestCoverViewWithGuiOutput(unittest.TestCase):
                 "gui": {
                     "template_gui_html_file": os.path.join(gui_dir, "gui.html"),
                     "javascript_directory": os.path.join(gui_dir, "lib")
-                },
-
-                "reference_file": "__MOCK__"
+                }
             }
 
         testutils.coverview.bamgen.make_bam_file(self.unique_bam_file_name, read_sets)
@@ -56,9 +54,10 @@ class TestCoverViewWithGuiOutput(unittest.TestCase):
         testutils.coverview.make_config_file(self.unique_config_file_name, config)
 
         command_line_args = testutils.coverview.make_command_line_arguments(
-            self.unique_bam_file_name,
-            self.unique_bed_file_name,
-            self.unique_config_file_name
+            bam_file_name=self.unique_bam_file_name,
+            bed_file_name=self.unique_bed_file_name,
+            reference_file_name="__MOCK__",
+            config_file_name=self.unique_config_file_name
         )
 
         assert coverview.main.main(command_line_args) == 0

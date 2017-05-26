@@ -1,12 +1,11 @@
 import coverview.main
 import os
-import shutil
 import testutils.coverview
 import unittest
 import uuid
 
 
-class TestCoverViewWithDirectionalOutput(unittest.TestCase):
+class TestCoverViewSkippingDuplicateReads(unittest.TestCase):
 
     def setUp(self):
         self.unique_bam_file_name = str(uuid.uuid4()) + ".bam"
@@ -38,7 +37,11 @@ class TestCoverViewWithDirectionalOutput(unittest.TestCase):
                     "profiles": True,
                 },
 
-                "count_duplicate_reads": True,
+                "pass": {
+                    "MINQCOV_MIN": 15
+                },
+
+                "count_duplicate_reads": False,
                 "direction": True
             }
 

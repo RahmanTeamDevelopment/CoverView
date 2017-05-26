@@ -120,6 +120,7 @@ cdef class RegionCoverageCalculator(object):
 
             # Skip duplicate reads
             if self.count_duplicates == 0 and src.core.flag & BAM_FDUP != 0:
+                reads_start += 1
                 continue
 
             # Reverse bit is set, so read is reverse
@@ -421,7 +422,7 @@ def get_region_coverage_summary(bam_file, cluster, config):
                 end,
                 bq_cutoff,
                 mq_cutoff,
-                config['duplicates']
+                config['count_duplicate_reads']
             )
 
             read_array.set_pointers_to_start_and_end_of_interval(begin, end, &reads_start, &reads_end)

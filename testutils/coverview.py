@@ -3,7 +3,10 @@ import json
 import pysam
 
 
-def make_command_line_arguments(bam_file_name, bed_file_name, config_file_name):
+def make_command_line_arguments(bam_file_name,
+                                bed_file_name,
+                                reference_file_name,
+                                config_file_name):
     """
     Utility function to construct a list of command-line arguments in the form that is stored
     in sys.argv. This can then be fed to the main function and used to run CoverView.
@@ -17,6 +20,12 @@ def make_command_line_arguments(bam_file_name, bed_file_name, config_file_name):
         arguments_list.extend([
             "-b",
             bed_file_name
+        ])
+
+    if reference_file_name is not None:
+        arguments_list.extend([
+            "-r",
+            reference_file_name
         ])
 
     if config_file_name is not None:

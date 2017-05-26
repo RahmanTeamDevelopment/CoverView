@@ -34,8 +34,8 @@ class CoverageCalculator(object):
         self.per_base_output = None
         self.gui_output = None
 
-        if config['reference_file'] is not None:
-            ref_file_name = config['reference_file']
+        if options.reference_file is not None:
+            ref_file_name = options.reference_file
 
             if ref_file_name == "__MOCK__":
                 _logger.info("Using Mock reference file. This should only be used for testing")
@@ -209,7 +209,7 @@ class CoverageCalculator(object):
 
 def get_default_config():
     return {
-        "duplicates": True,
+        "count_duplicate_reads": True,
         "outputs": {
             "regions": True,
             "profiles": True,
@@ -265,6 +265,15 @@ def get_input_options(command_line_args):
         dest='config',
         action='store',
         help="Configuration file"
+    )
+
+    parser.add_argument(
+        "-r",
+        "--reference_file",
+        default=None,
+        dest='reference_file',
+        action='store',
+        help="Reference FASTA file"
     )
 
     options = parser.parse_args(command_line_args)

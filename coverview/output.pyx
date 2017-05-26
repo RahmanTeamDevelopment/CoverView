@@ -358,7 +358,7 @@ class GuiOutput(object):
 
         self.output_file.write(',\"input\":\"' + infn + '\"')
         self.output_file.write(',\"direction\":' + str(config['direction']).lower())
-        self.output_file.write(',\"duplicates\":' + str(config['duplicates']).lower())
+        self.output_file.write(',\"count_duplicate_reads\":' + str(config['count_duplicate_reads']).lower())
         self.output_file.write(',\"ntargets\":' + str(numOfTargets))
         self.output_file.write(',\"unique\":' + str(uniqueIDs))
         self.output_file.write(',\"nfailed\":' + str(failedtargets))
