@@ -179,7 +179,7 @@ class CoverageCalculator(object):
                 )
 
                 if self.gui_output is not None:
-                    target.Ref = self.getReferenceSequence(
+                    target.Ref = self.get_reference_sequence(
                         target.chromosome,
                         target.start_position,
                         target.end_position
@@ -199,9 +199,9 @@ class CoverageCalculator(object):
         _logger.info("Finished computing coverage metrics in all regions")
         _logger.info("Data was processed in {} clusters".format(num_clusters))
 
-    def getReferenceSequence(self, chrom, start, end):
+    def get_reference_sequence(self, chrom, start, end):
         start = max(1, start)
-        end = min(end, self.ref_file.getReferenceLength(chrom))
+        end = min(end, self.ref_file.get_reference_length(chrom))
         seq = self.ref_file.fetch(chrom, start - 1, end)
 
         return seq.upper()

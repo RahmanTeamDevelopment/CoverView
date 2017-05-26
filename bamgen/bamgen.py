@@ -35,7 +35,7 @@ class MockReferenceFile(object):
     def fetch(self, chrom, start_pos, end_pos):
         return 'A' * (end_pos - start_pos)
 
-    def getReferenceLength(self, chrom):
+    def get_reference_length(self, chrom):
         """
         The name of this function matches the one in pysam.Fastafile
         """
