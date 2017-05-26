@@ -62,6 +62,35 @@ class TestCoverViewWithGuiOutput(unittest.TestCase):
 
         assert coverview.main.main(command_line_args) == 0
 
+    def test_coverview_runs_with_default_gui_output_file_names(self):
+        read_sets = [
+            ("1", 32, 100, 0)
+        ]
+
+        regions = [
+            ("1", 32, 132, "Region_1")
+        ]
+
+        config = \
+            {
+                "outputs": {
+                    "gui": True,
+                }
+            }
+
+        testutils.coverview.bamgen.make_bam_file(self.unique_bam_file_name, read_sets)
+        testutils.coverview.make_bed_file(self.unique_bed_file_name, regions)
+        testutils.coverview.make_config_file(self.unique_config_file_name, config)
+
+        command_line_args = testutils.coverview.make_command_line_arguments(
+            bam_file_name=self.unique_bam_file_name,
+            bed_file_name=self.unique_bed_file_name,
+            reference_file_name="__MOCK__",
+            config_file_name=self.unique_config_file_name
+        )
+
+        assert coverview.main.main(command_line_args) == 0
+
 
 if __name__ == "__main__":
     unittest.main()

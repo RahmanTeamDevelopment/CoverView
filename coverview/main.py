@@ -214,6 +214,7 @@ def get_default_config():
             "regions": True,
             "profiles": True,
             "gui": False,
+            "gui_output_directory": "output_gui_data"
         },
         "transcript": {
             "regions": True,
