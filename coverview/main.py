@@ -224,7 +224,11 @@ def get_default_config():
         "only_fail_profiles": False,
         "transcript_db": None,
         "pass": None,
-        "direction": False
+        "direction": False,
+        "gui": {
+            "template_gui_html_file": "gui/gui.html",
+            "javascript_directory": "gui/lib"
+        }
     }
 
 

@@ -6,7 +6,7 @@ import csv
 import datetime
 import json
 import logging
-import pysam
+import os
 
 from . import transcript
 
@@ -284,7 +284,14 @@ class GuiOutput(object):
     the graphical interface.
     """
     def __init__(self, options, config):
-        self.output_file = open(options.output  + '_gui/data/results.js', 'w')
+
+        gui_result_file_name = os.path.join(
+            config['outputs']['gui_output_directory'],
+            "data",
+            "results.js"
+        )
+
+        self.output_file = open(gui_result_file_name, 'w')
         self.have_written_first_line = False
 
     def __del__(self):

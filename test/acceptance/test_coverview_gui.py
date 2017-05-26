@@ -22,7 +22,7 @@ class TestCoverViewWithGuiOutput(unittest.TestCase):
         os.remove("output_regions.txt")
         os.remove("output_profiles.txt")
         os.remove("output_summary.txt")
-        shutil.rmtree("output_gui")
+        shutil.rmtree("output_gui_data")
 
     def test_coverview_runs_and_returns_0_exit_code(self):
         read_sets = [
@@ -40,7 +40,7 @@ class TestCoverViewWithGuiOutput(unittest.TestCase):
             {
                 "outputs": {
                     "gui": True,
-                    "gui_output_directory": os.path.join(coverview_dir, "output_gui")
+                    "gui_output_directory": os.path.join(coverview_dir, "output_gui_data")
                 },
 
                 "gui": {
