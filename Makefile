@@ -1,6 +1,6 @@
 HEADERS=coverview/*.pxd
 PYX=coverview/*.pyx
-PY=coverview/*.py bamgen/*.py bin/CoverView.py
+PY=coverview/*.py bamgen/*.py bin/CoverView.py testutils/*.py
 PEP8=pep8 --max-line-length=120
 SCRIPTS=bin/coverview
 

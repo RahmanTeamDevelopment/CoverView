@@ -1,6 +1,5 @@
 import coverview.main
 import os
-import shutil
 import testutils.coverview
 import unittest
 import uuid

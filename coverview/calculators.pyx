@@ -360,6 +360,11 @@ cdef void load_reads_into_array(ReadArray read_array, bam_file, chrom, start, en
     Load a chunk of BAM data into an in-memory read array
     """
     cdef int iterator_status = 0
+
+    _logger.info("Loading reads for chromm = {}. start = {}. end = {}".format(
+        chrom, start, end
+    ))
+
     cdef IteratorRowRegion read_iterator = bam_file.fetch(chrom, start, end)
 
     while True:
@@ -391,6 +396,7 @@ def get_region_coverage_summary(bam_file, cluster, config):
     cdef bam1_t** reads_start
     cdef bam1_t** reads_end
 
+    _logger.info("Cluster = {}".format(cluster))
     cluster_chrom = get_valid_chromosome_name(cluster[0][0], bam_file)
     cluster_begin = cluster[0][1]
     cluster_end = cluster[-1][2]

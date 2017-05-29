@@ -55,11 +55,11 @@ def make_bam_file(file_name, read_sets):
 
 def make_bed_file(file_name, regions):
     """
-    Output a BED file containing a list of genomic intervals    
+    Output a BED file containing a list of genomic intervals
     """
     with open(file_name, 'w') as bed_file:
         for chrom, start, end, name in regions:
-            bed_file.write("\t{}\t{}\t{}\t{}".format(
+            bed_file.write("{}\t{}\t{}\t{}".format(
                 chrom, start, end, name
             ))
 
@@ -71,7 +71,7 @@ def make_config_file(file_name, config_dict):
 
 def load_bam_into_read_array(file_name):
     """
-    Utility function for creating a read array from the contents of a sorted BAM file    
+    Utility function for creating a read array from the contents of a sorted BAM file
     """
     read_array = coverview.reads.pyReadArray()
 

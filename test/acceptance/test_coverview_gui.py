@@ -31,7 +31,7 @@ class TestCoverViewWithGuiOutput(unittest.TestCase):
         ]
 
         regions = [
-            ( "1", 32, 132, "Region_1")
+            ("1", 32, 132, "Region_1")
         ]
 
         coverview_dir = os.getcwd()
