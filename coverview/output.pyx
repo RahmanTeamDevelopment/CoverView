@@ -291,6 +291,10 @@ class GuiOutput(object):
             "results.js"
         )
 
+        _logger.info("Gui Javascript code will be written to {}".format(
+            gui_result_file_name
+        ))
+
         self.output_file = open(gui_result_file_name, 'w')
         self.have_written_first_line = False
 
@@ -424,10 +428,6 @@ def output_chromosome_coverage_metrics(options, chromosome_coverage_metrics):
     num_mapped_reads_in_bam = chromosome_coverage_metrics['Mapped']
     num_unmapped_reads_in_bam = chromosome_coverage_metrics['Unmapped']
     num_total_reads_in_bam = chromosome_coverage_metrics['Total']
-
-    _logger.info(num_mapped_reads_in_bam)
-    _logger.info(num_unmapped_reads_in_bam)
-    _logger.info(num_total_reads_in_bam)
 
     with open(options.output + '_summary.txt', 'w') as output_file:
         csv_writer = csv.writer(output_file, delimiter='\t')

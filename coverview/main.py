@@ -2,6 +2,7 @@ from __future__ import division
 
 import argparse
 import bamgen
+import collections
 import json
 import logging
 import os
@@ -197,7 +198,7 @@ class CoverageCalculator(object):
                 self.write_outputs_for_region(target)
 
         _logger.info("Finished computing coverage metrics in all regions")
-        _logger.info("Data was processed in {} clusters".format(num_clusters))
+        _logger.debug("Data was processed in {} clusters".format(num_clusters))
 
     def get_reference_sequence(self, chrom, start, end):
         start = max(1, start)
@@ -287,9 +288,12 @@ def get_input_options(command_line_args):
     if options.config is not None:
         with open(options.config) as config_file:
             input_config = json.load(config_file)
+            _logger.debug(input_config)
             for key, value in input_config.iteritems():
-                if key in ('outputs', 'transcripts'):
+                if isinstance(value, collections.Mapping):
                     for key_2, value_2 in value.iteritems():
+                        if key not in config or config[key] is None:
+                            config[key] = {}
                         config[key][key_2] = value_2
                 else:
                     config[key] = value
@@ -304,14 +308,14 @@ def configure_logging():
     """
     logger = logging.getLogger("coverview")
 
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(pathname)s - Line %(lineno)s - %(message)s")
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(filename)s - Line %(lineno)s - %(message)s")
 
     stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(formatter)
-    stream_handler.setLevel(logging.DEBUG)
+    stream_handler.setLevel(logging.INFO)
 
     logger.addHandler(stream_handler)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
     warnings.simplefilter("ignore", RuntimeWarning)
 
@@ -326,9 +330,9 @@ def clean_up_old_gui_output(gui_output_html_file, gui_data_directory):
         os.removedirs(gui_data_directory)
 
 
-def create_gui_output_directory(options, config):
+def create_gui_output_directory(config):
 
-    _logger.info("Creating output directory structure for GUI in directory".format(
+    _logger.info("Creating output directory structure for GUI in directory {}".format(
         config['outputs']['gui_output_directory']
     ))
 
@@ -349,10 +353,9 @@ def main(command_line_args):
     configure_logging()
     options, config = get_input_options(command_line_args)
 
-    _logger.info("Running CoverView {} with options".format(_version))
-    _logger.info(command_line_args)
-    _logger.info(options)
-    _logger.info(config)
+    _logger.debug("Running CoverView {} with options".format(_version))
+    _logger.debug(options)
+    _logger.debug(config)
 
     bam_file = pysam.Samfile(options.input, "rb")
 
@@ -372,7 +375,7 @@ def main(command_line_args):
         _logger.info('CoverView {} succesfully finished'.format(_version))
     else:
         if config['outputs']['gui']:
-            create_gui_output_directory(options, config)
+            create_gui_output_directory(config)
 
         target_names, unique_target_ids = get_names_of_target_regions(options.bedfile)
         number_of_targets = len(target_names)

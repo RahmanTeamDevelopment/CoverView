@@ -13,6 +13,7 @@ class TestCoverViewWithGuiOutput(unittest.TestCase):
         self.unique_index_file_name = self.unique_bam_file_name + ".bai"
         self.unique_bed_file_name = self.unique_bam_file_name.replace(".bam", ".bed")
         self.unique_config_file_name = self.unique_bam_file_name.replace(".bam", ".json")
+        self.gui_output_dir = os.path.join(os.getcwd(), "output_gui_data")
 
     def tearDown(self):
         os.remove(self.unique_bam_file_name)
@@ -22,7 +23,7 @@ class TestCoverViewWithGuiOutput(unittest.TestCase):
         os.remove("output_regions.txt")
         os.remove("output_profiles.txt")
         os.remove("output_summary.txt")
-        shutil.rmtree("output_gui_data")
+        shutil.rmtree(self.gui_output_dir)
 
     def test_coverview_runs_and_returns_0_exit_code(self):
         read_sets = [
@@ -35,18 +36,24 @@ class TestCoverViewWithGuiOutput(unittest.TestCase):
 
         coverview_dir = os.getcwd()
         gui_dir = os.path.join(coverview_dir, "gui")
+        self.gui_output_dir = os.path.join(coverview_dir, "guiout")
 
         config = \
             {
                 "outputs": {
                     "gui": True,
-                    "gui_output_directory": os.path.join(coverview_dir, "output_gui_data")
+                    "regions": True,
+                    "profiles": True,
+                    "gui_output_directory": self.gui_output_dir
                 },
 
                 "gui": {
                     "template_gui_html_file": os.path.join(gui_dir, "gui.html"),
                     "javascript_directory": os.path.join(gui_dir, "lib")
-                }
+                },
+
+                "duplicates": True,
+                "direction": True
             }
 
         testutils.coverview.bamgen.make_bam_file(self.unique_bam_file_name, read_sets)
