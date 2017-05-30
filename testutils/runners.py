@@ -1,6 +1,10 @@
 import bamgen
+import coverview.main
+import coverview.reads
 import json
+import os
 import pysam
+import uuid
 
 
 def make_command_line_arguments(bam_file_name,
@@ -80,3 +84,73 @@ def load_bam_into_read_array(file_name):
             read_array.append(read)
 
     return read_array
+
+
+class CoverViewTestRunner(object):
+    """
+    Utility class to wrap all the logic needed to run CoverView with simulated inputs
+    """
+    def __init__(self):
+        self.bam_file_name = str(uuid.uuid4()) + ".bam"
+        self.index_file_name = self.bam_file_name + ".bai"
+        self.bed_file_name = self.bam_file_name.replace(".bam", ".bed")
+        self.config_file_name = self.bam_file_name.replace(".bam", ".json")
+        self.ref_file_name = "__MOCK__"
+        self.read_sets = []
+        self.regions = []
+        self.config_data = {}
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.clean_up_input_files()
+        self.clean_up_output_files()
+
+    def add_reads(self, read_set):
+        self.read_sets.append(read_set)
+
+    def add_region(self, region):
+        self.regions.append(region)
+
+    def add_config_data(self, config_data):
+        self.config_data.update(config_data)
+
+    def generate_input_files(self):
+        bamgen.make_bam_file(
+            self.bam_file_name,
+            self.read_sets
+        )
+
+        make_bed_file(
+            self.bed_file_name,
+            self.regions
+        )
+
+        make_config_file(
+            self.config_file_name,
+            self.config_data
+        )
+
+    def clean_up_input_files(self):
+        os.remove(self.bam_file_name)
+        os.remove(self.index_file_name)
+        os.remove(self.bed_file_name)
+        os.remove(self.config_file_name)
+
+    def clean_up_output_files(self):
+        os.remove("output_regions.txt")
+        os.remove("output_profiles.txt")
+        os.remove("output_summary.txt")
+
+    def run_coverview_and_get_exit_code(self):
+        self.generate_input_files()
+
+        command_line_args = make_command_line_arguments(
+            bam_file_name=self.bam_file_name,
+            bed_file_name=self.bed_file_name,
+            reference_file_name=self.ref_file_name,
+            config_file_name=self.config_file_name
+        )
+
+        return coverview.main.main(command_line_args)

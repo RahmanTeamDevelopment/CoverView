@@ -1,6 +1,6 @@
 import coverview.main
 import os
-import testutils.coverview
+import testutils.runners
 import unittest
 import uuid
 
@@ -45,11 +45,11 @@ class TestCoverViewWithPassCriteria(unittest.TestCase):
                 "direction": True
             }
 
-        testutils.coverview.bamgen.make_bam_file(self.unique_bam_file_name, read_sets)
-        testutils.coverview.make_bed_file(self.unique_bed_file_name, regions)
-        testutils.coverview.make_config_file(self.unique_config_file_name, config)
+        testutils.runners.bamgen.make_bam_file(self.unique_bam_file_name, read_sets)
+        testutils.runners.make_bed_file(self.unique_bed_file_name, regions)
+        testutils.runners.make_config_file(self.unique_config_file_name, config)
 
-        command_line_args = testutils.coverview.make_command_line_arguments(
+        command_line_args = testutils.runners.make_command_line_arguments(
             bam_file_name=self.unique_bam_file_name,
             bed_file_name=self.unique_bed_file_name,
             reference_file_name="__MOCK__",
