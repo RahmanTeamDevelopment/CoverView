@@ -4,6 +4,7 @@ import coverview.reads
 import json
 import os
 import pysam
+import shutil
 import uuid
 
 
@@ -142,6 +143,19 @@ class CoverViewTestRunner(object):
         os.remove("output_regions.txt")
         os.remove("output_profiles.txt")
         os.remove("output_summary.txt")
+
+        has_gui_output = self.config_data.get("outputs").get(
+            "gui",
+            False
+        )
+
+        if has_gui_output:
+            gui_output_dir = self.config_data.get("outputs").get(
+                "gui_output_directory",
+                os.path.join(os.getcwd(), "output_gui_data")
+            )
+
+            shutil.rmtree(gui_output_dir)
 
     def run_coverview_and_get_exit_code(self):
         self.generate_input_files()
