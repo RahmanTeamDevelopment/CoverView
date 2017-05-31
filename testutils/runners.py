@@ -144,10 +144,15 @@ class CoverViewTestRunner(object):
         os.remove("output_profiles.txt")
         os.remove("output_summary.txt")
 
-        has_gui_output = self.config_data.get("outputs").get(
-            "gui",
-            False
-        )
+        output_config = self.config_data.get("outputs")
+
+        if output_config is not None:
+            has_gui_output = output_config.get(
+                "gui",
+                False
+            )
+        else:
+            has_gui_output = False
 
         if has_gui_output:
             gui_output_dir = self.config_data.get("outputs").get(

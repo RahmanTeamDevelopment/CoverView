@@ -4,7 +4,8 @@ import unittest
 
 
 class TestCoverViewWithGuiOutput(unittest.TestCase):
-    def test_coverview_runs_and_returns_0_exit_code(self):
+
+    def test_coverview_runs_with_user_specified_gui_output_directory(self):
         with testutils.runners.CoverViewTestRunner() as runner:
             runner.add_reads(("1", 32, 100, 0))
             runner.add_region(("1", 32, 132, "Region_1"))

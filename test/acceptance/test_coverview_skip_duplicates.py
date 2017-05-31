@@ -3,7 +3,8 @@ import unittest
 
 
 class TestCoverViewSkippingDuplicateReads(unittest.TestCase):
-    def test_coverview_runs_and_returns_0_exit_code(self):
+
+    def test_coverview_runs_when_skipping_duplicates_is_requested(self):
         with testutils.runners.CoverViewTestRunner() as runner:
             runner.add_reads(("1", 32, 100, 0))
             runner.add_region(("1", 32, 132, "Region_1"))
