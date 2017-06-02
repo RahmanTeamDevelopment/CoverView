@@ -24,6 +24,28 @@ _value_type_map = {
 }
 
 
+def load_coverview_summary_output(file_name):
+
+    data = {}
+
+    with open(file_name, 'r') as summary_file:
+        summary_file_reader = csv.DictReader(summary_file, delimiter='\t')
+
+        for record in summary_file_reader:
+            chrom = record['#CHROM']
+            read_count = record['RC']
+            on_target_read_count = record['RCIN']
+            off_target_read_count = record['RCOUT']
+
+            data[chrom] = {
+                "RC": read_count,
+                "RCIN": on_target_read_count,
+                "RCOUT": off_target_read_count
+            }
+
+    return data
+
+
 def load_coveriew_regions_output(file_name):
 
     data = {}

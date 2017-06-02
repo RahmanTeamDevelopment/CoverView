@@ -26,7 +26,7 @@ class CoverageCalculator(object):
         self.bam_file = pysam.Samfile(options.input, "rb")
         self.transcript_database = None
         self.out_poor = None
-        self.num_reads_on_target = {}
+        self.num_reads_on_target = collections.defaultdict(int)
         self.ids_of_failed_targets = set()
         self.regions_output = None
         self.per_base_output = None
@@ -165,9 +165,8 @@ class CoverageCalculator(object):
                     if target is None:
                         continue
 
-                    region_name = target.region_name
                     per_base_summary = target.per_base_coverage_profile
-                    self.num_reads_on_target[region_name] = per_base_summary.num_reads_in_region
+                    self.num_reads_on_target[target.chromosome] += per_base_summary.num_reads_in_region
 
                     target.summary = self.compute_summaries_of_region_coverage(
                         target.per_base_coverage_profile

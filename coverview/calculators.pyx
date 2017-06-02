@@ -780,7 +780,6 @@ def calculate_chromosome_coverage_metrics(bam_file, on_target):
 
     number_of_reads_covering_chromosomes = []
 
-    total_reference_length = sum(chromosome_lengths)
     total_mapped_reads_in_bam = 0
     total_reads_in_bam = bam_file.mapped + bam_file.unmapped
     total_on_target_reads = 0
