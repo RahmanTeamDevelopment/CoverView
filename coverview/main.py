@@ -160,42 +160,43 @@ class CoverageCalculator(object):
         self.write_output_file_headers()
         num_clusters = 0
 
-        for cluster in get_clusters_of_regions_from_bed_file(self.options.bedfile):
-            num_clusters += 1
-            for target in get_region_coverage_summary(self.bam_file, cluster, self.config):
+        with open(self.options.bedfile) as bed_file:
+            for cluster in get_clusters_of_regions_from_bed_file(bed_file):
+                num_clusters += 1
+                for target in get_region_coverage_summary(self.bam_file, cluster, self.config):
 
-                if target is None:
-                    continue
+                    if target is None:
+                        continue
 
-                region_name = target.region_name
-                per_base_summary = target.per_base_coverage_profile
-                self.num_reads_on_target[region_name] = per_base_summary.num_reads_in_region
+                    region_name = target.region_name
+                    per_base_summary = target.per_base_coverage_profile
+                    self.num_reads_on_target[region_name] = per_base_summary.num_reads_in_region
 
-                target.summary = self.compute_summaries_of_region_coverage(
-                    target.per_base_coverage_profile
-                )
-
-                target.passes_thresholds = self.does_region_pass_coverage_thresholds(
-                    target
-                )
-
-                if self.gui_output is not None:
-                    target.Ref = self.get_reference_sequence(
-                        target.chromosome,
-                        target.start_position,
-                        target.end_position
+                    target.summary = self.compute_summaries_of_region_coverage(
+                        target.per_base_coverage_profile
                     )
-                else:
-                    target.Ref = None
 
-                if not target.passes_thresholds:
-                    if '_' in target.region_name:
-                        ids = target.region_name[:target.region_name.find('_')]
+                    target.passes_thresholds = self.does_region_pass_coverage_thresholds(
+                        target
+                    )
+
+                    if self.gui_output is not None:
+                        target.Ref = self.get_reference_sequence(
+                            target.chromosome,
+                            target.start_position,
+                            target.end_position
+                        )
                     else:
-                        ids = target.region_name
+                        target.Ref = None
 
-                    self.ids_of_failed_targets.add(ids)
-                self.write_outputs_for_region(target)
+                    if not target.passes_thresholds:
+                        if '_' in target.region_name:
+                            ids = target.region_name[:target.region_name.find('_')]
+                        else:
+                            ids = target.region_name
+
+                        self.ids_of_failed_targets.add(ids)
+                    self.write_outputs_for_region(target)
 
         _logger.info("Finished computing coverage metrics in all regions")
         _logger.debug("Data was processed in {} clusters".format(num_clusters))
@@ -377,7 +378,9 @@ def main(command_line_args):
         if config['outputs']['gui']:
             create_gui_output_directory(config)
 
-        target_names, unique_target_ids = get_names_of_target_regions(options.bedfile)
+        with open(options.bedfile) as bed_file:
+            target_names, unique_target_ids = get_names_of_target_regions(bed_file)
+
         number_of_targets = len(target_names)
 
         _logger.info("There are {} target regions".format(number_of_targets))

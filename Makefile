@@ -57,3 +57,6 @@ test: pep8 smoketest unittest acceptancetest
 	@echo ''
 	@echo 'Finished running all tests'
 	@echo ''
+
+test_coverage:
+	pytest --cov=coverview test

@@ -64,7 +64,7 @@ def make_bed_file(file_name, regions):
     """
     with open(file_name, 'w') as bed_file:
         for chrom, start, end, name in regions:
-            bed_file.write("{}\t{}\t{}\t{}".format(
+            bed_file.write("{}\t{}\t{}\t{}\n".format(
                 chrom, start, end, name
             ))
 
