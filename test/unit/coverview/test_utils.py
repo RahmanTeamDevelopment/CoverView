@@ -46,7 +46,7 @@ class TestMaxOrNaN(unittest.TestCase):
 
 
 class TestGetNamesOfTargetRegions(unittest.TestCase):
-    def test_raises_exception_if_bed_file_is_empty(self):
+    def test_raises_exception_if_there_are_no_regions(self):
         self.assertRaises(
             StandardError,
             coverview.utils.get_names_of_target_regions,
@@ -85,8 +85,19 @@ class TestGetNamesOfTargetRegions(unittest.TestCase):
         assert names[1] == "Region_1_2"
 
 
-class Tes
-        # def get_clusters_of_regions_from_bed_file(bed_file_name, size_limit=100000):
+class TestGetClustersOfRegionsFromBEDFile(unittest.TestCase):
+    def test_raises_exception_if_there_are_no_regions(self):
+
+        # Generator functiond won't raise an exception until we start iterating
+        # through the results
+        clusters = coverview.utils.get_clusters_of_regions_from_bed_file(
+            []
+        )
+
+        self.assertRaises(
+            StandardError,
+            clusters.next
+        )
 
 
 if __name__ == "__main__":

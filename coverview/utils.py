@@ -49,6 +49,9 @@ def get_clusters_of_regions_from_bed_file(bed_file, size_limit=100000):
         region = "{}:{}-{}".format(chrom, begin, end)
         all_regions.append((chrom, begin, end, region, key))
 
+    if len(all_regions) == 0:
+        raise StandardError("No regions in BED file")
+
     all_regions.sort()
     current_cluster = []
 
