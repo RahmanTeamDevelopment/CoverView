@@ -4,12 +4,9 @@ import argparse
 import bamgen
 import collections
 import json
-import logging
 import os
 import pysam
 import shutil
-
-import warnings
 
 from . import output
 from .calculators import calculate_chromosome_coverage_metrics, get_region_coverage_summary
@@ -317,8 +314,6 @@ def configure_logging():
 
     logger.addHandler(stream_handler)
     logger.setLevel(logging.INFO)
-
-    warnings.simplefilter("ignore", RuntimeWarning)
 
     logger.info('CoverView v1.2.0 started running')
 

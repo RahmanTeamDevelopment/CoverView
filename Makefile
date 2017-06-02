@@ -33,7 +33,7 @@ profile: install
 	time python -m cProfile -s cumulative env/bin/CoverView.py --input ../Data/NA21144.mapped.ILLUMINA.bwa.GIH.exome.20121211.bam -b chrom20_exons.bed > profile.out
 
 regression_test: install pep8
-	coverview --input test/16768_sorted_picard.bam -b test/TSCP_coverviewInput.bed -c ../regression_test_data_for_coverview/CoverView_default.json
+	coverview --input ../regression_test_data_for_coverview/16768_sorted_picard.bam -b ../regression_test_data_for_coverview/TSCP_coverviewInput.bed -c ../regression_test_data_for_coverview/CoverView_default.json
 
 unittest: install
 	@echo ''

@@ -98,12 +98,24 @@ def compare_regions_file_contents(old_file, new_file):
                 typed_new_value = _value_type_map[key](new_value)
 
                 if typed_old_value != typed_new_value:
-                    _logger.error("New value for data point {}:{} ({}) != old value ({})".format(
-                        region_name,
-                        key,
-                        new_value,
-                        old_value
-                    ))
+
+                    if _value_type_map[key] != str:
+
+                        if (abs(typed_old_value - typed_new_value) / typed_old_value) > 0.05:
+                            _logger.error("New value for data point {}:{} ({}) differs by more than 1% from old value ({})".format(
+                                region_name,
+                                key,
+                                new_value,
+                                old_value
+                            ))
+                    else:
+                        _logger.error(
+                            "New value for data point {}:{} ({}) != old value ({})".format(
+                                region_name,
+                                key,
+                                new_value,
+                                old_value
+                            ))
 
 
 if __name__ == "__main__":

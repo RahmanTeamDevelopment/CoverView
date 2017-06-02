@@ -17,7 +17,8 @@ from pysam.libcalignmentfile cimport AlignmentFile, AlignedSegment, bam1_t, BAM_
     BAM_CIGAR_SHIFT, BAM_CINS, BAM_CSOFT_CLIP, BAM_CREF_SKIP, BAM_CMATCH, BAM_CDEL, BAM_FDUP,\
     BAM_FREVERSE
 
-from pysam.libchtslib cimport BGZF, hts_get_bgzfp, hts_itr_t, hts_idx_t, htsFile, hts_itr_next, bam_get_qual
+from pysam.libchtslib cimport BGZF, hts_get_bgzfp, hts_itr_t, hts_idx_t, htsFile, hts_itr_next, bam_get_qual,\
+    bam_get_qname
 
 from .reads cimport ReadArray
 from .statistics cimport QualityHistogramArray
@@ -131,8 +132,16 @@ cdef class RegionCoverageCalculator(object):
 
             n_cigar = src.core.n_cigar
 
+            # This is an unmapped read whose mate is mapped in this region. Skip these.
             if n_cigar == 0:
-                break
+                # _logger.warning("Encountered read with empty cigar string. Not sure what this is")
+                # _logger.warning("Read name = {}".format(bam_get_qname(src)))
+                # _logger.warning("Read length = {}".format(src.core.l_qseq))
+                # _logger.warning("Position = {}".format(src.core.pos))
+                # _logger.warning("Tid = {}".format(src.core.tid))
+                # _logger.warning("Insert size = {}".format(src.core.isize))
+                reads_start += 1
+                continue
 
             self.n_reads_in_region += 1
 
@@ -396,12 +405,11 @@ def get_region_coverage_summary(bam_file, cluster, config):
     cdef bam1_t** reads_start
     cdef bam1_t** reads_end
 
-    _logger.info("Cluster = {}".format(cluster))
     cluster_chrom = get_valid_chromosome_name(cluster[0][0], bam_file)
     cluster_begin = cluster[0][1]
     cluster_end = cluster[-1][2]
 
-    _logger.info("Processing cluster of regions spanning {}:{}-{}".format(
+    _logger.debug("Processing cluster of regions spanning {}:{}-{}".format(
         cluster_chrom, cluster_begin, cluster_end
     ))
 
@@ -432,6 +440,15 @@ def get_region_coverage_summary(bam_file, cluster, config):
             )
 
             read_array.set_pointers_to_start_and_end_of_interval(begin, end, &reads_start, &reads_end)
+
+            # _logger.info("There are {} reads in the region {} which spans the interval {}:{}-{}".format(
+            #     reads_end - reads_start,
+            #     key,
+            #     chrom,
+            #     begin,
+            #     end
+            # ))
+
             coverage_calc.add_reads(reads_start, reads_end)
 
             yield RegionCoverageSummary(
@@ -442,7 +459,7 @@ def get_region_coverage_summary(bam_file, cluster, config):
                 coverage_calc.get_coverage_summary()
             )
 
-    _logger.debug("Finished processing cluster")
+    #_logger.debug("Finished processing cluster")
 
 
 class BamFileCoverageSummary(object):
