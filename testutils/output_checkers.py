@@ -24,6 +24,33 @@ _value_type_map = {
 }
 
 
+def load_coverview_profile_output(file_name):
+
+    data = {}
+    header_names = []
+    current_region_name = None
+
+    with open(file_name, 'r') as profile_file:
+        for line in profile_file:
+            if line.startswith("#"):
+                header_names = line.strip().split("\t")
+            elif line.startswith("["):
+                region_name = line.strip().strip("[").strip("]")
+                data[region_name] = {}
+                current_region_name = region_name
+            else:
+
+                if line.strip() == "":
+                    continue
+                cols = line.strip().split("\t")
+                chrom_pos = ":".join([cols[0], cols[1]])
+                data[current_region_name][chrom_pos] = {}
+
+                for col_index, col_data in enumerate(cols):
+                    data[current_region_name][chrom_pos][header_names[col_index]] = col_data
+    return data
+
+
 def load_coverview_summary_output(file_name):
 
     data = {}
