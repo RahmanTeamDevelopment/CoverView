@@ -15,7 +15,7 @@ from .statistics import median
 from .utils import *
 
 
-_version = 'v1.2.0'
+_version = 'v1.3.0'
 _logger = logging.getLogger("coverview")
 
 

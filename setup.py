@@ -69,7 +69,7 @@ modules = [
 
 setup(
     name="CoverView",
-    version=1.0,
+    version=1.3,
     description="Calculation of coverage metrics",
     url='https://github.com/RahmanTeamDevelopment/CoverView',
     author='Marton Munz',
