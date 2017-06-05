@@ -429,7 +429,7 @@ def output_chromosome_coverage_metrics(options, chromosome_coverage_metrics):
     num_unmapped_reads_in_bam = chromosome_coverage_metrics['Unmapped']
     num_total_reads_in_bam = chromosome_coverage_metrics['Total']
 
-    with open(options.output + '_summary.txt', 'w') as output_file:
+    with open(options.output + '_summary.txt', 'wb') as output_file:
         csv_writer = csv.writer(output_file, delimiter='\t')
 
         csv_writer.writerows([
