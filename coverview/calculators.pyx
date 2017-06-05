@@ -370,7 +370,7 @@ cdef void load_reads_into_array(ReadArray read_array, bam_file, chrom, start, en
     """
     cdef int iterator_status = 0
 
-    _logger.info("Loading reads for chromm = {}. start = {}. end = {}".format(
+    _logger.info("Loading reads for chrom = {}. start = {}. end = {}".format(
         chrom, start, end
     ))
 

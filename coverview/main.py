@@ -314,7 +314,7 @@ def configure_logging():
     logger.addHandler(stream_handler)
     logger.setLevel(logging.INFO)
 
-    logger.info('CoverView v1.2.0 started running')
+    logger.info('CoverView {} started running'.format(_version))
 
 
 def clean_up_old_gui_output(gui_output_html_file, gui_data_directory):

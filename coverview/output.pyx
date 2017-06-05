@@ -315,7 +315,7 @@ class GuiOutput(object):
 
     def output_json(self, coverage_data):
         if self.have_written_first_line:
-            self.out_json.write(',')
+            self.output_file.write(',')
 
         self.output_file.write(
             json.dumps(coverage_data.as_dict(), separators=(',', ':'))
