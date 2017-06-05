@@ -5,7 +5,7 @@ CFLAGS="-fgnu89-inline"
 ABSOLUTE_PATH=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 PIP_ARGS='--no-cache-dir --ignore-installed --force-reinstall'
 
-virtualenv -p python2.7 --no-site-packages --always-copy env
+virtualenv -p python2.7 env
 
 source ${ABSOLUTE_PATH}/env/bin/activate
 
