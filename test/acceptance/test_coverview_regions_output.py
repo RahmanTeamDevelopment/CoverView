@@ -21,7 +21,7 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             assert regions_output['Region_1']["Chromosome"] == "1"
 
             # Output positions are 1-indexed and intervals are closed
-            assert regions_output['Region_1']["Start_position"] == 33
+            assert regions_output['Region_1']["Start_position"] == 32
             assert regions_output['Region_1']["End_position"] == 132
 
             # No data so all coverages are 0
@@ -48,7 +48,7 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
 
             assert "Region_1" in regions_output
             assert regions_output['Region_1']["Chromosome"] == "1"
-            assert regions_output['Region_1']["Start_position"] == 33
+            assert regions_output['Region_1']["Start_position"] == 32
             assert regions_output['Region_1']["End_position"] == 132
             assert regions_output['Region_1']["RC"] == 1
             assert regions_output['Region_1']["MEDCOV"] == 1
@@ -71,7 +71,7 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
 
             assert "Region_1" in regions_output
             assert regions_output['Region_1']["Chromosome"] == "1"
-            assert regions_output['Region_1']["Start_position"] == 33
+            assert regions_output['Region_1']["Start_position"] == 32
             assert regions_output['Region_1']["End_position"] == 132
             assert regions_output['Region_1']["RC"] == 2
             assert regions_output['Region_1']["MEDCOV"] == 2
@@ -94,7 +94,7 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
 
             assert "Region_1" in regions_output
             assert regions_output['Region_1']["Chromosome"] == "1"
-            assert regions_output['Region_1']["Start_position"] == 33
+            assert regions_output['Region_1']["Start_position"] == 32
             assert regions_output['Region_1']["End_position"] == 132
             assert regions_output['Region_1']["RC"] == 100
             assert regions_output['Region_1']["MEDCOV"] == 100
@@ -121,7 +121,7 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             assert "Region_2" in regions_output
 
             assert regions_output['Region_1']["Chromosome"] == "1"
-            assert regions_output['Region_1']["Start_position"] == 33
+            assert regions_output['Region_1']["Start_position"] == 32
             assert regions_output['Region_1']["End_position"] == 132
             assert regions_output['Region_1']["RC"] == 1
             assert regions_output['Region_1']["MEDCOV"] == 1
@@ -132,7 +132,7 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             assert regions_output['Region_1']["MAXFLBQ"] == 0.0
 
             assert regions_output['Region_2']["Chromosome"] == "1"
-            assert regions_output['Region_2']["Start_position"] == 1001
+            assert regions_output['Region_2']["Start_position"] == 1000
             assert regions_output['Region_2']["End_position"] == 1100
             assert regions_output['Region_2']["RC"] == 1
             assert regions_output['Region_2']["MEDCOV"] == 1
@@ -159,7 +159,7 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             assert "Region_2" in regions_output
 
             assert regions_output['Region_1']["Chromosome"] == "1"
-            assert regions_output['Region_1']["Start_position"] == 33
+            assert regions_output['Region_1']["Start_position"] == 32
             assert regions_output['Region_1']["End_position"] == 132
             assert regions_output['Region_1']["RC"] == 1
             assert regions_output['Region_1']["MEDCOV"] == 1
@@ -170,7 +170,7 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             assert regions_output['Region_1']["MAXFLBQ"] == 0.0
 
             assert regions_output['Region_2']["Chromosome"] == "1"
-            assert regions_output['Region_2']["Start_position"] == 133
+            assert regions_output['Region_2']["Start_position"] == 132
             assert regions_output['Region_2']["End_position"] == 232
             assert regions_output['Region_2']["RC"] == 10
             assert regions_output['Region_2']["MEDCOV"] == 10

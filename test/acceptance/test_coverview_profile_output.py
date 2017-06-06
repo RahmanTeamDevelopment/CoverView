@@ -3,7 +3,7 @@ import testutils.output_checkers
 import unittest
 
 
-class TestCoverViewRegionsOutput(unittest.TestCase):
+class TestCoverViewProfileOutput(unittest.TestCase):
 
     def test_summary_output_with_zero_coverage_in_bam(self):
         with testutils.runners.CoverViewTestRunner() as runner:
@@ -18,8 +18,9 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             )
 
             assert "Region_1" in profile_output
+            assert "1:40" not in profile_output['Region_1']
 
-            for position in ['36', '37', '38', '39', '40']:
+            for position in ['36', '37', '38', '39']:
                 chrom_pos = "1:{}".format(position)
                 assert profile_output['Region_1'][chrom_pos]['#Chromosome'] == "1"
                 assert profile_output['Region_1'][chrom_pos]['Position'] == position
@@ -43,8 +44,9 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             )
 
             assert "Region_1" in profile_output
+            assert "1:40" not in profile_output['Region_1']
 
-            for position in ['36', '37', '38', '39', '40']:
+            for position in ['36', '37', '38', '39']:
                 chrom_pos = "1:{}".format(position)
                 assert profile_output['Region_1'][chrom_pos]['#Chromosome'] == "1"
                 assert profile_output['Region_1'][chrom_pos]['Position'] == position

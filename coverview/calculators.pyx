@@ -15,7 +15,7 @@ from pysam.libcalignmentfile cimport IteratorRowRegion
 
 from pysam.libcalignmentfile cimport AlignmentFile, AlignedSegment, bam1_t, BAM_CIGAR_MASK,\
     BAM_CIGAR_SHIFT, BAM_CINS, BAM_CSOFT_CLIP, BAM_CREF_SKIP, BAM_CMATCH, BAM_CDEL, BAM_FDUP,\
-    BAM_FREVERSE
+    BAM_FREVERSE, bam_endpos
 
 from pysam.libchtslib cimport BGZF, hts_get_bgzfp, hts_itr_t, hts_idx_t, htsFile, hts_itr_next, bam_get_qual,\
     bam_get_qname
@@ -119,6 +119,14 @@ cdef class RegionCoverageCalculator(object):
 
             src = reads_start[0]
 
+            if src.core.pos >= end:
+                reads_start += 1
+                continue
+
+            if bam_endpos(src) < begin:
+                reads_start += 1
+                continue
+
             # Skip duplicate reads
             if self.count_duplicates == 0 and src.core.flag & BAM_FDUP != 0:
                 reads_start += 1
@@ -195,8 +203,8 @@ cdef class RegionCoverageCalculator(object):
 
                 elif op == BAM_CDEL or op == BAM_CREF_SKIP:
                     for i from pos <= i < pos + l:
-                        if begin < i <= end:
-                            offset = i - (begin + 1)
+                        if begin <= i < end:
+                            offset = i - begin
                             COV[offset] += 1
 
                             if is_forward_read:
@@ -211,6 +219,7 @@ cdef class RegionCoverageCalculator(object):
                                     QCOV_f[offset] += 1
                                 else:
                                     QCOV_r[offset] += 1
+
                     pos += l
             reads_start += 1
 
@@ -454,7 +463,7 @@ def get_region_coverage_summary(bam_file, cluster, config):
             yield RegionCoverageSummary(
                 key,
                 chrom,
-                begin+1,
+                begin,
                 end,
                 coverage_calc.get_coverage_summary()
             )
