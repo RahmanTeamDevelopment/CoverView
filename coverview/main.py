@@ -231,6 +231,76 @@ def get_default_config():
     }
 
 
+def load_and_validate_config(config_file_name):
+    """
+    Part of the command line input is a configuration file in JSON format. Here
+    we validate the contents of the JSON file.
+    """
+    config = get_default_config()
+    input_config = None
+
+    allowed_config_parameters = {
+        "count_duplicate_reads",
+        "direction",
+        "gui",
+        "low_bq",
+        "low_mq",
+        "only_fail_profiles",
+        "outputs",
+        "pass",
+        "transcript_db"
+    }
+
+    allowed_config_parameters_gui = {
+        "template_gui_html_file",
+        "javascript_directory",
+    }
+
+    allowed_config_paramters_outputs = {
+        "gui",
+        "gui_output_directory",
+        "profiles",
+        "regions",
+        "summary"
+    }
+
+    if config_file_name is not None:
+        with open(config_file_name) as config_file:
+
+            try:
+                input_config = json.load(config_file)
+                _logger.debug(input_config)
+            except:
+                _logger.error("Invalid JSON config file")
+                _logger.error("File {} cannot be loaded with the Pyton JSON parser".format(config_file_name))
+                _logger.error("Check the file for JSON format errors")
+
+        for key, value in input_config.iteritems():
+
+            if key not in allowed_config_parameters:
+                _logger.error("Invalid parameter '{}' found in config JSON file".format(key))
+                raise StandardError("Invalid configuration file")
+
+            if isinstance(value, collections.Mapping):
+                if key not in config or config[key] is None:
+                    config[key] = {}
+
+                for key_2, value_2 in value.iteritems():
+
+                    if key == "gui" and key_2 not in allowed_config_parameters_gui:
+                        _logger.error("Invalid gui parameter '{}' found in config JSON file".format(key_2))
+                        raise StandardError("Invalid gui section in configuration file")
+                    elif key == "outputs" and key_2 not in allowed_config_paramters_outputs:
+                        _logger.error("Invalid outputs parameter '{}' found in config JSON file".format(key_2))
+                        raise StandardError("Invalid outputs section in configuration file")
+                    else:
+                        config[key][key_2] = value_2
+            else:
+                config[key] = value
+
+    return config
+
+
 def get_input_options(command_line_args):
     parser = argparse.ArgumentParser()
 
@@ -280,20 +350,7 @@ def get_input_options(command_line_args):
     )
 
     options = parser.parse_args(command_line_args)
-    config = get_default_config()
-
-    if options.config is not None:
-        with open(options.config) as config_file:
-            input_config = json.load(config_file)
-            _logger.debug(input_config)
-            for key, value in input_config.iteritems():
-                if isinstance(value, collections.Mapping):
-                    for key_2, value_2 in value.iteritems():
-                        if key not in config or config[key] is None:
-                            config[key] = {}
-                        config[key][key_2] = value_2
-                else:
-                    config[key] = value
+    config = load_and_validate_config(options.config)
 
     return options, config
 

@@ -24,6 +24,27 @@ class TestCoverViewWithPassCriteria(unittest.TestCase):
             status_code = runner.run_coverview_and_get_exit_code()
             assert status_code == 0
 
+    def test_coverview_raises_exception_when_invalid_pass_fail_config_is_used(self):
+        with testutils.runners.CoverViewTestRunner() as runner:
+            runner.add_reads(("1", 32, 100, 0))
+            runner.add_region(("1", 32, 132, "Region_1"))
+            runner.add_config_data({
+                "outputs": {
+                    "profiles": True,
+                },
+
+                "fail": {
+                    "MIN_MINQCOV": 50,
+                    "MAX_MAXFLMQ": 0.05,
+                    "MAX_MAXFLBQ": 0.15
+                },
+            })
+
+            self.assertRaises(
+                StandardError,
+                runner.run_coverview_and_get_exit_code
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

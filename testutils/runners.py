@@ -140,27 +140,27 @@ class CoverViewTestRunner(object):
         os.remove(self.config_file_name)
 
     def clean_up_output_files(self):
-        os.remove("output_regions.txt")
-        os.remove("output_profiles.txt")
-        os.remove("output_summary.txt")
+
+        for file_name in {"output_regions.txt", "output_profiles.txt", "output_summary.txt"}:
+            if os.path.exists(file_name):
+                os.remove(file_name)
 
         output_config = self.config_data.get("outputs")
 
         if output_config is not None:
+
             has_gui_output = output_config.get(
                 "gui",
                 False
             )
-        else:
-            has_gui_output = False
 
-        if has_gui_output:
-            gui_output_dir = self.config_data.get("outputs").get(
-                "gui_output_directory",
-                os.path.join(os.getcwd(), "output_gui_data")
-            )
+            if has_gui_output:
+                gui_output_dir = self.config_data.get("outputs").get(
+                    "gui_output_directory",
+                    os.path.join(os.getcwd(), "output_gui_data")
+                )
 
-            shutil.rmtree(gui_output_dir)
+                shutil.rmtree(gui_output_dir)
 
     def run_coverview_and_get_exit_code(self):
         self.generate_input_files()
