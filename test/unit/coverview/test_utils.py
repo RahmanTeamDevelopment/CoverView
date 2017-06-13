@@ -30,11 +30,6 @@ class TestGenpmicInterval(unittest.TestCase):
         assert interval_1.size() == 100
         assert interval_2.size() == 0
 
-    def test_overlap_of_intervals_on_different_chromosomes_is_zero(self):
-        interval_1 = coverview.utils.GenomicInterval("1", 0, 100)
-        interval_2 = coverview.utils.GenomicInterval("2", 0, 100)
-        assert interval_1.overlap(interval_2).size() == 0
-
     def test_intervals_compare_equal_if_chromosomes_and_coordinates_are_identical(self):
         interval_1 = coverview.utils.GenomicInterval("1", 0, 100)
         interval_2 = coverview.utils.GenomicInterval("1", 0, 100)
@@ -45,12 +40,12 @@ class TestGenpmicInterval(unittest.TestCase):
         interval_2 = coverview.utils.GenomicInterval("2", 0, 100)
         assert interval_1 != interval_2
 
-    def test_intervals_do_not_compare_equal_if_chromosomes_are_different(self):
+    def test_intervals_do_not_compare_equal_if_start_positions_are_different(self):
         interval_1 = coverview.utils.GenomicInterval("1", 0, 100)
         interval_2 = coverview.utils.GenomicInterval("1", 10, 100)
         assert interval_1 != interval_2
 
-    def test_intervals_do_not_compare_equal_if_chromosomes_are_different(self):
+    def test_intervals_do_not_compare_equal_if_end_positions_are_different(self):
         interval_1 = coverview.utils.GenomicInterval("1", 0, 100)
         interval_2 = coverview.utils.GenomicInterval("1", 0, 150)
         assert interval_1 != interval_2
@@ -59,6 +54,33 @@ class TestGenpmicInterval(unittest.TestCase):
         interval_1 = coverview.utils.GenomicInterval("1", 0, 100)
         interval_2 = copy.deepcopy(interval_1)
         assert interval_1.overlap(interval_2) == interval_1
+
+    def test_overlap_of_intervals_on_different_chromosomes_is_zero(self):
+        interval_1 = coverview.utils.GenomicInterval("1", 0, 100)
+        interval_2 = coverview.utils.GenomicInterval("2", 0, 100)
+        assert interval_1.overlap(interval_2).size() == 0
+
+    def test_overlap_of_non_overlapping_intervals_on_same_chromosome_is_zero(self):
+        interval_1 = coverview.utils.GenomicInterval("1", 0, 100)
+
+        interval_2 = coverview.utils.GenomicInterval(
+            interval_1.chromosome,
+            interval_1.end_pos + 1,
+            interval_1.end_pos + 2
+        )
+
+        assert interval_1.overlap(interval_2).size() == 0
+
+    def test_overlap_of_small_interval_entirely_contained_in_larger_interval_is_small_interval(self):
+        small_interval = coverview.utils.GenomicInterval("1", 100, 200)
+
+        larger_interval = coverview.utils.GenomicInterval(
+            small_interval.chromosome,
+            small_interval.start_pos - 100,
+            small_interval.end_pos + 100
+        )
+
+        assert small_interval.overlap(larger_interval) == small_interval
 
 
 class TestMinOrNaN(unittest.TestCase):
