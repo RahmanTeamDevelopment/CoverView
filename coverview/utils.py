@@ -23,6 +23,87 @@ def max_or_nan(data):
         return max(data)
 
 
+class GenomicInterval(object):
+    """
+    Represents and interval on the genome. All coordinates are 0-based, and the
+    interval is half-open, i.e. the end position is not included in the interval.
+    """
+    def __init__(self, chromosome, start_pos, end_pos, name=None):
+        assert start_pos >= 0
+        assert end_pos >= 0
+
+        self.chromosome = chromosome
+        self.start_pos = start_pos
+        self.end_pos = end_pos
+
+        if name is None:
+            self.name = "{}:{}-{}".format(
+                chromosome,
+                start_pos,
+                end_pos
+            )
+        else:
+            self.name = name
+
+    def __eq__(self, other):
+        if self.chromosome != other.chromosome:
+            return False
+
+        if self.start_pos != other.start_pos:
+            return False
+
+        if self.end_pos != other.end_pos:
+            return False
+
+        return True
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def size(self):
+        return self.end_pos - self.start_pos
+
+    def overlap(self, other):
+        if self.chromosome != other.chromosome:
+            return GenomicInterval(None, 0, 0)
+        else:
+            overlap_start = max(self.start_pos, other.start_pos)
+            overlap_end = min(self.end_pos, other.end_pos)
+
+            if overlap_end > overlap_start:
+                return GenomicInterval(
+                    self.chromosome,
+                    overlap_start,
+                    overlap_end
+                )
+            else:
+                return GenomicInterval(None, 0, 0)
+
+
+class BedFileParser(object):
+    def __init__(self, bed_file):
+        self.bed_file = bed_file
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.bed_file.close()
+
+    def next(self):
+        line = self.bed_file.next()
+        cols = line.strip().split("\t")
+        chromosome = cols[0]
+        start_pos = int(cols[1])
+        end_pos = int(cols[2])
+        name = None
+
+        if len(cols) > 3:
+            name = cols[4]
+
+        yield GenomicInterval(chromosome, start_pos, end_pos, name)
+
+
 def get_clusters_of_regions_from_bed_file(bed_file, size_limit=100000):
     """
     Reads a BED file and yields lists of regions that are close
@@ -97,9 +178,9 @@ def get_names_of_target_regions(bed_file):
         if count == 1:
             target_names.append(target_name)
         else:
-            for i in xrange(1, count + 1):
+            for i in xrange(count):
                 target_names.append(
-                    "{}_{}".format(target_name, i)
+                    "{}_{}".format(target_name, i+1)
                 )
 
     return target_names, len(name_counts)

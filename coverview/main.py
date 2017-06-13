@@ -430,7 +430,7 @@ def main(command_line_args):
             create_gui_output_directory(config)
 
         with open(options.bedfile) as bed_file:
-            target_names, unique_target_ids = get_names_of_target_regions(bed_file)
+            target_names, num_unique_target_ids = get_names_of_target_regions(bed_file)
 
         number_of_targets = len(target_names)
 
@@ -461,7 +461,7 @@ def main(command_line_args):
                 config,
                 number_of_targets,
                 num_failed_targets,
-                unique_target_ids,
+                num_unique_target_ids,
                 ids_of_failed_targets
             )
 

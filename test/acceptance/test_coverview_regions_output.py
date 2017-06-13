@@ -180,6 +180,28 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             assert regions_output['Region_2']["MAXFLMQ"] == 0.0
             assert regions_output['Region_2']["MAXFLBQ"] == 0.0
 
+    def test_that_regions_with_same_name_have_1_based_index_appended_in_output_file(self):
+        with testutils.runners.CoverViewTestRunner() as runner:
+            runner.add_reads(("1", 32, 100, 1))
+            runner.add_reads(("1", 132, 100, 10))
+            runner.add_region(("1", 32, 132, "Region"))
+            runner.add_region(("1", 132, 232, "Region"))
+            status_code = runner.run_coverview_and_get_exit_code()
+            assert status_code == 0
+
+            regions_output = testutils.output_checkers.load_coveriew_regions_output(
+                "output_regions.txt"
+            )
+
+            assert "Region_1" in regions_output
+            assert "Region_2" in regions_output
+            assert regions_output['Region_1']["Chromosome"] == "1"
+            assert regions_output['Region_1']["Start_position"] == 32
+            assert regions_output['Region_1']["End_position"] == 132
+            assert regions_output['Region_2']["Chromosome"] == "1"
+            assert regions_output['Region_2']["Start_position"] == 132
+            assert regions_output['Region_2']["End_position"] == 232
+
 
 if __name__ == "__main__":
     unittest.main()
