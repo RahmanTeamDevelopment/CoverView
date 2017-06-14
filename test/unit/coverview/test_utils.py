@@ -4,6 +4,21 @@ import math
 import unittest
 
 
+class TestUniquifyRegionNames(unittest.TestCase):
+    def test_returns_empty_list_when_given_empty_list(self):
+        assert coverview.utils.uniquify_region_names([]) == []
+
+    def test_returns_list_of_one_interval_when_given_list_of_one_interval(self):
+        interval = coverview.utils.GenomicInterval("1", 100, 200, "REGION")
+        assert coverview.utils.uniquify_region_names([interval]) == [interval]
+
+    def test_returns_identical_copy_of_inputs_when_inputs_have_different_names(self):
+        interval_1 = coverview.utils.GenomicInterval("1", 100, 200, "REGION")
+        interval_2 = coverview.utils.GenomicInterval("1", 500, 600, "OTHER_REGION")
+        inputs = [interval_1, interval_2]
+        assert coverview.utils.uniquify_region_names(inputs) == inputs
+
+
 class TestGenpmicInterval(unittest.TestCase):
     def test_raises_assertion_if_constructed_with_negative_position(self):
         self.assertRaises(
@@ -81,6 +96,38 @@ class TestGenpmicInterval(unittest.TestCase):
         )
 
         assert small_interval.overlap(larger_interval) == small_interval
+
+
+class TestBEDParser(unittest.TestCase):
+    def test_raises_standard_error_if_line_in_file_has_less_than_three_columns(self):
+        parser = coverview.utils.BedFileParser(iter([
+            "chr1\t100\n"
+        ]))
+
+        self.assertRaises(
+            StandardError,
+            parser.next
+        )
+
+    def test_returns_genomic_interval_from_well_formatted_line(self):
+        parser = coverview.utils.BedFileParser(iter([
+            "chr1\t100\t200\tREGION_1\n",
+            "chr1\t300\t400\tREGION_2\n",
+        ]))
+
+        assert parser.next() == coverview.utils.GenomicInterval(
+            "chr1",
+            100,
+            200,
+            "REGION_1"
+        )
+
+        assert parser.next() == coverview.utils.GenomicInterval(
+            "chr1",
+            300,
+            400,
+            "REGION_2"
+        )
 
 
 class TestMinOrNaN(unittest.TestCase):

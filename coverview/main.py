@@ -12,7 +12,7 @@ from . import output
 from .calculators import calculate_chromosome_coverage_metrics, get_region_coverage_summary
 from .calculators import calculate_minimal_chromosome_coverage_metrics
 from .statistics import median
-from .utils import *
+from . import utils
 
 
 _version = 'v1.3.0'
@@ -92,24 +92,39 @@ class CoverageCalculator(object):
 
         summary['MEDCOV'] = median(profile.coverage_at_each_base)
         summary['MEDQCOV'] = median(profile.high_quality_coverage_at_each_base)
-        summary['MINCOV'] = int(min_or_nan(profile.coverage_at_each_base))
-        summary['MINQCOV'] = int(min_or_nan(profile.high_quality_coverage_at_each_base))
-        summary['MAXFLBQ'] = round(max_or_nan(profile.fraction_of_low_base_qualities_at_each_base), 3)
-        summary['MAXFLMQ'] = round(max_or_nan(profile.fraction_of_low_mapping_qualities_at_each_base), 3)
+        summary['MINCOV'] = int(utils.min_or_nan(profile.coverage_at_each_base))
+        summary['MINQCOV'] = int(utils.min_or_nan(profile.high_quality_coverage_at_each_base))
+        summary['MAXFLBQ'] = round(utils.max_or_nan(profile.fraction_of_low_base_qualities_at_each_base), 3)
+        summary['MAXFLMQ'] = round(utils.max_or_nan(profile.fraction_of_low_mapping_qualities_at_each_base), 3)
 
         if self.config['direction']:
             summary['MEDCOV_f'] = median(profile.forward_coverage_at_each_base)
             summary['MEDQCOV_r'] = median(profile.reverse_high_quality_coverage_at_each_base)
             summary['MEDQCOV_f'] = median(profile.forward_high_quality_coverage_at_each_base)
             summary['MEDCOV_r'] = median(profile.reverse_coverage_at_each_base)
-            summary['MINCOV_f'] = int(min_or_nan(profile.forward_coverage_at_each_base))
-            summary['MINQCOV_f'] = int(min_or_nan(profile.forward_high_quality_coverage_at_each_base))
-            summary['MAXFLBQ_f'] = round(max_or_nan(profile.forward_fraction_of_low_base_qualities_at_each_base), 3)
-            summary['MAXFLMQ_f'] = round(max_or_nan(profile.forward_fraction_of_low_mapping_qualities_at_each_base), 3)
-            summary['MINCOV_r'] = int(min_or_nan(profile.reverse_coverage_at_each_base))
-            summary['MINQCOV_r'] = int(min_or_nan(profile.reverse_high_quality_coverage_at_each_base))
-            summary['MAXFLBQ_r'] = round(max_or_nan(profile.reverse_fraction_of_low_base_qualities_at_each_base), 3)
-            summary['MAXFLMQ_r'] = round(max_or_nan(profile.reverse_fraction_of_low_mapping_qualities_at_each_base), 3)
+            summary['MINCOV_f'] = int(utils.min_or_nan(profile.forward_coverage_at_each_base))
+            summary['MINQCOV_f'] = int(utils.min_or_nan(profile.forward_high_quality_coverage_at_each_base))
+
+            summary['MAXFLBQ_f'] = round(
+                utils.max_or_nan(profile.forward_fraction_of_low_base_qualities_at_each_base),
+                3
+            )
+            summary['MAXFLMQ_f'] = round(
+                utils.max_or_nan(profile.forward_fraction_of_low_mapping_qualities_at_each_base),
+                3
+            )
+
+            summary['MINCOV_r'] = int(utils.min_or_nan(profile.reverse_coverage_at_each_base))
+            summary['MINQCOV_r'] = int(utils.min_or_nan(profile.reverse_high_quality_coverage_at_each_base))
+            summary['MAXFLBQ_r'] = round(
+                utils.max_or_nan(profile.reverse_fraction_of_low_base_qualities_at_each_base),
+                3
+            )
+
+            summary['MAXFLMQ_r'] = round(
+                utils.max_or_nan(profile.reverse_fraction_of_low_mapping_qualities_at_each_base),
+                3
+            )
 
         return summary
 
@@ -430,6 +445,12 @@ def main(command_line_args):
             create_gui_output_directory(config)
 
         with open(options.bedfile) as bed_file:
+            bed_parser = utils.BedFileParser(bed_file)
+            all_regions = []
+
+            for region in bed_parser:
+                all_regions.append(region)
+
             target_names, num_unique_target_ids = get_names_of_target_regions(bed_file)
 
         number_of_targets = len(target_names)

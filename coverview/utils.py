@@ -3,6 +3,7 @@ Assorted utility functions that don't belong anywhere else
 """
 
 from collections import defaultdict
+import functools
 import logging
 
 
@@ -23,6 +24,7 @@ def max_or_nan(data):
         return max(data)
 
 
+@functools.total_ordering
 class GenomicInterval(object):
     """
     Represents and interval on the genome. All coordinates are 0-based, and the
@@ -45,6 +47,17 @@ class GenomicInterval(object):
         else:
             self.name = name
 
+    def __lt__(self, other):
+        return (self.chromosome, self.start_pos, self.end_pos) < (other.chromosome, other.start_pos, other.end_pos)
+
+    def __hash__(self):
+        return hash((
+            self.chromosome,
+            self.start_pos,
+            self.end_pos,
+            self.name
+        ))
+
     def __eq__(self, other):
         if self.chromosome != other.chromosome:
             return False
@@ -59,6 +72,17 @@ class GenomicInterval(object):
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    def __repr__(self):
+        return "{}\t{}:{}-{}".format(
+            self.name,
+            self.chromosome,
+            self.start_pos,
+            self.end_pos
+        )
+
+    def __str__(self):
+        return self.__repr__()
 
     def size(self):
         return self.end_pos - self.start_pos
@@ -84,24 +108,63 @@ class BedFileParser(object):
     def __init__(self, bed_file):
         self.bed_file = bed_file
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.bed_file.close()
-
     def next(self):
         line = self.bed_file.next()
         cols = line.strip().split("\t")
+
+        if len(cols) < 3:
+            raise StandardError("Invalid line in BED file. Lines must have >= 3 columns")
+
         chromosome = cols[0]
         start_pos = int(cols[1])
         end_pos = int(cols[2])
         name = None
 
         if len(cols) > 3:
-            name = cols[4]
+            name = cols[3]
 
-        yield GenomicInterval(chromosome, start_pos, end_pos, name)
+        return GenomicInterval(chromosome, start_pos, end_pos, name)
+
+
+def uniquify_region_names(regions):
+    """
+    If there are duplicate names in the region list, e.g. 2 regions called BRCA, then
+    rename to BRCA_1, BRCA_2 etc. Return a new list of new intervals with unique names.
+    """
+    regions_by_name = defaultdict(list)
+    regions_with_unique_names = []
+
+    for region in sorted(regions):
+        regions_by_name[region.name].append(region)
+
+    for name, regions_with_same_name in regions_by_name.iteritems():
+        count = len(regions_with_same_name)
+        
+        if count == 1:
+            old_region = regions_with_same_name[0]
+            
+            new_region = GenomicInterval(
+                old_region.chromosome,
+                old_region.start_pos,
+                old_region.end_pos,
+                old_region.name
+            )
+            
+            regions_with_unique_names.append(new_region)
+        else:
+            for i in xrange(count):
+                old_region = regions_with_same_name[i]
+
+                new_region = GenomicInterval(
+                    old_region.chromosome,
+                    old_region.start_pos,
+                    old_region.end_pos,
+                    "{}_{}".format(old_region.name, i+1)
+                )
+                
+                regions_with_unique_names.append(new_region)
+                
+    return sorted(regions_with_unique_names)
 
 
 def get_clusters_of_regions_from_bed_file(bed_file, size_limit=100000):
@@ -111,24 +174,8 @@ def get_clusters_of_regions_from_bed_file(bed_file, size_limit=100000):
     """
     all_regions = []
 
-    for line in bed_file:
-
-        line = line.rstrip()
-
-        if len(line) == 0 or line.startswith('#'):
-            continue
-
-        row = line.split('\t')
-
-        if len(row) < 4:
-            raise StandardError("Error: incorrect BED file!")
-
-        chrom = row[0]
-        begin = int(row[1])
-        end = int(row[2])
-        key = row[3]
-        region = "{}:{}-{}".format(chrom, begin, end)
-        all_regions.append((chrom, begin, end, region, key))
+    for region in bed_file:
+        all_regions.append(region)
 
     if len(all_regions) == 0:
         raise StandardError("No regions in BED file")
