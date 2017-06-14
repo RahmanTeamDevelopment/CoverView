@@ -18,6 +18,30 @@ class TestUniquifyRegionNames(unittest.TestCase):
         inputs = [interval_1, interval_2]
         assert coverview.utils.uniquify_region_names(inputs) == inputs
 
+    def test_returns_copy_with_unique_names_if_identical_names_in_input(self):
+        interval_1 = coverview.utils.GenomicInterval("1", 100, 200, "REGION")
+        interval_2 = coverview.utils.GenomicInterval("1", 500, 600, "REGION")
+        inputs = [interval_1, interval_2]
+
+        expected_outputs = [
+            coverview.utils.GenomicInterval("1", 100, 200, "REGION_1"),
+            coverview.utils.GenomicInterval("1", 500, 600, "REGION_2"),
+        ]
+
+        assert coverview.utils.uniquify_region_names(inputs) == expected_outputs
+
+    def test_returns_sorted_copy_with_unique_names_if_identical_names_in_input_and_inputs_unsorted(self):
+        interval_1 = coverview.utils.GenomicInterval("1", 500, 600, "REGION")
+        interval_2 = coverview.utils.GenomicInterval("1", 100, 200, "REGION")
+        inputs = [interval_1, interval_2]
+
+        expected_outputs = [
+            coverview.utils.GenomicInterval("1", 100, 200, "REGION_1"),
+            coverview.utils.GenomicInterval("1", 500, 600, "REGION_2"),
+        ]
+
+        assert coverview.utils.uniquify_region_names(inputs) == expected_outputs
+
 
 class TestGenpmicInterval(unittest.TestCase):
     def test_raises_assertion_if_constructed_with_negative_position(self):
