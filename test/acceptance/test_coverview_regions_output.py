@@ -202,6 +202,28 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             assert regions_output['Region_2']["Start_position"] == 132
             assert regions_output['Region_2']["End_position"] == 232
 
+    def test_that_when_input_regions_are_unsorted_output_regions_are_sorted(self):
+        with testutils.runners.CoverViewTestRunner() as runner:
+            runner.add_reads(("1", 100, 100, 1))
+            runner.add_reads(("1", 500, 100, 10))
+            runner.add_region(("1", 500, 600, "Region"))
+            runner.add_region(("1", 100, 200, "Region"))
+            status_code = runner.run_coverview_and_get_exit_code()
+            assert status_code == 0
+
+            regions_output = testutils.output_checkers.load_coveriew_regions_output(
+                "output_regions.txt"
+            )
+
+            assert "Region_1" in regions_output
+            assert "Region_2" in regions_output
+            assert regions_output['Region_1']["Chromosome"] == "1"
+            assert regions_output['Region_1']["Start_position"] == 100
+            assert regions_output['Region_1']["End_position"] == 200
+            assert regions_output['Region_2']["Chromosome"] == "1"
+            assert regions_output['Region_2']["Start_position"] == 500
+            assert regions_output['Region_2']["End_position"] == 600
+
 
 if __name__ == "__main__":
     unittest.main()
