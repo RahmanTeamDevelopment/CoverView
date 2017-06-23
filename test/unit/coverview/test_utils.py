@@ -153,6 +153,14 @@ class TestBEDParser(unittest.TestCase):
             "REGION_2"
         )
 
+    def test_iterating_over_parser_gives_instances_of_genomic_interval_class(self):
+        parser = coverview.utils.BedFileParser(iter([
+            "chr1\t100\t200\tREGION_1\n"
+        ]))
+
+        for interval in parser:
+            self.assertIsInstance(interval, coverview.utils.GenomicInterval)
+
 
 class TestMinOrNaN(unittest.TestCase):
     def test_returns_nan_if_empty_list_is_passed(self):
@@ -196,52 +204,12 @@ class TestMaxOrNaN(unittest.TestCase):
         assert coverview.utils.max_or_nan([10, 20]) == 20
 
 
-class TestGetNamesOfTargetRegions(unittest.TestCase):
-    def test_raises_exception_if_there_are_no_regions(self):
-        self.assertRaises(
-            StandardError,
-            coverview.utils.get_names_of_target_regions,
-            []
-        )
-
-    def test_with_single_region(self):
-        names, num_unique_names = coverview.utils.get_names_of_target_regions([
-            "1\t32\t32\tRegion_1"
-        ])
-
-        assert len(names) == 1
-        assert num_unique_names == 1
-        assert names[0] == "Region_1"
-
-    def test_with_two_regions_with_different_names(self):
-        names, num_unique_names = coverview.utils.get_names_of_target_regions([
-            "1\t32\t32\tRegion_1",
-            "1\t1000\t1100\tRegion_2"
-        ])
-
-        assert len(names) == 2
-        assert num_unique_names == 2
-        assert names[0] == "Region_1"
-        assert names[1] == "Region_2"
-
-    def test_with_two_regions_with_the_same_name(self):
-        names, num_unique_names = coverview.utils.get_names_of_target_regions([
-            "1\t32\t32\tRegion_1",
-            "1\t1000\t1100\tRegion_1"
-        ])
-
-        assert len(names) == 2
-        assert num_unique_names == 1
-        assert names[0] == "Region_1_1"
-        assert names[1] == "Region_1_2"
-
-
 class TestGetClustersOfRegionsFromBEDFile(unittest.TestCase):
     def test_raises_exception_if_there_are_no_regions(self):
 
         # Generator functiond won't raise an exception until we start iterating
         # through the results
-        clusters = coverview.utils.get_clusters_of_regions_from_bed_file(
+        clusters = coverview.utils.cluster_genomic_intervals(
             []
         )
 

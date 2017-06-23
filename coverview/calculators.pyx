@@ -414,9 +414,9 @@ def get_region_coverage_summary(bam_file, cluster, config):
     cdef bam1_t** reads_start
     cdef bam1_t** reads_end
 
-    cluster_chrom = get_valid_chromosome_name(cluster[0][0], bam_file)
-    cluster_begin = cluster[0][1]
-    cluster_end = cluster[-1][2]
+    cluster_chrom = get_valid_chromosome_name(cluster[0].chromosome, bam_file)
+    cluster_begin = cluster[0].start_pos
+    cluster_end = cluster[-1].end_pos
 
     _logger.debug("Processing cluster of regions spanning {}:{}-{}".format(
         cluster_chrom, cluster_begin, cluster_end
@@ -435,40 +435,35 @@ def get_region_coverage_summary(bam_file, cluster, config):
     bq_cutoff = float(config['low_bq'])
     mq_cutoff = float(config['low_mq'])
 
-    for chrom, begin, end, region, key in cluster:
+    for interval in cluster:
 
         if config['outputs']['profiles'] or config['outputs']['regions']:
 
             coverage_calc = RegionCoverageCalculator(
                 cluster_chrom,
-                begin,
-                end,
+                interval.start_pos,
+                interval.end_pos,
                 bq_cutoff,
                 mq_cutoff,
                 config['count_duplicate_reads']
             )
 
-            read_array.set_pointers_to_start_and_end_of_interval(begin, end, &reads_start, &reads_end)
-
-            # _logger.info("There are {} reads in the region {} which spans the interval {}:{}-{}".format(
-            #     reads_end - reads_start,
-            #     key,
-            #     chrom,
-            #     begin,
-            #     end
-            # ))
+            read_array.set_pointers_to_start_and_end_of_interval(
+                interval.start_pos,
+                interval.end_pos,
+                &reads_start,
+                &reads_end
+            )
 
             coverage_calc.add_reads(reads_start, reads_end)
 
             yield RegionCoverageSummary(
-                key,
-                chrom,
-                begin,
-                end,
+                interval.name,
+                interval.chromosome,
+                interval.start_pos,
+                interval.end_pos,
                 coverage_calc.get_coverage_summary()
             )
-
-    #_logger.debug("Finished processing cluster")
 
 
 class BamFileCoverageSummary(object):

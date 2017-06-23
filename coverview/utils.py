@@ -108,6 +108,9 @@ class BedFileParser(object):
     def __init__(self, bed_file):
         self.bed_file = bed_file
 
+    def __iter__(self):
+        return self
+
     def next(self):
         line = self.bed_file.next()
         cols = line.strip().split("\t")
@@ -139,17 +142,17 @@ def uniquify_region_names(regions):
 
     for name, regions_with_same_name in regions_by_name.iteritems():
         count = len(regions_with_same_name)
-        
+
         if count == 1:
             old_region = regions_with_same_name[0]
-            
+
             new_region = GenomicInterval(
                 old_region.chromosome,
                 old_region.start_pos,
                 old_region.end_pos,
                 old_region.name
             )
-            
+
             regions_with_unique_names.append(new_region)
         else:
             for i in xrange(count):
@@ -161,73 +164,38 @@ def uniquify_region_names(regions):
                     old_region.end_pos,
                     "{}_{}".format(old_region.name, i+1)
                 )
-                
+
                 regions_with_unique_names.append(new_region)
-                
+
     return sorted(regions_with_unique_names)
 
 
-def get_clusters_of_regions_from_bed_file(bed_file, size_limit=100000):
+def cluster_genomic_intervals(bed_file, size_limit=100000):
     """
     Reads a BED file and yields lists of regions that are close
     together.
     """
-    all_regions = []
+    all_intervals = []
 
     for region in bed_file:
-        all_regions.append(region)
+        all_intervals.append(region)
 
-    if len(all_regions) == 0:
+    if len(all_intervals) == 0:
         raise StandardError("No regions in BED file")
 
-    all_regions.sort()
+    all_intervals.sort()
     current_cluster = []
 
-    for chrom, begin, end, region, key in all_regions:
+    for interval in all_intervals:
         if len(current_cluster) == 0:
-            current_cluster.append((chrom, begin, end, region, key))
-        elif current_cluster[-1][0] != chrom:
+            current_cluster.append(interval)
+        elif current_cluster[-1].chromosome != interval.chromosome:
             yield current_cluster
-            current_cluster = [(chrom, begin, end, region, key)]
-        elif end - current_cluster[0][1] > size_limit:
+            current_cluster = [interval]
+        elif interval.end_pos - current_cluster[0].start_pos > size_limit:
             yield current_cluster
-            current_cluster = [(chrom, begin, end, region, key)]
+            current_cluster = [interval]
         else:
-            current_cluster.append((chrom, begin, end, region, key))
+            current_cluster.append(interval)
 
     yield current_cluster
-
-
-def get_names_of_target_regions(bed_file):
-    """
-    Reads a BED file of target regions and returns a list of target
-    names. If there are duplicated names (e.g. multiple exons for the same
-    gene with the gene name as the target name) then a number is appended to the
-    name e.g. BRCA1_1, BRCA1_2 etc.
-    """
-    target_names = []
-    name_counts = defaultdict(int)
-
-    for line in bed_file:
-        line = line.strip()
-
-        if len(line) == 0 or line.startswith("#"):
-            continue
-
-        cols = line.split('\t')
-        target_name = cols[3]
-        name_counts[target_name] += 1
-
-    if len(name_counts) == 0:
-        raise StandardError("No regions in BED file")
-
-    for target_name, count in name_counts.iteritems():
-        if count == 1:
-            target_names.append(target_name)
-        else:
-            for i in xrange(count):
-                target_names.append(
-                    "{}_{}".format(target_name, i+1)
-                )
-
-    return target_names, len(name_counts)
