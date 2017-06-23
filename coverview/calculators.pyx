@@ -841,7 +841,7 @@ def calculate_minimal_chromosome_coverage_metrics(bam_file, options):
     _logger.info("Finished calculating minimal per-chromosome coverage metrics")
 
     return {
-        "Chrom": number_of_reads_covering_chromosomes,
+        "Chroms": number_of_reads_covering_chromosomes,
         "Mapped": {
             "RC": total_mapped_reads_in_bam
         },

@@ -111,6 +111,9 @@ class CoverViewTestRunner(object):
     def add_reads(self, read_set):
         self.read_sets.append(read_set)
 
+    def add_unmapped_reads(self, read_length, number_of_reads):
+        self.read_sets.append((None, None, read_length, number_of_reads))
+
     def add_region(self, region):
         self.regions.append(region)
 
@@ -123,10 +126,13 @@ class CoverViewTestRunner(object):
             self.read_sets
         )
 
-        make_bed_file(
-            self.bed_file_name,
-            self.regions
-        )
+        if len(self.regions) > 0:
+            make_bed_file(
+                self.bed_file_name,
+                self.regions
+            )
+        else:
+            self.bed_file_name = None
 
         make_config_file(
             self.config_file_name,
@@ -136,7 +142,10 @@ class CoverViewTestRunner(object):
     def clean_up_input_files(self):
         os.remove(self.bam_file_name)
         os.remove(self.index_file_name)
-        os.remove(self.bed_file_name)
+
+        if self.bed_file_name is not None:
+            os.remove(self.bed_file_name)
+
         os.remove(self.config_file_name)
 
     def clean_up_output_files(self):

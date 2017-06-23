@@ -3,7 +3,7 @@ import testutils.output_checkers
 import unittest
 
 
-class TestCoverViewRegionsOutput(unittest.TestCase):
+class TestCoverViewSummaryOutput(unittest.TestCase):
 
     def test_summary_output_with_zero_coverage_in_bam(self):
         with testutils.runners.CoverViewTestRunner() as runner:
@@ -109,6 +109,22 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             assert summary_output['Unmapped']['RC'] == "0"
             assert summary_output['Unmapped']['RCIN'] == "-"
             assert summary_output['Unmapped']['RCOUT'] == "-"
+
+    def test_summary_output_reports_correct_number_of_unmapped_reads(self):
+        with testutils.runners.CoverViewTestRunner() as runner:
+            read_length = 100
+            num_unmapped_reads = 100
+            num_mapped_reads = 50
+            runner.add_reads(("1", 1000, read_length, num_mapped_reads))
+            runner.add_unmapped_reads(read_length, num_unmapped_reads)
+            status_code = runner.run_coverview_and_get_exit_code()
+            assert status_code == 0
+
+            summary_output = testutils.output_checkers.load_coverview_summary_output(
+                "output_summary.txt"
+            )
+
+            assert summary_output['Unmapped']['RC'] == str(num_unmapped_reads)
 
 
 if __name__ == "__main__":

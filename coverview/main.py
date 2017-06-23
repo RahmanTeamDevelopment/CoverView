@@ -490,4 +490,5 @@ def main(command_line_args):
             )
 
         _logger.info("CoverView {} succesfully finished".format(_version))
-        return 0  # Standard success code
+
+    return 0  # Standard success code

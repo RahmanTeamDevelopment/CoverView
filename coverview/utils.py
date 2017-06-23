@@ -170,18 +170,18 @@ def uniquify_region_names(regions):
     return sorted(regions_with_unique_names)
 
 
-def cluster_genomic_intervals(bed_file, size_limit=100000):
+def cluster_genomic_intervals(intervals, size_limit=100000):
     """
     Reads a BED file and yields lists of regions that are close
     together.
     """
+    if len(intervals) == 0:
+        raise StandardError("Passed empty list of intervals to cluster function")
+
     all_intervals = []
 
-    for region in bed_file:
-        all_intervals.append(region)
-
-    if len(all_intervals) == 0:
-        raise StandardError("No regions in BED file")
+    for interval in intervals:
+        all_intervals.append(interval)
 
     all_intervals.sort()
     current_cluster = []

@@ -56,6 +56,7 @@ def create_unpaired_read(
     read.query_name = "simulated_read_{}".format(
         str(uuid.uuid4())
     )
+
     read.query_sequence = sequence
     read.query_qualities = qualities
     read.reference_id = reference_id
@@ -94,13 +95,32 @@ def create_perfect_unpaired_read(
     )
 
 
+def create_unmapped_unpaired_read(
+        read_length
+):
+    sequence = "G"*read_length
+    qualities = array.array('b', [_high_quality] * read_length)
+    cigar = ((0, read_length),)
+
+    return create_unpaired_read(
+        sequence,
+        qualities,
+        0,
+        2000000,
+        0,
+        cigar,
+        is_unmapped=1,
+        is_duplicate=0
+    )
+
+
 def generate_bam_file(bam_file_name, reference_file, regions):
     """
     Create a new BAM file and write reads to that file. The number and details
     of the reads are specified in the 'regions' parameter.
     """
-    references = sorted(set(x[0] for x in regions))
-    lengths = [max(2 * (x[1] + x[2]) for x in regions)] * len(references)
+    references = sorted(set(x[0] for x in regions if x[0] is not None))
+    lengths = [max(2 * (x[1] + x[2]) for x in regions if x[0] is not None)] * len(references)
 
     with pysam.AlignmentFile(
         bam_file_name,
@@ -110,16 +130,21 @@ def generate_bam_file(bam_file_name, reference_file, regions):
     ) as bam_file:
 
         for chromosome, start_position, read_length, num_reads in regions:
-            reference_id = bam_file.get_tid(chromosome)
-
             for read_index in xrange(num_reads):
-                new_read = create_perfect_unpaired_read(
-                    reference_file,
-                    reference_id,
-                    chromosome,
-                    start_position,
-                    read_length
-                )
+                if chromosome is None and start_position is None:
+                    new_read = create_unmapped_unpaired_read(
+                        read_length
+                    )
+                else:
+                    reference_id = bam_file.get_tid(chromosome)
+
+                    new_read = create_perfect_unpaired_read(
+                        reference_file,
+                        reference_id,
+                        chromosome,
+                        start_position,
+                        read_length
+                    )
 
                 bam_file.write(new_read)
 

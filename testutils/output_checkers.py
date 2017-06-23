@@ -60,15 +60,14 @@ def load_coverview_summary_output(file_name):
 
         for record in summary_file_reader:
             chrom = record['#CHROM']
-            read_count = record['RC']
-            on_target_read_count = record['RCIN']
-            off_target_read_count = record['RCOUT']
 
-            data[chrom] = {
-                "RC": read_count,
-                "RCIN": on_target_read_count,
-                "RCOUT": off_target_read_count
-            }
+            data[chrom] = {}
+
+            for key, value in record.iteritems():
+                if key == "#CHROM":
+                    continue
+                else:
+                    data[chrom][key] = value
 
     return data
 
