@@ -696,14 +696,15 @@ def calculate_chromosome_coverage_metrics(bam_file, on_target):
 
     number_of_reads_covering_chromosomes = []
 
-    total_mapped_reads_in_bam = 0
     total_reads_in_bam = bam_file.mapped + bam_file.unmapped
     total_on_target_reads = 0
     total_off_target_reads = 0
 
+    bam_index_stats = coverview.bamutils.load_bam_index_stats_from_file(bam_file)
+
     for chrom, length in zip(chromosomes, chromosome_lengths):
 
-        num_mapped_reads = coverview.bamutils.get_num_mapped_reads_covering_chromosome(bam_file, chrom)
+        num_mapped_reads = bam_index_stats.get_num_mapped_reads_for_chromosome(chrom)
 
         if chrom in on_target:
             num_on_target_reads = on_target[chrom]
@@ -719,7 +720,6 @@ def calculate_chromosome_coverage_metrics(bam_file, on_target):
             'RCOUT': num_off_target_reads
         })
 
-        total_mapped_reads_in_bam += num_mapped_reads
         total_on_target_reads += num_on_target_reads
         total_off_target_reads += num_off_target_reads
 
@@ -728,24 +728,23 @@ def calculate_chromosome_coverage_metrics(bam_file, on_target):
     return {
         "Chroms": number_of_reads_covering_chromosomes,
         "Mapped": {
-            'RC': total_mapped_reads_in_bam,
+            'RC': bam_index_stats.get_total_mapped_reads_in_bam(),
             'RCIN': total_on_target_reads,
             'RCOUT': total_off_target_reads
         },
-        "Total": total_reads_in_bam,
-        "Unmapped": total_reads_in_bam - total_mapped_reads_in_bam
+        "Total": bam_index_stats.get_total_reads_in_bam(),
+        "Unmapped": bam_index_stats.get_total_unmapped_reads_in_bam()
     }
 
 
 def calculate_minimal_chromosome_coverage_metrics(bam_file, options):
     _logger.info("Calculating minimal per-chromosome coverage metrics")
 
+    bam_index_stats = coverview.bamutils.load_bam_index_stats_from_file(bam_file)
     number_of_reads_covering_chromosomes = []
-    total_reads_in_bam = bam_file.mapped + bam_file.unmapped
-    total_mapped_reads_in_bam = bam_file.mapped
 
     for chrom in bam_file.references:
-        num_reads = coverview.bamutils.get_total_num_reads_covering_chromosome(bam_file, chrom)
+        num_reads = bam_index_stats.get_num_total_reads_for_chromosome(chrom)
         number_of_reads_covering_chromosomes.append({
             'CHROM': chrom, 'RC': num_reads
         })
@@ -755,8 +754,8 @@ def calculate_minimal_chromosome_coverage_metrics(bam_file, options):
     return {
         "Chroms": number_of_reads_covering_chromosomes,
         "Mapped": {
-            "RC": total_mapped_reads_in_bam
+            "RC": bam_index_stats.get_total_mapped_reads_in_bam()
         },
-        "Total": total_reads_in_bam,
-        "Unmapped": total_reads_in_bam - total_mapped_reads_in_bam
+        "Total": bam_index_stats.get_total_reads_in_bam(),
+        "Unmapped": bam_index_stats.get_total_unmapped_reads_in_bam()
     }

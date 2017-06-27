@@ -53,6 +53,15 @@ class BamIndexStats(object):
         stats = self._get_stats_for_chromosome(chromosome)
         return stats.chromosome_length
 
+    def get_total_mapped_reads_in_bam(self):
+        return sum(x.num_mapped_reads for x in self.rows)
+
+    def get_total_unmapped_reads_in_bam(self):
+        return sum(x.num_unmapped_reads for x in self.rows)
+
+    def get_total_reads_in_bam(self):
+        return sum(x.num_reads for x in self.rows)
+
 
 def extract_bam_index_stats(index_stats_lines):
     bam_index_stats = BamIndexStats()
@@ -85,78 +94,6 @@ def load_bam_index_stats_from_file(bam_file):
     index_stats_text = pysam.idxstats(bam_file.filename)
     lines = index_stats_text.splitlines()
     return extract_bam_index_stats(lines)
-
-
-def get_num_mapped_reads_covering_chromosome(bam_file, chrom):
-    """
-    Return the total number of mapped reads covering the specified chromsome
-    in the specified BAM file. This is an optimisation, which makes use of the
-    index statistics in the BAM index, which record the nunmber of alignments. This is
-    an O(1) operation rather than the O(N) operation of looping through all reads in the
-    file with read.tid == chromID.
-    """
-    index_stats = pysam.idxstats(bam_file.filename).splitlines()
-
-    for line in index_stats:
-        if not line.startswith("#"):
-            the_chrom, length, num_reads, num_unmapped_reads = line.split("\t")
-            num_reads = int(num_reads)
-            num_unmapped_reads = int(num_unmapped_reads)
-
-            if the_chrom == chrom:
-                return num_reads - num_unmapped_reads
-    else:
-        raise StandardError("Could not find chromosome {} in pysam index stats".format(
-            chrom
-        ))
-
-
-def get_num_unmapped_reads_covering_chromosome(bam_file, chrom):
-    """
-    Return the total number of unmapped reads covering the specified chromsome
-    in the specified BAM file. This is an optimisation, which makes use of the
-    index statistics in the BAM index, which record the nunmber of alignments. This is
-    an O(1) operation rather than the O(N) operation of looping through all reads in the
-    file with read.tid == chromID.
-    """
-    index_stats = pysam.idxstats(bam_file.filename).splitlines()
-
-    for line in index_stats:
-        if not line.startswith("#"):
-            the_chrom, length, num_reads, num_unmapped_reads = line.split("\t")
-            num_reads = int(num_reads)
-            num_unmapped_reads = int(num_unmapped_reads)
-
-            if the_chrom == chrom:
-                return num_unmapped_reads
-    else:
-        raise StandardError("Could not find chromosome {} in pysam index stats".format(
-            chrom
-        ))
-
-
-def get_total_num_reads_covering_chromosome(bam_file, chrom):
-    """
-    Return the total number of reads covering the specified chromsome
-    in the specified BAM file. This is an optimisation, which makes use of the
-    index statistics in the BAM index, which record the nunmber of alignments. This is
-    an O(1) operation rather than the O(N) operation of looping through all reads in the
-    file with read.tid == chromID.
-    """
-    index_stats = pysam.idxstats(bam_file.filename).splitlines()
-
-    for line in index_stats:
-        if not line.startswith("#"):
-            the_chrom, length, num_reads, num_unmapped_reads = line.split("\t")
-            num_reads = int(num_reads)
-            num_unmapped_reads = int(num_unmapped_reads)
-
-            if the_chrom == chrom:
-                return num_reads
-    else:
-        raise StandardError("Could not find chromosome {} in pysam index stats".format(
-            chrom
-        ))
 
 
 def get_valid_chromosome_name(chrom, bam_file):
