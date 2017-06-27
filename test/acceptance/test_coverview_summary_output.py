@@ -125,6 +125,7 @@ class TestCoverViewSummaryOutput(unittest.TestCase):
             )
 
             assert summary_output['Unmapped']['RC'] == str(num_unmapped_reads)
+            assert summary_output['Mapped']['RC'] == str(num_mapped_reads)
 
 
 if __name__ == "__main__":

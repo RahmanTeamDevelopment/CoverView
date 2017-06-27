@@ -263,6 +263,7 @@ def load_and_validate_config(config_file_name):
         "only_fail_profiles",
         "outputs",
         "pass",
+        "transcript",
         "transcript_db"
     }
 

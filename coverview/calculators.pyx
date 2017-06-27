@@ -4,9 +4,10 @@ Utilities for calculating coverage summaries from a BAM file
 
 from __future__ import division
 
+import coverview.bamutils
 import logging
 import output
-import pysam
+
 
 from cpython cimport array
 from libc.stdint cimport uint32_t, uint64_t, uint8_t
@@ -285,94 +286,6 @@ cdef class RegionCoverageCalculator(object):
         )
 
 
-def get_num_mapped_reads_covering_chromosome(bam_file, chrom):
-    """
-    Return the total number of mapped reads covering the specified chromsome
-    in the specified BAM file. This is an optimisation, which makes use of the
-    index statistics in the BAM index, which record the nunmber of alignments. This is
-    an O(1) operation rather than the O(N) operation of looping through all reads in the
-    file with read.tid == chromID.
-    """
-    index_stats = pysam.idxstats(bam_file.filename).splitlines()
-
-    for line in index_stats:
-        if not line.startswith("#"):
-            the_chrom, length, num_reads, num_unmapped_reads = line.split("\t")
-            num_reads = int(num_reads)
-            num_unmapped_reads = int(num_unmapped_reads)
-
-            if the_chrom == chrom:
-                return num_reads - num_unmapped_reads
-    else:
-        raise StandardError("Could not find chromosome {} in pysam index stats".format(
-            chrom
-        ))
-
-
-def get_num_unmapped_reads_covering_chromosome(bam_file, chrom):
-    """
-    Return the total number of unmapped reads covering the specified chromsome
-    in the specified BAM file. This is an optimisation, which makes use of the
-    index statistics in the BAM index, which record the nunmber of alignments. This is
-    an O(1) operation rather than the O(N) operation of looping through all reads in the
-    file with read.tid == chromID.
-    """
-    index_stats = pysam.idxstats(bam_file.filename).splitlines()
-
-    for line in index_stats:
-        if not line.startswith("#"):
-            the_chrom, length, num_reads, num_unmapped_reads = line.split("\t")
-            num_reads = int(num_reads)
-            num_unmapped_reads = int(num_unmapped_reads)
-
-            if the_chrom == chrom:
-                return num_unmapped_reads
-    else:
-        raise StandardError("Could not find chromosome {} in pysam index stats".format(
-            chrom
-        ))
-
-
-def get_total_num_reads_covering_chromosome(bam_file, chrom):
-    """
-    Return the total number of reads covering the specified chromsome
-    in the specified BAM file. This is an optimisation, which makes use of the
-    index statistics in the BAM index, which record the nunmber of alignments. This is
-    an O(1) operation rather than the O(N) operation of looping through all reads in the
-    file with read.tid == chromID.
-    """
-    index_stats = pysam.idxstats(bam_file.filename).splitlines()
-
-    for line in index_stats:
-        if not line.startswith("#"):
-            the_chrom, length, num_reads, num_unmapped_reads = line.split("\t")
-            num_reads = int(num_reads)
-            num_unmapped_reads = int(num_unmapped_reads)
-
-            if the_chrom == chrom:
-                return num_reads
-    else:
-        raise StandardError("Could not find chromosome {} in pysam index stats".format(
-            chrom
-        ))
-
-
-def get_valid_chromosome_name(chrom, bam_file):
-    """
-    Return a chromosome name that matches the naming convention used in the BAM file, i.e.
-    add or remove 'chr' as appropriate.
-    """
-    chr_prefix = bam_file.references[0].startswith('chr')
-
-    if chr_prefix and not chrom.startswith('chr'):
-        return 'chr' + chrom
-
-    if not chr_prefix and chrom.startswith('chr'):
-        return chrom[3:]
-
-    return chrom
-
-
 cdef void load_reads_into_array(ReadArray read_array, bam_file, chrom, start, end):
     """
     Load a chunk of BAM data into an in-memory read array
@@ -414,7 +327,7 @@ def get_region_coverage_summary(bam_file, cluster, config):
     cdef bam1_t** reads_start
     cdef bam1_t** reads_end
 
-    cluster_chrom = get_valid_chromosome_name(cluster[0].chromosome, bam_file)
+    cluster_chrom = coverview.bamutils.get_valid_chromosome_name(cluster[0].chromosome, bam_file)
     cluster_begin = cluster[0].start_pos
     cluster_end = cluster[-1].end_pos
 
@@ -791,7 +704,7 @@ def calculate_chromosome_coverage_metrics(bam_file, on_target):
 
     for chrom, length in zip(chromosomes, chromosome_lengths):
 
-        num_mapped_reads = get_num_mapped_reads_covering_chromosome(bam_file, chrom)
+        num_mapped_reads = coverview.bamutils.get_num_mapped_reads_covering_chromosome(bam_file, chrom)
 
         if chrom in on_target:
             num_on_target_reads = on_target[chrom]
@@ -833,7 +746,7 @@ def calculate_minimal_chromosome_coverage_metrics(bam_file, options):
     total_mapped_reads_in_bam = bam_file.mapped
 
     for chrom in bam_file.references:
-        num_reads = get_total_num_reads_covering_chromosome(bam_file, chrom)
+        num_reads = coverview.bamutils.get_total_num_reads_covering_chromosome(bam_file, chrom)
         number_of_reads_covering_chromosomes.append({
             'CHROM': chrom, 'RC': num_reads
         })
