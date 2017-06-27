@@ -5,7 +5,7 @@ PEP8=pep8 --max-line-length=120
 SCRIPTS=bin/coverview
 
 env:
-	virtualenv -p python2.7 --no-site-packages --always-copy env
+	virtualenv -p python2.7 env
 	pip install -U pip
 	pip install -r requirements.txt --no-cache-dir --ignore-installed
 
@@ -16,7 +16,7 @@ clean:
 	pip uninstall -y CoverView
 	find . -name __pycache__ | xargs rm -rf
 
-cleanAll:
+cleanAll: clean
 	rm -rf env
 
 wheels: env

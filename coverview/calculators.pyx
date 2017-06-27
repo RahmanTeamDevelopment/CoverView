@@ -4,7 +4,7 @@ Utilities for calculating coverage summaries from a BAM file
 
 from __future__ import division
 
-import coverview.bamutils
+import tgmi.bamutils
 import logging
 import output
 
@@ -326,7 +326,7 @@ def get_region_coverage_summary(bam_file, cluster, config):
     cdef bam1_t** reads_start
     cdef bam1_t** reads_end
 
-    cluster_chrom = coverview.bamutils.get_valid_chromosome_name(cluster[0].chromosome, bam_file)
+    cluster_chrom = tgmi.bamutils.get_valid_chromosome_name(cluster[0].chromosome, bam_file)
     cluster_begin = cluster[0].start_pos
     cluster_end = cluster[-1].end_pos
 
@@ -700,7 +700,7 @@ def calculate_chromosome_coverage_metrics(bam_file, on_target):
     total_on_target_reads = 0
     total_off_target_reads = 0
 
-    bam_index_stats = coverview.bamutils.load_bam_index_stats_from_file(bam_file)
+    bam_index_stats = tgmi.bamutils.load_bam_index_stats_from_file(bam_file)
 
     for chrom, length in zip(chromosomes, chromosome_lengths):
 
@@ -740,7 +740,7 @@ def calculate_chromosome_coverage_metrics(bam_file, on_target):
 def calculate_minimal_chromosome_coverage_metrics(bam_file, options):
     _logger.info("Calculating minimal per-chromosome coverage metrics")
 
-    bam_index_stats = coverview.bamutils.load_bam_index_stats_from_file(bam_file)
+    bam_index_stats = tgmi.bamutils.load_bam_index_stats_from_file(bam_file)
     number_of_reads_covering_chromosomes = []
 
     for chrom in bam_file.references:
