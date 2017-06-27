@@ -43,7 +43,7 @@ class BamIndexStats(object):
 
     def get_num_unmapped_reads_for_chromosome(self, chromosome):
         stats = self._get_stats_for_chromosome(chromosome)
-        return stats.num_mapped_reads
+        return stats.num_unmapped_reads
 
     def get_num_total_reads_for_chromosome(self, chromosome):
         stats = self._get_stats_for_chromosome(chromosome)
@@ -54,12 +54,10 @@ class BamIndexStats(object):
         return stats.chromosome_length
 
 
-def load_bam_index_stats(bam_file):
-    index_stats_text = pysam.idxstats(bam_file.filename)
-    lines = index_stats_text.splitlines()
+def extract_bam_index_stats(index_stats_lines):
     bam_index_stats = BamIndexStats()
 
-    for line in lines:
+    for line in index_stats_lines:
         if line.startswith("#"):
             continue
 
@@ -81,6 +79,12 @@ def load_bam_index_stats(bam_file):
         )
 
     return bam_index_stats
+
+
+def load_bam_index_stats_from_file(bam_file):
+    index_stats_text = pysam.idxstats(bam_file.filename)
+    lines = index_stats_text.splitlines()
+    return extract_bam_index_stats(lines)
 
 
 def get_num_mapped_reads_covering_chromosome(bam_file, chrom):

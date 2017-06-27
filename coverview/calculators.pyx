@@ -8,7 +8,6 @@ import coverview.bamutils
 import logging
 import output
 
-
 from cpython cimport array
 from libc.stdint cimport uint32_t, uint64_t, uint8_t
 
