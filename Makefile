@@ -4,11 +4,6 @@ PY=coverview/*.py bamgen/*.py bin/CoverView.py testutils/*.py
 PEP8=pep8 --max-line-length=120
 SCRIPTS=bin/coverview
 
-env:
-	virtualenv -p python2.7 env
-	pip install -U pip
-	pip install -r requirements.txt --no-cache-dir --ignore-installed
-
 pep8:
 	${PEP8} ${PY}
 
@@ -19,13 +14,11 @@ clean:
 cleanAll: clean
 	rm -rf env
 
-wheels: env
+wheels:
 	pip wheel .
 
-env/bin/coverview: ${HEADERS} ${PYX} ${PY} ${SCRIPTS} env
-	pip install -U .
-	touch env/bin/coverview
-	touch env/bin/CoverView.py
+env/bin/coverview: ${HEADERS} ${PYX} ${PY} ${SCRIPTS}
+	./install.sh
 
 install: env/bin/coverview
 
