@@ -123,7 +123,7 @@ cdef class RegionCoverageCalculator(object):
                 reads_start += 1
                 continue
 
-            if bam_endpos(src) < begin:
+            if bam_endpos(src) <= begin:
                 reads_start += 1
                 continue
 
@@ -144,6 +144,13 @@ cdef class RegionCoverageCalculator(object):
             if n_cigar == 0:
                 reads_start += 1
                 continue
+
+            # _logger.info("Read. Start = {}. End = {}. Name = {}. ISize = {}".format(
+            #     src.core.pos,
+            #     bam_endpos(src),
+            #     bam_get_qname(src),
+            #     src.core.isize
+            # ))
 
             self.n_reads_in_region += 1
 
