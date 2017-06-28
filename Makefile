@@ -17,10 +17,8 @@ cleanAll: clean
 wheels:
 	pip wheel .
 
-env/bin/coverview: ${HEADERS} ${PYX} ${PY} ${SCRIPTS}
+install: ${HEADERS} ${PYX} ${PY} ${SCRIPTS}
 	./install.sh
-
-install: env/bin/coverview
 
 profile: install
 	time python -m cProfile -s cumulative env/bin/CoverView.py --input ../Data/NA21144.mapped.ILLUMINA.bwa.GIH.exome.20121211.bam -b chrom20_exons.bed > profile.out

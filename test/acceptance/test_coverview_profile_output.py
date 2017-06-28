@@ -53,9 +53,9 @@ class TestCoverViewProfileOutput(unittest.TestCase):
                 assert profile_output['Region_1'][chrom_pos]['COV'] == "1"
                 assert profile_output['Region_1'][chrom_pos]['QCOV'] == "1"
                 assert profile_output['Region_1'][chrom_pos]['MEDBQ'] == "60.0"
-                assert profile_output['Region_1'][chrom_pos]['FLBQ'] == "0.0"
+                assert profile_output['Region_1'][chrom_pos]['FLBQ'] == "0.000"
                 assert profile_output['Region_1'][chrom_pos]['MEDMQ'] == "60.0"
-                assert profile_output['Region_1'][chrom_pos]['FLMQ'] == "0.0"
+                assert profile_output['Region_1'][chrom_pos]['FLMQ'] == "0.000"
 
 
 if __name__ == "__main__":
