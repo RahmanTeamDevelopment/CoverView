@@ -142,12 +142,6 @@ cdef class RegionCoverageCalculator(object):
 
             # This is an unmapped read whose mate is mapped in this region. Skip these.
             if n_cigar == 0:
-                # _logger.warning("Encountered read with empty cigar string. Not sure what this is")
-                # _logger.warning("Read name = {}".format(bam_get_qname(src)))
-                # _logger.warning("Read length = {}".format(src.core.l_qseq))
-                # _logger.warning("Position = {}".format(src.core.pos))
-                # _logger.warning("Tid = {}".format(src.core.tid))
-                # _logger.warning("Insert size = {}".format(src.core.isize))
                 reads_start += 1
                 continue
 
@@ -588,7 +582,7 @@ class PerBaseCoverageSummary(object):
             flmq_r = FLMQ_r_array[i]
 
             if write_directional_summaries == 0:
-                output_line = "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(
+                output_line = "{}\t{}\t{}\t{}\t{}\t{:.3f}\t{}\t{:.3f}\n".format(
                     chromosome,
                     start_position + i,
                     cov,
@@ -602,28 +596,31 @@ class PerBaseCoverageSummary(object):
                 output_line = output_line.replace("nan", ".")
                 output_file.write(output_line)
             else:
-                output_line = "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(
-                    chromosome,
-                    start_position + i,
-                    cov,
-                    qcov,
-                    medbq,
-                    flbq,
-                    medmq,
-                    flmq,
-                    cov_f,
-                    qcov_f,
-                    medbq_f,
-                    flbq_f,
-                    medmq_f,
-                    flmq_f,
-                    cov_r,
-                    qcov_r,
-                    medbq_r,
-                    flbq_r,
-                    medmq_r,
-                    flmq_r
-                )
+                output_line = \
+                    "{}\t{}\t{}\t{}\t{}\t{:.3f}\t{}\t{:.3f}\t{}\t{}\t{}\t{:.3f}\t{}\t{:.3f}" \
+                    "\t{}\t{}\t{}\t{:.3f}\t{}\t{:.3f}\n" \
+                    "".format(
+                        chromosome,
+                        start_position + i,
+                        cov,
+                        qcov,
+                        medbq,
+                        flbq,
+                        medmq,
+                        flmq,
+                        cov_f,
+                        qcov_f,
+                        medbq_f,
+                        flbq_f,
+                        medmq_f,
+                        flmq_f,
+                        cov_r,
+                        qcov_r,
+                        medbq_r,
+                        flbq_r,
+                        medmq_r,
+                        flmq_r
+                    )
 
                 output_line = output_line.replace("nan", ".")
                 output_file.write(output_line)
