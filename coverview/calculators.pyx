@@ -243,13 +243,12 @@ cdef class RegionCoverageCalculator(object):
         cdef float* FLMQ_f = self.FLMQ_f.data.as_floats
         cdef float* FLMQ_r = self.FLMQ_r.data.as_floats
 
-        for i in xrange(self.end - self.begin):
+        for i in range(self.end - self.begin):
             MEDBQ[i] = self.bq_hists.compute_median(i)
             MEDBQ_f[i] = self.bq_hists_f.compute_median(i)
             MEDBQ_r[i] = self.bq_hists_r.compute_median(i)
 
             MEDMQ[i] = self.mq_hists.compute_median(i)
-            _logger.info("MEDMQ[{}] = {}".format(i, MEDMQ[i]))
             MEDMQ_f[i] = self.mq_hists_f.compute_median(i)
             MEDMQ_r[i] = self.mq_hists_r.compute_median(i)
 
