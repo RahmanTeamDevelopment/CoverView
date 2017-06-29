@@ -249,6 +249,7 @@ cdef class RegionCoverageCalculator(object):
             MEDBQ_r[i] = self.bq_hists_r.compute_median(i)
 
             MEDMQ[i] = self.mq_hists.compute_median(i)
+            _logger.info("MEDMQ[{}] = {}".format(i, MEDMQ[i]))
             MEDMQ_f[i] = self.mq_hists_f.compute_median(i)
             MEDMQ_r[i] = self.mq_hists_r.compute_median(i)
 

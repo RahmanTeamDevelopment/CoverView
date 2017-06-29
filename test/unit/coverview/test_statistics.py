@@ -1,4 +1,4 @@
-import coverview
+import coverview.statistics
 import math
 import unittest
 
@@ -64,15 +64,23 @@ class TestQualityHistogramMedianCalculation(unittest.TestCase):
         hist.add_data(30)
         assert hist.compute_median() == 20
 
+    def test_median_of_four_values_with_one_low_and_three_high_is_high_value(self):
+        hist = coverview.statistics.pyQualityHistogram()
+        hist.add_data(10)
+        hist.add_data(20)
+        hist.add_data(20)
+        hist.add_data(20)
+        assert hist.compute_median() == 20
+
     def test_median_of_0_to_99_is_49_and_a_half(self):
         hist = coverview.statistics.pyQualityHistogram()
-        for i in xrange(0, 100):
+        for i in range(0, 100):
             hist.add_data(i)
         assert hist.compute_median() == 49.5
 
     def test_median_of_0_to_100_is_50(self):
         hist = coverview.statistics.pyQualityHistogram()
-        for i in xrange(0, 101):
+        for i in range(0, 101):
             hist.add_data(i)
         assert hist.compute_median() == 50.0
 

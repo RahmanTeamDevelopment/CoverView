@@ -66,31 +66,25 @@ cdef class QualityHistogramArray:
         cdef int total = 0
         cdef int current_bin = 0
         cdef int last_non_empty_bin = -1
+        cdef int half = self.n_data_points[index] // 2
+        cdef int is_even_number_of_data_points = (self.n_data_points[index] % 2 == 0)
+        cdef int data_this_bin = 0
 
         if self.n_data_points[index] == 0:
             return float('NaN')
 
-        if self.n_data_points[index] % 2 == 0:
+        while True:
+            data_this_bin = self.data[index][current_bin]
 
-            while True:
-                total += self.data[index][current_bin]
-
-                if total > self.n_data_points[index] // 2:
-                    if last_non_empty_bin == -1:
-                        return current_bin
-                    else:
-                        return (current_bin + last_non_empty_bin) / 2.0
-
-                if self.data[index][current_bin] > 0:
+            if is_even_number_of_data_points and total == half and total + data_this_bin > half:
+                return (current_bin + last_non_empty_bin) / 2.0
+            elif total + data_this_bin > half:
+                return current_bin
+            else:
+                if data_this_bin > 0:
                     last_non_empty_bin = current_bin
 
-                current_bin += 1
-        else:
-            while True:
-                total += self.data[index][current_bin]
-                if total > self.n_data_points[index] // 2:
-                    return current_bin
-
+                total += data_this_bin
                 current_bin += 1
 
 
