@@ -1,7 +1,7 @@
 from __future__ import division
 
 import argparse
-import bamgen
+import bamgen.bamgen
 import collections
 import json
 import logging
@@ -38,7 +38,7 @@ class CoverageCalculator(object):
 
             if ref_file_name == "__MOCK__":
                 _logger.info("Using Mock reference file. This should only be used for testing")
-                self.ref_file = bamgen.MockReferenceFile()
+                self.ref_file = bamgen.bamgen.MockReferenceFile()
             else:
                 _logger.info("Using file {} to retrieve reference sequence".format(
                     ref_file_name
@@ -137,7 +137,7 @@ class CoverageCalculator(object):
         """
         if self.config['outputs']['profiles']:
             self.out_profiles.close()
-            if not config['transcript_db'] is None:
+            if not self.config['transcript_db'] is None:
                 self.out_poor.close()
 
     def write_output_file_headers(self):

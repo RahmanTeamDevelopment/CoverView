@@ -1,4 +1,4 @@
-import bamgen
+import bamgen.bamgen
 import coverview.main
 import coverview.reads
 import json
@@ -49,9 +49,9 @@ def make_bam_file(file_name, read_sets):
     at least as long as the max(2 * (start_position + read_length)), which is longer than we need but
     that's ok.
     """
-    ref_file = bamgen.MockReferenceFile()
+    ref_file = bamgen.bamgen.MockReferenceFile()
 
-    bamgen.generate_bam_file(
+    bamgen.bamgen.generate_bam_file(
         file_name,
         ref_file,
         read_sets
@@ -121,7 +121,7 @@ class CoverViewTestRunner(object):
         self.config_data.update(config_data)
 
     def generate_input_files(self):
-        bamgen.make_bam_file(
+        bamgen.bamgen.make_bam_file(
             self.bam_file_name,
             self.read_sets
         )

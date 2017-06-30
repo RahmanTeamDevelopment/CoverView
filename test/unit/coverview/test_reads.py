@@ -1,4 +1,4 @@
-import bamgen
+import bamgen.bamgen
 import coverview.statistics
 import coverview.reads
 import os
@@ -39,7 +39,7 @@ class TestReadArray(unittest.TestCase):
             ("1", 32, 100, 0)
         ]
 
-        bamgen.make_bam_file(self.unique_bam_file_name, read_sets)
+        bamgen.bamgen.make_bam_file(self.unique_bam_file_name, read_sets)
         read_array = load_bam_into_read_array(self.unique_bam_file_name)
 
         assert read_array.count_reads_in_interval(32, 132) == 0
@@ -49,7 +49,7 @@ class TestReadArray(unittest.TestCase):
             ("1", 32, 100, 1)
         ]
 
-        bamgen.make_bam_file(self.unique_bam_file_name, read_sets)
+        bamgen.bamgen.make_bam_file(self.unique_bam_file_name, read_sets)
         read_array = load_bam_into_read_array(self.unique_bam_file_name)
 
         assert read_array.count_reads_in_interval(32, 132) == 1
@@ -59,7 +59,7 @@ class TestReadArray(unittest.TestCase):
             ("1", 32, 100, 1)
         ]
 
-        bamgen.make_bam_file(self.unique_bam_file_name, read_sets)
+        bamgen.bamgen.make_bam_file(self.unique_bam_file_name, read_sets)
         read_array = load_bam_into_read_array(self.unique_bam_file_name)
 
         assert read_array.count_reads_in_interval(0, 31) == 0

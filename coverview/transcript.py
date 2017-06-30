@@ -1,6 +1,68 @@
 from collections import OrderedDict
 
 
+# Class representing a DNA sequence
+class Sequence(str):
+    # Translating to amino acid sequence
+    def translate(self, code='standard'):
+        if code == 'standard':
+            gencode = {
+                'ATA': 'I', 'ATC': 'I', 'ATT': 'I', 'ATG': 'M',
+                'ACA': 'T', 'ACC': 'T', 'ACG': 'T', 'ACT': 'T',
+                'AAC': 'N', 'AAT': 'N', 'AAA': 'K', 'AAG': 'K',
+                'AGC': 'S', 'AGT': 'S', 'AGA': 'R', 'AGG': 'R',
+                'CTA': 'L', 'CTC': 'L', 'CTG': 'L', 'CTT': 'L',
+                'CCA': 'P', 'CCC': 'P', 'CCG': 'P', 'CCT': 'P',
+                'CAC': 'H', 'CAT': 'H', 'CAA': 'Q', 'CAG': 'Q',
+                'CGA': 'R', 'CGC': 'R', 'CGG': 'R', 'CGT': 'R',
+                'GTA': 'V', 'GTC': 'V', 'GTG': 'V', 'GTT': 'V',
+                'GCA': 'A', 'GCC': 'A', 'GCG': 'A', 'GCT': 'A',
+                'GAC': 'D', 'GAT': 'D', 'GAA': 'E', 'GAG': 'E',
+                'GGA': 'G', 'GGC': 'G', 'GGG': 'G', 'GGT': 'G',
+                'TCA': 'S', 'TCC': 'S', 'TCG': 'S', 'TCT': 'S',
+                'TTC': 'F', 'TTT': 'F', 'TTA': 'L', 'TTG': 'L',
+                'TAC': 'Y', 'TAT': 'Y', 'TAA': 'X', 'TAG': 'X',
+                'TGC': 'C', 'TGT': 'C', 'TGA': 'X', 'TGG': 'W'}
+        elif code == 'mitochondrial':
+            gencode = {
+                'ATA': 'M', 'ATC': 'I', 'ATT': 'I', 'ATG': 'M',
+                'ACA': 'T', 'ACC': 'T', 'ACG': 'T', 'ACT': 'T',
+                'AAC': 'N', 'AAT': 'N', 'AAA': 'K', 'AAG': 'K',
+                'AGC': 'S', 'AGT': 'S', 'AGA': 'X', 'AGG': 'X',
+                'CTA': 'L', 'CTC': 'L', 'CTG': 'L', 'CTT': 'L',
+                'CCA': 'P', 'CCC': 'P', 'CCG': 'P', 'CCT': 'P',
+                'CAC': 'H', 'CAT': 'H', 'CAA': 'Q', 'CAG': 'Q',
+                'CGA': 'R', 'CGC': 'R', 'CGG': 'R', 'CGT': 'R',
+                'GTA': 'V', 'GTC': 'V', 'GTG': 'V', 'GTT': 'V',
+                'GCA': 'A', 'GCC': 'A', 'GCG': 'A', 'GCT': 'A',
+                'GAC': 'D', 'GAT': 'D', 'GAA': 'E', 'GAG': 'E',
+                'GGA': 'G', 'GGC': 'G', 'GGG': 'G', 'GGT': 'G',
+                'TCA': 'S', 'TCC': 'S', 'TCG': 'S', 'TCT': 'S',
+                'TTC': 'F', 'TTT': 'F', 'TTA': 'L', 'TTG': 'L',
+                'TAC': 'Y', 'TAT': 'Y', 'TAA': 'X', 'TAG': 'X',
+                'TGC': 'C', 'TGT': 'C', 'TGA': 'W', 'TGG': 'W'}
+        ret = ''
+        index = 0
+        while index + 3 <= len(self):
+            codon = self[index:index + 3].upper()
+            if 'N' in codon:
+                ret += '?'
+                index += 3
+                continue
+            ret += gencode[codon]
+            index += 3
+        return ret
+
+    # Getting reverse complement sequence
+    def reverseComplement(self):
+        complement = {"A": "T", "T": "A", "C": "G", "G": "C", "N": "N", "a": "t", "t": "a", "c": "g", "g": "c",
+                      "n": "n"}
+        ret = ''
+        for base in self[::-1]:
+            ret += complement[base]
+        return ret
+
+
 class Transcript(object):
     def __init__(self, line):
         self.exons = []
