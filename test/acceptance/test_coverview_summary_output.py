@@ -31,6 +31,9 @@ class TestCoverViewSummaryOutput(unittest.TestCase):
             assert summary_output['Unmapped']['RCIN'] == "-"
             assert summary_output['Unmapped']['RCOUT'] == "-"
 
+            chr_1 = summary_output['1']
+            assert int(chr_1['RC']) == int(chr_1['RCIN']) + int(chr_1['RCOUT'])
+
     def test_summary_output_with_one_on_target_read_in_bam(self):
         with testutils.runners.CoverViewTestRunner() as runner:
             runner.add_reads(("1", 32, 100, 1))
@@ -56,6 +59,9 @@ class TestCoverViewSummaryOutput(unittest.TestCase):
             assert summary_output['Unmapped']['RC'] == "0"
             assert summary_output['Unmapped']['RCIN'] == "-"
             assert summary_output['Unmapped']['RCOUT'] == "-"
+
+            chr_1 = summary_output['1']
+            assert int(chr_1['RC']) == int(chr_1['RCIN']) + int(chr_1['RCOUT'])
 
     def test_summary_output_with_one_off_target_read_in_bam(self):
         with testutils.runners.CoverViewTestRunner() as runner:
@@ -83,6 +89,9 @@ class TestCoverViewSummaryOutput(unittest.TestCase):
             assert summary_output['Unmapped']['RCIN'] == "-"
             assert summary_output['Unmapped']['RCOUT'] == "-"
 
+            chr_1 = summary_output['1']
+            assert int(chr_1['RC']) == int(chr_1['RCIN']) + int(chr_1['RCOUT'])
+
     def test_summary_output_with_one_on_target_and_one_off_target_read_in_bam(self):
         with testutils.runners.CoverViewTestRunner() as runner:
             runner.add_reads(("1", 32, 100, 1))
@@ -109,6 +118,9 @@ class TestCoverViewSummaryOutput(unittest.TestCase):
             assert summary_output['Unmapped']['RC'] == "0"
             assert summary_output['Unmapped']['RCIN'] == "-"
             assert summary_output['Unmapped']['RCOUT'] == "-"
+
+            chr_1 = summary_output['1']
+            assert int(chr_1['RC']) == int(chr_1['RCIN']) + int(chr_1['RCOUT'])
 
     def test_summary_output_reports_correct_number_of_unmapped_reads(self):
         with testutils.runners.CoverViewTestRunner() as runner:

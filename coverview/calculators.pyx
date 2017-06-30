@@ -715,7 +715,7 @@ def calculate_chromosome_coverage_metrics(bam_file, on_target):
             num_off_target_reads = num_mapped_reads - num_on_target_reads
         else:
             num_on_target_reads = 0
-            num_off_target_reads = 0
+            num_off_target_reads = num_mapped_reads
 
         number_of_reads_covering_chromosomes.append({
             'CHROM': chrom,

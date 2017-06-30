@@ -2,10 +2,14 @@ HEADERS=coverview/*.pxd
 PYX=coverview/*.pyx
 PY=coverview/*.py bamgen/*.py bin/CoverView.py testutils/*.py
 PEP8=pep8 --max-line-length=120
+FLAKE8=flake8 --max-line-length=120
 SCRIPTS=bin/coverview
 
 pep8:
 	${PEP8} ${PY}
+
+flake8:
+	${FLAKE8} ${PY}
 
 clean:
 	pip uninstall -y CoverView
