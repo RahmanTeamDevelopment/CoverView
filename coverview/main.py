@@ -8,12 +8,14 @@ import logging
 import os
 import pysam
 import shutil
+import tgmi.bed
+import tgmi.interval
+import tgmi.math
 
 from . import output
 from .calculators import calculate_chromosome_coverage_metrics, get_region_coverage_summary
 from .calculators import calculate_minimal_chromosome_coverage_metrics
 from .statistics import median
-from . import utils
 
 
 _version = 'v1.3.0'
@@ -93,37 +95,37 @@ class CoverageCalculator(object):
 
         summary['MEDCOV'] = median(profile.coverage_at_each_base)
         summary['MEDQCOV'] = median(profile.high_quality_coverage_at_each_base)
-        summary['MINCOV'] = int(utils.min_or_nan(profile.coverage_at_each_base))
-        summary['MINQCOV'] = int(utils.min_or_nan(profile.high_quality_coverage_at_each_base))
-        summary['MAXFLBQ'] = round(utils.max_or_nan(profile.fraction_of_low_base_qualities_at_each_base), 3)
-        summary['MAXFLMQ'] = round(utils.max_or_nan(profile.fraction_of_low_mapping_qualities_at_each_base), 3)
+        summary['MINCOV'] = int(tgmi.math.min_or_nan(profile.coverage_at_each_base))
+        summary['MINQCOV'] = int(tgmi.math.min_or_nan(profile.high_quality_coverage_at_each_base))
+        summary['MAXFLBQ'] = round(tgmi.math.max_or_nan(profile.fraction_of_low_base_qualities_at_each_base), 3)
+        summary['MAXFLMQ'] = round(tgmi.math.max_or_nan(profile.fraction_of_low_mapping_qualities_at_each_base), 3)
 
         if self.config['direction']:
             summary['MEDCOV_f'] = median(profile.forward_coverage_at_each_base)
             summary['MEDQCOV_r'] = median(profile.reverse_high_quality_coverage_at_each_base)
             summary['MEDQCOV_f'] = median(profile.forward_high_quality_coverage_at_each_base)
             summary['MEDCOV_r'] = median(profile.reverse_coverage_at_each_base)
-            summary['MINCOV_f'] = int(utils.min_or_nan(profile.forward_coverage_at_each_base))
-            summary['MINQCOV_f'] = int(utils.min_or_nan(profile.forward_high_quality_coverage_at_each_base))
+            summary['MINCOV_f'] = int(tgmi.math.min_or_nan(profile.forward_coverage_at_each_base))
+            summary['MINQCOV_f'] = int(tgmi.math.min_or_nan(profile.forward_high_quality_coverage_at_each_base))
 
             summary['MAXFLBQ_f'] = round(
-                utils.max_or_nan(profile.forward_fraction_of_low_base_qualities_at_each_base),
+                tgmi.math.max_or_nan(profile.forward_fraction_of_low_base_qualities_at_each_base),
                 3
             )
             summary['MAXFLMQ_f'] = round(
-                utils.max_or_nan(profile.forward_fraction_of_low_mapping_qualities_at_each_base),
+                tgmi.math.max_or_nan(profile.forward_fraction_of_low_mapping_qualities_at_each_base),
                 3
             )
 
-            summary['MINCOV_r'] = int(utils.min_or_nan(profile.reverse_coverage_at_each_base))
-            summary['MINQCOV_r'] = int(utils.min_or_nan(profile.reverse_high_quality_coverage_at_each_base))
+            summary['MINCOV_r'] = int(tgmi.math.min_or_nan(profile.reverse_coverage_at_each_base))
+            summary['MINQCOV_r'] = int(tgmi.math.min_or_nan(profile.reverse_high_quality_coverage_at_each_base))
             summary['MAXFLBQ_r'] = round(
-                utils.max_or_nan(profile.reverse_fraction_of_low_base_qualities_at_each_base),
+                tgmi.math.max_or_nan(profile.reverse_fraction_of_low_base_qualities_at_each_base),
                 3
             )
 
             summary['MAXFLMQ_r'] = round(
-                utils.max_or_nan(profile.reverse_fraction_of_low_mapping_qualities_at_each_base),
+                tgmi.math.max_or_nan(profile.reverse_fraction_of_low_mapping_qualities_at_each_base),
                 3
             )
 
@@ -173,7 +175,7 @@ class CoverageCalculator(object):
         self.write_output_file_headers()
         num_clusters = 0
 
-        for cluster in utils.cluster_genomic_intervals(intervals):
+        for cluster in tgmi.interval.cluster_genomic_intervals(intervals):
             num_clusters += 1
             for target in get_region_coverage_summary(self.bam_file, cluster, self.config):
 
@@ -446,14 +448,14 @@ def main(command_line_args):
             create_gui_output_directory(config)
 
         with open(options.bedfile) as bed_file:
-            bed_parser = utils.BedFileParser(bed_file)
+            bed_parser = tgmi.bed.BedFileParser(bed_file)
             all_regions = []
 
             for region in bed_parser:
                 all_regions.append(region)
 
             number_of_unique_input_region_names = len(set([x.name for x in all_regions]))
-            regions_with_unique_names = utils.uniquify_region_names(all_regions)
+            regions_with_unique_names = tgmi.interval.uniquify_region_names(all_regions)
 
         number_of_targets = len(regions_with_unique_names)
 
