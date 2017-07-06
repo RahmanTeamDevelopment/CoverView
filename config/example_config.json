@@ -1,0 +1,8 @@
+{
+	"count_duplicate_reads": true,
+	"outputs": { "regions": true, "profiles": true },
+	"low_bq": 10,
+	"low_mq": 20,
+	"pass": { "MINQCOV_MIN": 50, "MAXFLMQ_MAX": 0.05, "MAXFLBQ_MAX": 0.15 },
+	"transcript":  {"regions": false, "profiles": false, "poor": true }
+}
