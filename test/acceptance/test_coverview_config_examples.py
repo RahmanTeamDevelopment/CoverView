@@ -10,8 +10,6 @@ class TestCoverViewWithPassCriteria(unittest.TestCase):
             runner.add_region(("1", 32, 132, "Region_1"))
             runner.add_config_data({
                 "outputs": {
-                    "gui": False,
-                    "gui_output_directory": "guiout",
                     "profiles": True,
                     "regions": True
                 },

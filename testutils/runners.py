@@ -10,7 +10,6 @@ import uuid
 
 def make_command_line_arguments(bam_file_name,
                                 bed_file_name,
-                                reference_file_name,
                                 config_file_name):
     """
     Utility function to construct a list of command-line arguments in the form that is stored
@@ -25,12 +24,6 @@ def make_command_line_arguments(bam_file_name,
         arguments_list.extend([
             "-b",
             bed_file_name
-        ])
-
-    if reference_file_name is not None:
-        arguments_list.extend([
-            "-r",
-            reference_file_name
         ])
 
     if config_file_name is not None:
@@ -96,7 +89,6 @@ class CoverViewTestRunner(object):
         self.index_file_name = self.bam_file_name + ".bai"
         self.bed_file_name = self.bam_file_name.replace(".bam", ".bed")
         self.config_file_name = self.bam_file_name.replace(".bam", ".json")
-        self.ref_file_name = "__MOCK__"
         self.read_sets = []
         self.regions = []
         self.config_data = {}
@@ -177,7 +169,6 @@ class CoverViewTestRunner(object):
         command_line_args = make_command_line_arguments(
             bam_file_name=self.bam_file_name,
             bed_file_name=self.bed_file_name,
-            reference_file_name=self.ref_file_name,
             config_file_name=self.config_file_name
         )
 

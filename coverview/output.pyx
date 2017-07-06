@@ -3,10 +3,7 @@ Format and write per-base coverage profile output
 """
 
 import csv
-import datetime
-import json
 import logging
-import os
 
 from . import transcript
 
@@ -23,7 +20,7 @@ def get_transcripts_overlapping_position(transcript_database, chrom, pos):
     transcript_coordinates = transcript.getTranscriptCoordinates(transcript_database, chrom, pos)
     transcripts = []
 
-    for key, value in transcript_coordinates.iteritems():
+    for key, value in transcript_coordinates.items():
         transcripts.append(key.geneSymbol + ':' + key.ENST + ':' + value)
 
     return ','.join(transcripts)
@@ -276,149 +273,6 @@ class RegionsOutput(object):
         self.output_file.write(
             ('\t'.join(str(x) for x in output_record) + '\n').replace("nan", ".")
         )
-
-
-class GuiOutput(object):
-    """
-    Encapsulates all data and functions needed or producing the JSON output for
-    the graphical interface.
-    """
-    def __init__(self, options, config):
-
-        gui_result_file_name = os.path.join(
-            config['outputs']['gui_output_directory'],
-            "data",
-            "results.js"
-        )
-
-        _logger.info("Gui Javascript code will be written to {}".format(
-            gui_result_file_name
-        ))
-
-        self.output_file = open(gui_result_file_name, 'w')
-        self.have_written_first_line = False
-
-    def __del__(self):
-        self.output_file.write(']')
-        self.output_file.close()
-
-    def write_header(self):
-        self.output_file.write('function readData() {\n')
-        self.output_file.write('\tdata={\"targets\":[')
-
-    def write_output(self, coverage_data):
-
-        self.output_json(coverage_data)
-
-        if not self.have_written_first_line:
-            self.have_written_first_line = True
-
-    def output_json(self, coverage_data):
-        if self.have_written_first_line:
-            self.output_file.write(',')
-
-        self.output_file.write(
-            json.dumps(coverage_data.as_dict(), separators=(',', ':'))
-        )
-
-    def finalize_output(self, options, chromdata, config,
-                        numOfTargets, failedtargets, uniqueIDs, uniqueids):
-
-        newchromsres = []
-
-        others = {
-            'CHROM': '...',
-            'RC': 0,
-            'RCIN': 0,
-            'RCOUT': 0
-        }
-
-        chrnames = [
-            '1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
-            '11', '12', '13', '14', '15', '16', '17', '18', '19',
-            '20', '21', '22', 'X', 'Y', 'chr1', 'chr2', 'chr3', 'chr4',
-            'chr5', 'chr6', 'chr7', 'chr8', 'chr9', 'chr10', 'chr11',
-            'chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 'chr18',
-            'chr19', 'chr20', 'chr21', 'chr22', 'chrX', 'chrY'
-        ]
-
-        chromsres = chromdata['Chroms']
-
-        for x in chromsres:
-            if x['CHROM'] in chrnames:
-                newchromsres.append(x)
-            else:
-                others['RC'] += x['RC']
-                others['RCIN'] += x['RCIN']
-                others['RCOUT'] += x['RCOUT']
-
-        newchromsres.append(others)
-        chromdata['Chroms'] = newchromsres
-
-        self.output_file.write(
-            ',\"chromdata\":' + json.dumps(chromdata, separators=(',', ':'))
-        )
-
-        infn = options.input
-
-        if '/' in infn:
-            infn = infn[infn.rfind('/') + 1:]
-
-        if len(infn) > 27:
-            infn = infn[:27] + '...bam'
-
-        self.output_file.write(',\"input\":\"' + infn + '\"')
-        self.output_file.write(',\"direction\":' + str(config['direction']).lower())
-        self.output_file.write(',\"count_duplicate_reads\":' + str(config['count_duplicate_reads']).lower())
-        self.output_file.write(',\"ntargets\":' + str(numOfTargets))
-        self.output_file.write(',\"unique\":' + str(uniqueIDs))
-        self.output_file.write(',\"nfailed\":' + str(failedtargets))
-        self.output_file.write(',\"uniquefailed\":' + str(len(uniqueids)))
-
-        bedfn = options.bedfile
-
-        if '/' in bedfn:
-            bedfn = bedfn[bedfn.rfind('/') + 1:]
-
-        if len(bedfn) > 20:
-            bedfn = bedfn[:20] + '...bed'
-
-        self.output_file.write(',\"bedfile\":\"' + bedfn + '\"')
-
-        now = datetime.datetime.now()
-        self.output_file.write(',\"date\":\"' + now.strftime("%d-%m-%Y, %H:%M") + "\"")
-
-        if config['pass'] is not None:
-            passdef = []
-
-            for k, v in config['pass'].iteritems():
-                [met,minmax] = k.split('_')
-                if minmax == 'MIN':
-                    passdef.append(met + '>' + str(v))
-                else:
-                    passdef.append(met + '<' + str(v))
-
-            passdefstr = ', '.join(passdef)
-            self.output_file.write(',\"passdef\":\"' + passdefstr + '\"')
-
-            passmets = dict()
-
-            for k, v in config['pass'].iteritems():
-                [met, minmax] = k.split('_')
-                if met.endswith('QCOV'):
-                    passmets['QCOV'] = v
-                elif met.endswith('COV'):
-                    passmets['COV'] = v
-                elif met.endswith('FLMQ'):
-                    passmets['FLMQ'] = v
-                elif met.endswith('FLBQ'):
-                    passmets['FLBQ'] = v
-                passmets[met] = v
-
-            self.output_file.write(',\"passmets\":' + json.dumps(passmets, separators=(',', ':')))
-        self.output_file.write('}\n')
-        self.output_file.write('\treturn data\n')
-        self.output_file.write('}\n')
 
 
 def output_chromosome_coverage_metrics(options, chromosome_coverage_metrics):

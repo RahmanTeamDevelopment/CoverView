@@ -5,9 +5,7 @@ import bamgen.bamgen
 import collections
 import json
 import logging
-import os
 import pysam
-import shutil
 import tgmi.bed
 import tgmi.interval
 import tgmi.math
@@ -33,19 +31,6 @@ class CoverageCalculator(object):
         self.ids_of_failed_targets = set()
         self.regions_output = None
         self.per_base_output = None
-        self.gui_output = None
-
-        if options.reference_file is not None:
-            ref_file_name = options.reference_file
-
-            if ref_file_name == "__MOCK__":
-                _logger.info("Using Mock reference file. This should only be used for testing")
-                self.ref_file = bamgen.bamgen.MockReferenceFile()
-            else:
-                _logger.info("Using file {} to retrieve reference sequence".format(
-                    ref_file_name
-                ))
-                self.ref_file = pysam.Fastafile(ref_file_name)
 
         if config['transcript_db'] is not None:
             self.transcript_database = pysam.Tabixfile(config['transcript_db'])
@@ -57,9 +42,6 @@ class CoverageCalculator(object):
 
         if config['outputs']['profiles']:
             self.per_base_output = output.PerBaseCoverageOutput(options, config)
-
-        if config['outputs']['gui']:
-            self.gui_output = output.GuiOutput(options, config)
 
     def does_region_pass_coverage_thresholds(self, target):
         """
@@ -73,7 +55,7 @@ class CoverageCalculator(object):
         else:
             region_coverage_summary = target.summary
 
-            for key, value in self.config['pass'].iteritems():
+            for key, value in self.config['pass'].items():
                 metric_name, min_or_max = key.split('_')
                 metric_value = region_coverage_summary[metric_name]
                 threshold = float(value)
@@ -154,9 +136,6 @@ class CoverageCalculator(object):
         if self.per_base_output is not None:
             self.per_base_output.write_header()
 
-        if self.gui_output is not None:
-            self.gui_output.write_header()
-
     def write_outputs_for_region(self, region_coverage_data):
         """
         Write various summaries for each targeted region, if required.
@@ -166,9 +145,6 @@ class CoverageCalculator(object):
 
         if self.per_base_output:
             self.per_base_output.write_output(region_coverage_data)
-
-        if self.gui_output:
-            self.gui_output.write_output(region_coverage_data)
 
     def calculate_coverage_summaries(self, intervals):
         _logger.info("Coverage metrics will be generated in a single process")
@@ -193,15 +169,6 @@ class CoverageCalculator(object):
                     target
                 )
 
-                if self.gui_output is not None:
-                    target.Ref = self.get_reference_sequence(
-                        target.chromosome,
-                        target.start_position,
-                        target.end_position
-                    )
-                else:
-                    target.Ref = None
-
                 if not target.passes_thresholds:
                     if '_' in target.region_name:
                         ids = target.region_name[:target.region_name.find('_')]
@@ -214,13 +181,6 @@ class CoverageCalculator(object):
         _logger.info("Finished computing coverage metrics in all regions")
         _logger.debug("Data was processed in {} clusters".format(num_clusters))
 
-    def get_reference_sequence(self, chrom, start, end):
-        start = max(1, start)
-        end = min(end, self.ref_file.get_reference_length(chrom))
-        seq = self.ref_file.fetch(chrom, start - 1, end)
-
-        return seq.upper()
-
 
 def get_default_config():
     return {
@@ -228,8 +188,6 @@ def get_default_config():
         "outputs": {
             "regions": True,
             "profiles": True,
-            "gui": False,
-            "gui_output_directory": "output_gui_data"
         },
         "transcript": {
             "regions": True,
@@ -241,10 +199,6 @@ def get_default_config():
         "transcript_db": None,
         "pass": None,
         "direction": False,
-        "gui": {
-            "template_gui_html_file": "gui/gui.html",
-            "javascript_directory": "gui/lib"
-        }
     }
 
 
@@ -259,7 +213,6 @@ def load_and_validate_config(config_file_name):
     allowed_config_parameters = {
         "count_duplicate_reads",
         "direction",
-        "gui",
         "low_bq",
         "low_mq",
         "only_fail_profiles",
@@ -269,14 +222,7 @@ def load_and_validate_config(config_file_name):
         "transcript_db"
     }
 
-    allowed_config_parameters_gui = {
-        "template_gui_html_file",
-        "javascript_directory",
-    }
-
     allowed_config_paramters_outputs = {
-        "gui",
-        "gui_output_directory",
         "profiles",
         "regions",
         "summary"
@@ -293,7 +239,7 @@ def load_and_validate_config(config_file_name):
                 _logger.error("File {} cannot be loaded with the Pyton JSON parser".format(config_file_name))
                 _logger.error("Check the file for JSON format errors")
 
-        for key, value in input_config.iteritems():
+        for key, value in input_config.items():
 
             if key not in allowed_config_parameters:
                 _logger.error("Invalid parameter '{}' found in config JSON file".format(key))
@@ -303,12 +249,9 @@ def load_and_validate_config(config_file_name):
                 if key not in config or config[key] is None:
                     config[key] = {}
 
-                for key_2, value_2 in value.iteritems():
+                for key_2, value_2 in value.items():
 
-                    if key == "gui" and key_2 not in allowed_config_parameters_gui:
-                        _logger.error("Invalid gui parameter '{}' found in config JSON file".format(key_2))
-                        raise StandardError("Invalid gui section in configuration file")
-                    elif key == "outputs" and key_2 not in allowed_config_paramters_outputs:
+                    if key == "outputs" and key_2 not in allowed_config_paramters_outputs:
                         _logger.error("Invalid outputs parameter '{}' found in config JSON file".format(key_2))
                         raise StandardError("Invalid outputs section in configuration file")
                     else:
@@ -358,15 +301,6 @@ def get_input_options(command_line_args):
         help="Configuration file"
     )
 
-    parser.add_argument(
-        "-r",
-        "--reference_file",
-        default=None,
-        dest='reference_file',
-        action='store',
-        help="Reference FASTA file"
-    )
-
     options = parser.parse_args(command_line_args)
     config = load_and_validate_config(options.config)
 
@@ -390,33 +324,6 @@ def configure_logging():
     logger.setLevel(logging.INFO)
 
     logger.info('CoverView {} started running'.format(_version))
-
-
-def clean_up_old_gui_output(gui_output_html_file, gui_data_directory):
-    if os.path.exists(gui_output_html_file):
-        os.remove(gui_output_html_file)
-
-    if os.path.exists(gui_data_directory):
-        os.removedirs(gui_data_directory)
-
-
-def create_gui_output_directory(config):
-
-    _logger.info("Creating output directory structure for GUI in directory {}".format(
-        config['outputs']['gui_output_directory']
-    ))
-
-    template_gui_html_file = config['gui']['template_gui_html_file']
-    javascript_directory = config['gui']['javascript_directory']
-    gui_output_direcory = config['outputs']['gui_output_directory']
-    gui_data_directory = os.path.join(gui_output_direcory, "data")
-    gui_output_html_file = os.path.join(gui_output_direcory, "_coverview.html")
-    gui_output_javascript_directory = os.path.join(gui_output_direcory, "lib")
-
-    clean_up_old_gui_output(gui_output_html_file, gui_data_directory)
-    os.makedirs(os.path.join(gui_output_direcory, 'data'))
-    shutil.copy(template_gui_html_file, gui_output_html_file)
-    shutil.copytree(javascript_directory, gui_output_javascript_directory)
 
 
 def main(command_line_args):
@@ -444,9 +351,6 @@ def main(command_line_args):
 
         _logger.info('CoverView {} succesfully finished'.format(_version))
     else:
-        if config['outputs']['gui']:
-            create_gui_output_directory(config)
-
         with open(options.bedfile) as bed_file:
             bed_parser = tgmi.bed.BedFileParser(bed_file)
             all_regions = []
@@ -454,7 +358,6 @@ def main(command_line_args):
             for region in bed_parser:
                 all_regions.append(region)
 
-            number_of_unique_input_region_names = len(set([x.name for x in all_regions]))
             regions_with_unique_names = tgmi.interval.uniquify_region_names(all_regions)
 
         number_of_targets = len(regions_with_unique_names)
@@ -480,17 +383,6 @@ def main(command_line_args):
             options,
             chromosome_coverage_metrics
         )
-
-        if config['outputs']['gui']:
-            coverage_calculator.gui_output.finalize_output(
-                options,
-                chromosome_coverage_metrics,
-                config,
-                number_of_targets,
-                num_failed_targets,
-                number_of_unique_input_region_names,
-                ids_of_failed_targets
-            )
 
         _logger.info("CoverView {} succesfully finished".format(_version))
 
