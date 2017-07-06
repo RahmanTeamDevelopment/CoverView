@@ -48,7 +48,7 @@ smoketest: install
 	@echo ''
 	./test/smoke/check_installation_succeeded.bash
 
-test: pep8 smoketest unittest acceptancetest
+test: flake8 pep8 smoketest unittest acceptancetest
 	@echo ''
 	@echo 'Finished running all tests'
 	@echo ''

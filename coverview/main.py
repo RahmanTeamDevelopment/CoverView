@@ -1,7 +1,6 @@
 from __future__ import division
 
 import argparse
-import bamgen.bamgen
 import collections
 import json
 import logging

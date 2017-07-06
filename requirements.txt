@@ -1,11 +1,14 @@
-Cython==0.25.2
 appdirs==1.4.3
+Cython==0.25.2
+flake8==3.3.0
 packaging==16.8
 pep8==1.7.0
 py==1.4.32
+pylint==1.7.2
 pyparsing==2.2.0
 pysam==0.10.0
 pytest==3.0.7
+radon==2.0.2
 six==1.10.0
 pytest-cov>=2.2.0
 git+https://github.com/RahmanTeamDevelopment/TGMI#egg=TGMI
