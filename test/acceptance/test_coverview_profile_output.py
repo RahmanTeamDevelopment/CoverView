@@ -84,5 +84,92 @@ class TestCoverViewProfileOutput(unittest.TestCase):
                 assert profile_output['Region_1'][chrom_pos]['FLMQ'] == 0.0
 
 
+class TestOnlyFailProfilesOptionWithPassCriteria(unittest.TestCase):
+
+    def test_fail_regions_are_in_profile_output_when_only_fail_profiles_is_true(self):
+        with testutils.runners.CoverViewTestRunner() as runner:
+            runner.add_reads(("1", 32, 100, 0))
+            runner.add_region(("1", 35, 40, "Region_1"))
+            runner.add_config_data({
+                "outputs": {"profiles": True},
+                "only_fail_profiles": True,
+                "pass": {
+                    "MINQCOV_MIN": 1
+                },
+            })
+
+            status_code = runner.run_coverview_and_get_exit_code()
+            assert status_code == 0
+
+            profile_output = testutils.output_checkers.load_coverview_profile_output(
+                "output_profiles.txt"
+            )
+
+            assert "Region_1" in profile_output
+
+    def test_pass_regions_are_not_in_profile_output_when_only_fail_profiles_is_true(self):
+        with testutils.runners.CoverViewTestRunner() as runner:
+            runner.add_reads(("1", 32, 100, 2))
+            runner.add_region(("1", 35, 40, "Region_1"))
+            runner.add_config_data({
+                "outputs": {"profiles": True},
+                "only_fail_profiles": True,
+                "pass": {
+                    "MINQCOV_MIN": 1
+                },
+            })
+
+            status_code = runner.run_coverview_and_get_exit_code()
+            assert status_code == 0
+
+            profile_output = testutils.output_checkers.load_coverview_profile_output(
+                "output_profiles.txt"
+            )
+
+            assert "Region_1" not in profile_output
+
+    def test_fail_regions_are_in_profile_output_when_only_fail_profiles_is_false(self):
+        with testutils.runners.CoverViewTestRunner() as runner:
+            runner.add_reads(("1", 32, 100, 0))
+            runner.add_region(("1", 35, 40, "Region_1"))
+            runner.add_config_data({
+                "outputs": {"profiles": True},
+                "only_fail_profiles": False,
+                "pass": {
+                    "MINQCOV_MIN": 1
+                },
+            })
+
+            status_code = runner.run_coverview_and_get_exit_code()
+            assert status_code == 0
+
+            profile_output = testutils.output_checkers.load_coverview_profile_output(
+                "output_profiles.txt"
+            )
+
+            assert "Region_1" in profile_output
+
+    def test_pass_regions_are_in_profile_output_when_only_fail_profiles_is_false(self):
+        with testutils.runners.CoverViewTestRunner() as runner:
+            runner.add_reads(("1", 32, 100, 5))
+            runner.add_region(("1", 35, 40, "Region_1"))
+            runner.add_config_data({
+                "outputs": {"profiles": True},
+                "only_fail_profiles": False,
+                "pass": {
+                    "MINQCOV_MIN": 1
+                },
+            })
+
+            status_code = runner.run_coverview_and_get_exit_code()
+            assert status_code == 0
+
+            profile_output = testutils.output_checkers.load_coverview_profile_output(
+                "output_profiles.txt"
+            )
+
+            assert "Region_1" in profile_output
+
+
 if __name__ == "__main__":
     unittest.main()
