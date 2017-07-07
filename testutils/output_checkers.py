@@ -3,7 +3,7 @@ import csv
 
 def float_or_nan(x):
     if x == ".":
-        return float('NaN')
+        return x
     else:
         return float(x)
 
@@ -32,6 +32,18 @@ _summary_value_type_map = {
 }
 
 
+_profile_value_type_map = {
+    "#Chromosome": lambda x: x,
+    "Position": int,
+    "COV": int,
+    "QCOV": int,
+    "MEDBQ": float_or_nan,
+    "FLBQ": float_or_nan,
+    "MEDMQ": float_or_nan,
+    "FLMQ": float_or_nan
+}
+
+
 def load_coverview_profile_output(file_name):
 
     data = {}
@@ -56,7 +68,8 @@ def load_coverview_profile_output(file_name):
                 data[current_region_name][chrom_pos] = {}
 
                 for col_index, col_data in enumerate(cols):
-                    data[current_region_name][chrom_pos][header_names[col_index]] = col_data
+                    typed_data = _profile_value_type_map[header_names[col_index]](col_data)
+                    data[current_region_name][chrom_pos][header_names[col_index]] = typed_data
     return data
 
 

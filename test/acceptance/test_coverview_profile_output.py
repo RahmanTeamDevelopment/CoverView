@@ -20,12 +20,12 @@ class TestCoverViewProfileOutput(unittest.TestCase):
             assert "Region_1" in profile_output
             assert "1:40" not in profile_output['Region_1']
 
-            for position in ['36', '37', '38', '39']:
+            for position in [36, 37, 38, 39]:
                 chrom_pos = "1:{}".format(position)
                 assert profile_output['Region_1'][chrom_pos]['#Chromosome'] == "1"
                 assert profile_output['Region_1'][chrom_pos]['Position'] == position
-                assert profile_output['Region_1'][chrom_pos]['COV'] == "0"
-                assert profile_output['Region_1'][chrom_pos]['QCOV'] == "0"
+                assert profile_output['Region_1'][chrom_pos]['COV'] == 0
+                assert profile_output['Region_1'][chrom_pos]['QCOV'] == 0
                 assert profile_output['Region_1'][chrom_pos]['MEDBQ'] == "."
                 assert profile_output['Region_1'][chrom_pos]['FLBQ'] == "."
                 assert profile_output['Region_1'][chrom_pos]['MEDMQ'] == "."
@@ -46,16 +46,16 @@ class TestCoverViewProfileOutput(unittest.TestCase):
             assert "Region_1" in profile_output
             assert "1:40" not in profile_output['Region_1']
 
-            for position in ['36', '37', '38', '39']:
+            for position in [36, 37, 38, 39]:
                 chrom_pos = "1:{}".format(position)
                 assert profile_output['Region_1'][chrom_pos]['#Chromosome'] == "1"
                 assert profile_output['Region_1'][chrom_pos]['Position'] == position
-                assert profile_output['Region_1'][chrom_pos]['COV'] == "1"
-                assert profile_output['Region_1'][chrom_pos]['QCOV'] == "1"
-                assert profile_output['Region_1'][chrom_pos]['MEDBQ'] == "60.0"
-                assert profile_output['Region_1'][chrom_pos]['FLBQ'] == "0.000"
-                assert profile_output['Region_1'][chrom_pos]['MEDMQ'] == "60.0"
-                assert profile_output['Region_1'][chrom_pos]['FLMQ'] == "0.000"
+                assert profile_output['Region_1'][chrom_pos]['COV'] == 1
+                assert profile_output['Region_1'][chrom_pos]['QCOV'] == 1
+                assert profile_output['Region_1'][chrom_pos]['MEDBQ'] == 60.0
+                assert profile_output['Region_1'][chrom_pos]['FLBQ'] == 0.0
+                assert profile_output['Region_1'][chrom_pos]['MEDMQ'] == 60.0
+                assert profile_output['Region_1'][chrom_pos]['FLMQ'] == 0.0
 
     def test_with_one_low_mapping_quality_read_in_bam(self):
         with testutils.runners.CoverViewTestRunner() as runner:
@@ -72,16 +72,16 @@ class TestCoverViewProfileOutput(unittest.TestCase):
             assert "Region_1" in profile_output
             assert "1:40" not in profile_output['Region_1']
 
-            for position in ['36', '37', '38', '39']:
+            for position in [36, 37, 38, 39]:
                 chrom_pos = "1:{}".format(position)
                 assert profile_output['Region_1'][chrom_pos]['#Chromosome'] == "1"
                 assert profile_output['Region_1'][chrom_pos]['Position'] == position
-                assert profile_output['Region_1'][chrom_pos]['COV'] == "1"
-                assert profile_output['Region_1'][chrom_pos]['QCOV'] == "1"
-                assert profile_output['Region_1'][chrom_pos]['MEDBQ'] == "60.0"
-                assert profile_output['Region_1'][chrom_pos]['FLBQ'] == "0.000"
-                assert profile_output['Region_1'][chrom_pos]['MEDMQ'] == "60.0"
-                assert profile_output['Region_1'][chrom_pos]['FLMQ'] == "0.000"
+                assert profile_output['Region_1'][chrom_pos]['COV'] == 1
+                assert profile_output['Region_1'][chrom_pos]['QCOV'] == 1
+                assert profile_output['Region_1'][chrom_pos]['MEDBQ'] == 60.0
+                assert profile_output['Region_1'][chrom_pos]['FLBQ'] == 0.0
+                assert profile_output['Region_1'][chrom_pos]['MEDMQ'] == 60.0
+                assert profile_output['Region_1'][chrom_pos]['FLMQ'] == 0.0
 
 
 if __name__ == "__main__":

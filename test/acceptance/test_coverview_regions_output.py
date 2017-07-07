@@ -1,4 +1,3 @@
-import math
 import testutils.runners
 import testutils.output_checkers
 import unittest
@@ -20,20 +19,17 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             assert "Region_1" in regions_output
             assert regions_output['Region_1']["Chromosome"] == "1"
 
-            # Output positions are 1-indexed and intervals are closed
             assert regions_output['Region_1']["Start_position"] == 32
             assert regions_output['Region_1']["End_position"] == 132
 
-            # No data so all coverages are 0
             assert regions_output['Region_1']["RC"] == 0
             assert regions_output['Region_1']["MEDCOV"] == 0
             assert regions_output['Region_1']["MINCOV"] == 0
             assert regions_output['Region_1']["MEDQCOV"] == 0
             assert regions_output['Region_1']["MINQCOV"] == 0
 
-            # Fractions are NaN with 0 reads
-            assert math.isnan(regions_output['Region_1']["MAXFLMQ"])
-            assert math.isnan(regions_output['Region_1']["MAXFLBQ"])
+            assert regions_output['Region_1']["MAXFLMQ"] == "."
+            assert regions_output['Region_1']["MAXFLBQ"] == "."
 
     def test_regions_output_one_read_in_bam(self):
         with testutils.runners.CoverViewTestRunner() as runner:

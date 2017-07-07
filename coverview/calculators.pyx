@@ -292,9 +292,7 @@ cdef void load_reads_into_array(ReadArray read_array, bam_file, chrom, start, en
     """
     cdef int iterator_status = 0
 
-    _logger.info("Loading reads for chrom = {}. start = {}. end = {}".format(
-        chrom, start, end
-    ))
+    _logger.info("Loading data for %s:%s-%s", chrom, start, end)
 
     cdef IteratorRowRegion read_iterator = bam_file.fetch(chrom, start, end)
 
