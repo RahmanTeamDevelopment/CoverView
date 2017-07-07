@@ -21,13 +21,13 @@ class TestCoverViewSummaryOutput(unittest.TestCase):
             assert "Mapped" in summary_output
             assert "1" in summary_output
 
-            assert summary_output['Total']['RC'] == "0"
+            assert summary_output['Total']['RC'] == 0
             assert summary_output['Total']['RCIN'] == "-"
             assert summary_output['Total']['RCOUT'] == "-"
-            assert summary_output['Mapped']['RC'] == "0"
-            assert summary_output['Mapped']['RCIN'] == "0"
-            assert summary_output['Mapped']['RCOUT'] == "0"
-            assert summary_output['Unmapped']['RC'] == "0"
+            assert summary_output['Mapped']['RC'] == 0
+            assert summary_output['Mapped']['RCIN'] == 0
+            assert summary_output['Mapped']['RCOUT'] == 0
+            assert summary_output['Unmapped']['RC'] == 0
             assert summary_output['Unmapped']['RCIN'] == "-"
             assert summary_output['Unmapped']['RCOUT'] == "-"
 
@@ -50,13 +50,13 @@ class TestCoverViewSummaryOutput(unittest.TestCase):
             assert "Mapped" in summary_output
             assert "1" in summary_output
 
-            assert summary_output['Total']['RC'] == "1"
+            assert summary_output['Total']['RC'] == 1
             assert summary_output['Total']['RCIN'] == "-"
             assert summary_output['Total']['RCOUT'] == "-"
-            assert summary_output['Mapped']['RC'] == "1"
-            assert summary_output['Mapped']['RCIN'] == "1"
-            assert summary_output['Mapped']['RCOUT'] == "0"
-            assert summary_output['Unmapped']['RC'] == "0"
+            assert summary_output['Mapped']['RC'] == 1
+            assert summary_output['Mapped']['RCIN'] == 1
+            assert summary_output['Mapped']['RCOUT'] == 0
+            assert summary_output['Unmapped']['RC'] == 0
             assert summary_output['Unmapped']['RCIN'] == "-"
             assert summary_output['Unmapped']['RCOUT'] == "-"
 
@@ -79,13 +79,13 @@ class TestCoverViewSummaryOutput(unittest.TestCase):
             assert "Mapped" in summary_output
             assert "1" in summary_output
 
-            assert summary_output['Total']['RC'] == "1"
+            assert summary_output['Total']['RC'] == 1
             assert summary_output['Total']['RCIN'] == "-"
             assert summary_output['Total']['RCOUT'] == "-"
-            assert summary_output['Mapped']['RC'] == "1"
-            assert summary_output['Mapped']['RCIN'] == "0"
-            assert summary_output['Mapped']['RCOUT'] == "1"
-            assert summary_output['Unmapped']['RC'] == "0"
+            assert summary_output['Mapped']['RC'] == 1
+            assert summary_output['Mapped']['RCIN'] == 0
+            assert summary_output['Mapped']['RCOUT'] == 1
+            assert summary_output['Unmapped']['RC'] == 0
             assert summary_output['Unmapped']['RCIN'] == "-"
             assert summary_output['Unmapped']['RCOUT'] == "-"
 
@@ -109,13 +109,13 @@ class TestCoverViewSummaryOutput(unittest.TestCase):
             assert "Mapped" in summary_output
             assert "1" in summary_output
 
-            assert summary_output['Total']['RC'] == "2"
+            assert summary_output['Total']['RC'] == 2
             assert summary_output['Total']['RCIN'] == "-"
             assert summary_output['Total']['RCOUT'] == "-"
-            assert summary_output['Mapped']['RC'] == "2"
-            assert summary_output['Mapped']['RCIN'] == "1"
-            assert summary_output['Mapped']['RCOUT'] == "1"
-            assert summary_output['Unmapped']['RC'] == "0"
+            assert summary_output['Mapped']['RC'] == 2
+            assert summary_output['Mapped']['RCIN'] == 1
+            assert summary_output['Mapped']['RCOUT'] == 1
+            assert summary_output['Unmapped']['RC'] == 0
             assert summary_output['Unmapped']['RCIN'] == "-"
             assert summary_output['Unmapped']['RCOUT'] == "-"
 
@@ -136,8 +136,8 @@ class TestCoverViewSummaryOutput(unittest.TestCase):
                 "output_summary.txt"
             )
 
-            assert summary_output['Unmapped']['RC'] == str(num_unmapped_reads)
-            assert summary_output['Mapped']['RC'] == str(num_mapped_reads)
+            assert summary_output['Unmapped']['RC'] == num_unmapped_reads
+            assert summary_output['Mapped']['RC'] == num_mapped_reads
 
 
 if __name__ == "__main__":

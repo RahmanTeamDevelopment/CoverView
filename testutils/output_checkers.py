@@ -8,7 +8,7 @@ def float_or_nan(x):
         return float(x)
 
 
-_value_type_map = {
+_regions_value_type_map = {
     "#Region": str,
     "Chromosome": lambda x: str(x).replace("chr", "").replace("CHR", ""),
     "Start_position": int,
@@ -21,6 +21,14 @@ _value_type_map = {
     "MINQCOV": float_or_nan,
     "MAXFLMQ": float_or_nan,
     "MAXFLBQ": float_or_nan
+}
+
+
+_summary_value_type_map = {
+    "#CHROM": lambda x: x,
+    "RC": int,
+    "RCIN": lambda x: x if x == "-" else int(x),
+    "RCOUT": lambda x: x if x == "-" else int(x)
 }
 
 
@@ -42,6 +50,7 @@ def load_coverview_profile_output(file_name):
 
                 if line.strip() == "":
                     continue
+
                 cols = line.strip().split("\t")
                 chrom_pos = ":".join([cols[0], cols[1]])
                 data[current_region_name][chrom_pos] = {}
@@ -52,41 +61,37 @@ def load_coverview_profile_output(file_name):
 
 
 def load_coverview_summary_output(file_name):
-
-    data = {}
-
     with open(file_name, 'r') as summary_file:
         summary_file_reader = csv.DictReader(summary_file, delimiter='\t')
+        data = {}
 
         for record in summary_file_reader:
             chrom = record['#CHROM']
-
             data[chrom] = {}
 
-            for key, value in record.iteritems():
+            for key, value in record.items():
                 if key == "#CHROM":
                     continue
                 else:
-                    data[chrom][key] = value
+                    typed_value = _summary_value_type_map[key](value)
+                    data[chrom][key] = typed_value
 
-    return data
+        return data
 
 
 def load_coveriew_regions_output(file_name):
-
-    data = {}
-
     with open(file_name, 'r') as regions_file:
+        data = {}
         regions_file_reader = csv.DictReader(regions_file, delimiter='\t')
 
         for record in regions_file_reader:
             region_name = record['#Region']
             data[region_name] = {}
 
-            for key, converter_function in _value_type_map.iteritems():
+            for key, converter_function in _regions_value_type_map.items():
 
                 if key in record:
                     typed_value = converter_function(record[key])
                     data[region_name][key] = typed_value
 
-    return data
+        return data

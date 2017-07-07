@@ -21,7 +21,7 @@ def get_transcripts_overlapping_position(transcript_database, chrom, pos):
     transcripts = []
 
     for key, value in transcript_coordinates.items():
-        transcripts.append(key.geneSymbol + ':' + key.ENST + ':' + value)
+        transcripts.append(key.gene_symbol + ':' + key.ensembl_id + ':' + value)
 
     return ','.join(transcripts)
 
