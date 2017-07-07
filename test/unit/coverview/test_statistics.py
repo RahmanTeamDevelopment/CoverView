@@ -119,5 +119,3 @@ class TestQualityHistogramFractionBelowThresholdCalculation(object):
 
 if __name__ == "__main__":
     unittest.main()
-
-

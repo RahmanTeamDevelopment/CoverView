@@ -5,7 +5,7 @@ FLAKE8=flake8 --max-line-length=120
 SCRIPTS=bin/coverview
 
 flake8:
-	${FLAKE8} ${PY}
+	${FLAKE8} ${PY} test
 
 clean:
 	pip uninstall -y CoverView

@@ -8,9 +8,6 @@ import uuid
 
 
 def load_bam_into_read_array(file_name):
-    """
-    Utility function for creating a read array from the contents of a sorted BAM file    
-    """
     read_array = coverview.reads.pyReadArray()
 
     with pysam.AlignmentFile(file_name, 'rb') as bam_file:
