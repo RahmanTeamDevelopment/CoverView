@@ -17,7 +17,7 @@ def get_transcripts_overlapping_position(transcript_database, chrom, pos):
     Returns a comma-separated list of the transcripts which overlap this base, and the coordinate of
     the base within each transcript, in.
     """
-    transcript_coordinates = transcript.getTranscriptCoordinates(transcript_database, chrom, pos)
+    transcript_coordinates = transcript.get_transcript_coordinates(transcript_database, chrom, pos)
     transcripts = []
 
     for key, value in transcript_coordinates.items():
