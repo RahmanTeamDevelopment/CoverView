@@ -3,7 +3,7 @@ import pysam
 import uuid
 
 
-_high_quality = 60
+HIGH_QUALITY = 60
 
 
 def make_bam_file(file_name, read_sets):
@@ -78,9 +78,9 @@ def create_perfect_unpaired_read(
         start_position,
         read_length
 ):
-    mapping_quality = _high_quality
+    mapping_quality = HIGH_QUALITY
     sequence = reference_file.fetch(chromosome, start_position, start_position + read_length)
-    qualities = array.array('b', [_high_quality] * read_length)
+    qualities = array.array('b', [HIGH_QUALITY] * read_length)
     cigar = ((0, read_length),)  # Perfect match
 
     return create_unpaired_read(
@@ -99,7 +99,7 @@ def create_unmapped_unpaired_read(
         read_length
 ):
     sequence = "G"*read_length
-    qualities = array.array('b', [_high_quality] * read_length)
+    qualities = array.array('b', [HIGH_QUALITY] * read_length)
     cigar = ((0, read_length),)
 
     return create_unpaired_read(
@@ -130,7 +130,7 @@ def generate_bam_file(bam_file_name, reference_file, regions):
     ) as bam_file:
 
         for chromosome, start_position, read_length, num_reads in regions:
-            for read_index in xrange(num_reads):
+            for read_index in range(num_reads):
                 if chromosome is None and start_position is None:
                     new_read = create_unmapped_unpaired_read(
                         read_length
