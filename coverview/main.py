@@ -31,8 +31,10 @@ class CoverageCalculator(object):
         self.regions_output = None
         self.per_base_output = None
 
-        if config['transcript_db'] is not None:
-            self.transcript_database = pysam.Tabixfile(config['transcript_db'])
+        if options.transcript_db is not None:
+            self.transcript_database = pysam.Tabixfile(
+                options.transcript_db
+            )
 
         self.first = True
 
@@ -120,7 +122,7 @@ class CoverageCalculator(object):
         """
         if self.config['outputs']['profiles']:
             self.out_profiles.close()
-            if not self.config['transcript_db'] is None:
+            if self.transcript_database is not None:
                 self.out_poor.close()
 
     def write_output_file_headers(self):
@@ -140,10 +142,16 @@ class CoverageCalculator(object):
         Write various summaries for each targeted region, if required.
         """
         if self.regions_output:
-            self.regions_output.write_output(region_coverage_data)
+            self.regions_output.write_output(
+                region_coverage_data,
+                self.transcript_database
+            )
 
         if self.per_base_output:
-            self.per_base_output.write_output(region_coverage_data)
+            self.per_base_output.write_output(
+                region_coverage_data,
+                self.transcript_database
+            )
 
     def calculate_coverage_summaries(self, intervals):
         _logger.info("Coverage metrics will be generated in a single process")
@@ -195,7 +203,6 @@ def get_default_config():
         "low_bq": 10,
         "low_mq": 20,
         "only_fail_profiles": False,
-        "transcript_db": None,
         "pass": None,
         "direction": False,
     }
@@ -218,7 +225,6 @@ def load_and_validate_config(config_file_name):
         "outputs",
         "pass",
         "transcript",
-        "transcript_db"
     }
 
     allowed_config_paramters_outputs = {
@@ -298,6 +304,15 @@ def get_input_options(command_line_args):
         dest='config',
         action='store',
         help="Configuration file"
+    )
+
+    parser.add_argument(
+        "-t",
+        "--transcript_db",
+        default=None,
+        dest='transcript_db',
+        action='store',
+        help="Tabix-indexed database of transcripts"
     )
 
     options = parser.parse_args(command_line_args)

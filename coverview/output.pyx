@@ -43,7 +43,7 @@ class PerBaseCoverageOutput(object):
         if config['only_fail_profiles']:
             self.only_output_profiles_for_failed_regions = True
 
-        if config['transcript_db'] is not None:
+        if options.transcript_db is not None:
             self.out_poor = open(options.output + '_poor.txt', 'w')
 
         if config['direction']:
@@ -104,7 +104,7 @@ class PerBaseCoverageOutput(object):
 
             self.out_poor.write('#' + '\t'.join(poorheader) + '\n')
 
-    def write_output(self, coverage_data):
+    def write_output(self, coverage_data, transcript_database):
         if self.only_output_profiles_for_failed_regions and coverage_data.passes_thresholds:
             pass
         else:
@@ -115,7 +115,7 @@ class PerBaseCoverageOutput(object):
                 coverage_data.chromosome,
                 coverage_data.start_position,
                 coverage_data.end_position,
-                self.config['transcript_db'],
+                transcript_database,
                 self.output_directional_coverage_information,
                 self.out_profiles,
                 self.out_poor
@@ -133,7 +133,7 @@ class RegionsOutput(object):
         self.config = config
         self.options = options
 
-        if config['transcript_db'] is not None:
+        if options.transcript_db is not None:
             self.output_transcript_data = True
         else:
             self.output_transcript_data = False
@@ -205,7 +205,7 @@ class RegionsOutput(object):
             '#' + '\t'.join(header) + '\n'
         )
 
-    def write_output(self, coverage_data):
+    def write_output(self, coverage_data, transcript_database):
 
         region_name = coverage_data.region_name
         chrom = coverage_data.chromosome
@@ -226,11 +226,11 @@ class RegionsOutput(object):
         if self.output_transcript_data:
 
             transcripts_overlapping_start = get_transcripts_overlapping_position(
-                self.enstdb, chrom, region_start
+                transcript_database, chrom, region_start
             )
 
             transcripts_overlapping_end = get_transcripts_overlapping_position(
-                self.entsdb, chrom, region_end
+                transcript_database, chrom, region_end
             )
 
             output_record.extend([

@@ -74,11 +74,11 @@ def convert_transcript_to_line_of_ensemble_database(transcript):
         "DUMMY_VALUE",
         transcript.chrom,
         str(transcript.strand),
-        transcript.transcript_start,
-        transcript.transcript_end,
-        transcript.coding_start,
-        transcript.coding_start_genomic,
-        transcript.coding_end_genomic,
+        str(transcript.transcript_start),
+        str(transcript.transcript_end),
+        str(transcript.coding_start),
+        str(transcript.coding_start_genomic),
+        str(transcript.coding_end_genomic),
     ]
 
     for exon in transcript.exons:
@@ -130,9 +130,9 @@ class Exon(object):
         self.length = end - start
 
 
-def get_transcript_coordinates(enstdb, chrom, pos):
+def get_transcript_coordinates(transcript_database, chrom, pos):
     ret = OrderedDict()
-    transcripts = find_transcripts(enstdb, chrom, pos)
+    transcripts = find_transcripts(transcript_database, chrom, pos)
 
     for ensembl_id, transcript in transcripts.items():
         x, y = transform_to_csn_coordinate(pos, transcript)
@@ -146,23 +146,23 @@ def get_transcript_coordinates(enstdb, chrom, pos):
     return ret
 
 
-def find_transcripts(enstdb, chrom, pos):
+def find_transcripts(transcript_database, chrom, pos):
     ret = OrderedDict()
 
-    if chrom in enstdb.contigs:
+    if chrom in transcript_database.contigs:
         good_chrom = chrom
     else:
-        if 'chr' + chrom in enstdb.contigs:
+        if 'chr' + chrom in transcript_database.contigs:
             good_chrom = 'chr' + chrom
         else:
-            if chrom.startswith('chr') and chrom[3:] in enstdb.contigs:
+            if chrom.startswith('chr') and chrom[3:] in transcript_database.contigs:
                 good_chrom = chrom[3:]
             else:
                 return ret
 
     # Checking both end points of the variant
     reg = good_chrom + ':' + str(pos) + '-' + str(pos)
-    hits = enstdb.fetch(region=reg)
+    hits = transcript_database.fetch(region=reg)
 
     for line in hits:
 
