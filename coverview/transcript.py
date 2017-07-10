@@ -1,25 +1,119 @@
+import pysam
 from collections import OrderedDict
 
 
-class Transcript(object):
-    def __init__(self, line):
-        self.exons = []
-        cols = line.split('\t')
-        self.ensembl_id = cols[0]
-        self.gene_symbol = cols[1]
-        self.gene_ID = cols[2]
-        self.chrom = cols[4]
-        self.strand = int(cols[5])
-        self.transcript_start = int(cols[6])
-        self.transcript_end = int(cols[7])
-        self.coding_start = int(cols[8])
-        self.coding_start_genomic = int(cols[9])
-        self.coding_end_genomic = int(cols[10])
+CHROM_IDX = 2
+TRANSCRIPT_START_IDX = 6
+TRANSCRIPT_END_IDX = 7
 
-        for i in range(1, len(cols) - 11, 2):
-            self.exons.append(
-                Exon(int((i + 1) / 2), int(cols[10 + i]), int(cols[11 + i]))
+
+def write_transcripts_to_indexed_tabix_file(transcripts, file_name):
+    with open(file_name, 'w') as transcript_database:
+        for transcript in transcripts:
+            transcript_database.write(
+                convert_transcript_to_line_of_ensemble_database(
+                    transcript
+                )
             )
+
+    pysam.tabix_compress(
+        file_name,
+        file_name + '.gz',
+        force=True
+    )
+
+    pysam.tabix_index(
+        file_name + '.gz',
+        seq_col=CHROM_IDX,
+        start_col=TRANSCRIPT_START_IDX,
+        end_col=TRANSCRIPT_END_IDX,
+        meta_char='#',
+        force=True
+    )
+
+
+def create_transcript_from_line_of_ensembl_database(line):
+    cols = line.split('\t')
+    exons = []
+    ensembl_id = cols[0]
+    gene_symbol = cols[1]
+    gene_id = cols[2]
+    chrom = cols[4]
+    strand = int(cols[5])
+    transcript_start = int(cols[6])
+    transcript_end = int(cols[7])
+    coding_start = int(cols[8])
+    coding_start_genomic = int(cols[9])
+    coding_end_genomic = int(cols[10])
+
+    for i in range(1, len(cols) - 11, 2):
+        exons.append(
+            Exon(int((i + 1) / 2), int(cols[10 + i]), int(cols[11 + i]))
+        )
+
+    return Transcript(
+        ensembl_id=ensembl_id,
+        gene_symbol=gene_symbol,
+        gene_id=gene_id,
+        chrom=chrom,
+        strand=strand,
+        transcript_start=transcript_start,
+        transcript_end=transcript_end,
+        coding_start=coding_start,
+        coding_start_genomic=coding_start_genomic,
+        coding_end_genomic=coding_end_genomic,
+        exons=exons
+    )
+
+
+def convert_transcript_to_line_of_ensemble_database(transcript):
+    cols = [
+        transcript.ensembl_id,
+        transcript.gene_symbol,
+        transcript.gene_id,
+        "DUMMY_VALUE",
+        transcript.chrom,
+        str(transcript.strand),
+        transcript.transcript_start,
+        transcript.transcript_end,
+        transcript.coding_start,
+        transcript.coding_start_genomic,
+        transcript.coding_end_genomic,
+    ]
+
+    for exon in transcript.exons:
+        cols.append(str(exon.start))
+        cols.append(str(exon.end))
+
+    return "\t".join(cols)
+
+
+class Transcript(object):
+    def __init__(
+            self,
+            ensembl_id,
+            gene_symbol,
+            gene_id,
+            chrom,
+            strand,
+            transcript_start,
+            transcript_end,
+            coding_start,
+            coding_start_genomic,
+            coding_end_genomic,
+            exons
+    ):
+        self.ensembl_id = ensembl_id
+        self.gene_symbol = gene_symbol
+        self.gene_id = gene_id
+        self.chrom = chrom
+        self.strand = strand
+        self.transcript_start = transcript_start
+        self.transcript_end = transcript_end
+        self.coding_start = coding_start
+        self.coding_start_genomic = coding_start_genomic
+        self.coding_end_genomic = coding_end_genomic
+        self.exons = exons
 
     def is_in_utr(self, pos):
         if self.strand == 1:
@@ -71,7 +165,11 @@ def find_transcripts(enstdb, chrom, pos):
     hits = enstdb.fetch(region=reg)
 
     for line in hits:
-        transcript = Transcript(line)
+
+        transcript = create_transcript_from_line_of_ensembl_database(
+            line
+        )
+
         if not transcript.transcript_start + 1 <= pos <= transcript.transcript_end:
             continue
         ret[transcript.ensembl_id] = transcript
