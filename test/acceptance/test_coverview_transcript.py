@@ -3,7 +3,7 @@ import testutils.output_checkers
 import unittest
 
 
-class TestCoverViewProfileOutput(unittest.TestCase):
+class TestCoverViewWithTranscriptDatabase(unittest.TestCase):
 
     def test_with_zero_coverage_in_bam(self):
         with testutils.runners.CoverViewTestRunner() as runner:
