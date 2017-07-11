@@ -1,8 +1,13 @@
+import logging
 import pysam
+
 from collections import OrderedDict
 
 
-CHROM_IDX = 2
+_logger = logging.getLogger("coverview")
+
+
+CHROM_IDX = 4
 TRANSCRIPT_START_IDX = 6
 TRANSCRIPT_END_IDX = 7
 
@@ -103,6 +108,9 @@ class Transcript(object):
             coding_end_genomic,
             exons
     ):
+        assert transcript_start == exons[0].start
+        assert transcript_end == exons[-1].end
+
         self.ensembl_id = ensembl_id
         self.gene_symbol = gene_symbol
         self.gene_id = gene_id
@@ -117,7 +125,7 @@ class Transcript(object):
 
     def is_in_utr(self, pos):
         if self.strand == 1:
-            return (pos < self.coding_start_genomic) or (pos > self.coding_end_genomic)
+            return (pos < self.coding_start_genomic) or (pos >= self.coding_end_genomic)
         else:
             return (pos > self.coding_start_genomic) or (pos < self.coding_end_genomic)
 
@@ -129,105 +137,92 @@ class Exon(object):
         self.end = end
         self.length = end - start
 
+    def __contains__(self, position):
+        return self.start <= position < self.end
+
+
+def find_transcripts(transcript_database, chrom, pos):
+    overlapping_transcripts = OrderedDict()
+    region = "{}:{}-{}".format(chrom, pos, pos+1)
+    hits = transcript_database.fetch(region=region)
+
+    for line in hits:
+        transcript = create_transcript_from_line_of_ensembl_database(
+            line
+        )
+
+        if transcript.transcript_start <= pos < transcript.transcript_end:
+            overlapping_transcripts[transcript.ensembl_id] = transcript
+
+    return overlapping_transcripts
+
 
 def get_transcript_coordinates(transcript_database, chrom, pos):
     ret = OrderedDict()
     transcripts = find_transcripts(transcript_database, chrom, pos)
 
     for ensembl_id, transcript in transcripts.items():
-        x, y = transform_to_csn_coordinate(pos, transcript)
-        transcript_coordinates = 'c.' + str(x)
-        if y != 0:
-            if y > 0:
-                transcript_coordinates += '+' + str(y)
-            else:
-                transcript_coordinates += str(y)
+        transcript_coordinates = get_csn_coordinates(
+            pos,
+            transcript
+        )
+
         ret[transcript] = transcript_coordinates
     return ret
 
 
-def find_transcripts(transcript_database, chrom, pos):
-    ret = OrderedDict()
+def get_csn_coordinates(position, transcript):
+    x, y = transform_to_csn_coordinate(position, transcript)
+    transcript_coordinates = 'c.' + str(x)
 
-    if chrom in transcript_database.contigs:
-        good_chrom = chrom
-    else:
-        if 'chr' + chrom in transcript_database.contigs:
-            good_chrom = 'chr' + chrom
+    if y != 0:
+        if y > 0:
+            transcript_coordinates += '+' + str(y)
         else:
-            if chrom.startswith('chr') and chrom[3:] in transcript_database.contigs:
-                good_chrom = chrom[3:]
-            else:
-                return ret
+            transcript_coordinates += str(y)
 
-    # Checking both end points of the variant
-    reg = good_chrom + ':' + str(pos) + '-' + str(pos)
-    hits = transcript_database.fetch(region=reg)
-
-    for line in hits:
-
-        transcript = create_transcript_from_line_of_ensembl_database(
-            line
-        )
-
-        if not transcript.transcript_start + 1 <= pos <= transcript.transcript_end:
-            continue
-        ret[transcript.ensembl_id] = transcript
-
-    return ret
+    return transcript_coordinates
 
 
 def transform_to_csn_coordinate(pos, transcript):
-    previous_exon_end = 99999999
 
-    if not transcript.is_in_utr(pos):
-        sum_of_exon_lengths = -transcript.codingStart + 1
-
-        for i in range(len(transcript.exons)):
-            exon = transcript.exons[i]
-            if i > 0:
-                if transcript.strand == 1:
-                    # Checking if genomic position is within intron
-                    if previous_exon_end < pos < exon.start + 1:
-                        if pos <= (exon.start + 1 - previous_exon_end) / 2 + previous_exon_end:
-                            x, y = transform_to_csn_coordinate(previous_exon_end, transcript)
-                            return x, pos - previous_exon_end
-                        else:
-                            x, y = transform_to_csn_coordinate(exon.start + 1, transcript)
-                            return x, pos - exon.start - 1
-                else:
-                    # Checking if genomic position is within intron
-                    if exon.end < pos < previous_exon_end:
-                        if pos >= (previous_exon_end - exon.end + 1) / 2 + exon.end:
-                            x, y = transform_to_csn_coordinate(previous_exon_end, transcript)
-                            return x, previous_exon_end - pos
-                        else:
-                            x, y = transform_to_csn_coordinate(exon.end, transcript)
-                            return x, exon.end - pos
-
-            # Checking if genomic position is within exon
-            if exon.start + 1 <= pos <= exon.end:
-                if transcript.strand == 1:
-                    return sum_of_exon_lengths + pos - exon.start, 0
-                else:
-                    return sum_of_exon_lengths + exon.end - pos + 1, 0
-
-            # Calculating sum of exon lengths up to this point
-            sum_of_exon_lengths += exon.length
-            if transcript.strand == 1:
-                previous_exon_end = exon.end
-            else:
-                previous_exon_end = exon.start + 1
-
-    # If genomic position is within UTR
-    else:
-        if transcript.strand == 1:
-            if pos < transcript.coding_start_genomic:
-                return pos - transcript.coding_start_genomic, 0
-            if pos > transcript.coding_end_genomic:
-                return '+' + str(pos - transcript.coding_end_genomic), 0
+    if transcript.is_in_utr(pos):
+        if pos < transcript.coding_start_genomic:
+            return "{}".format(transcript.strand * (pos - transcript.coding_start_genomic)), 0
+        elif pos >= transcript.coding_end_genomic:
+            return "+{}".format(transcript.strand * (pos - (transcript.coding_end_genomic -1))), 0
         else:
-            if pos > transcript.coding_start_genomic:
-                return transcript.coding_start_genomic - pos, 0
-            if pos < transcript.coding_end_genomic:
-                return '+' + str(transcript.coding_end_genomic - pos), 0
+            raise StandardError("This should not happen.")
+
+    previous_exon = None
+    sum_of_exon_lengths = -transcript.coding_start
+
+    for i in range(len(transcript.exons)):
+        exon = transcript.exons[i]
+        if i > 0:
+            if transcript.strand == 1:
+                # Checking if genomic position is within intron
+                if previous_exon.end <= pos < exon.start:
+                    if pos <= (exon.start + 1 - previous_exon.end) / 2 + previous_exon.end:
+                        return sum_of_exon_lengths, pos - (previous_exon.end - 1)
+                    else:
+                        return sum_of_exon_lengths + 1, pos - exon.start
+            else:
+                # Checking if genomic position is within intron
+                if exon.end <= pos < previous_exon.start:
+                    if pos >= (previous_exon.start - exon.end + 1) / 2 + exon.end:
+                        return sum_of_exon_lengths + 1, previous_exon.start - pos
+                    else:
+                        return sum_of_exon_lengths, exon.end - pos
+
+        # Checking if genomic position is within exon
+        if pos in exon:
+            if transcript.strand == 1:
+                return sum_of_exon_lengths + pos - exon.start + 1, 0
+            else:
+                return sum_of_exon_lengths + exon.end - pos + 1, 0
+
+        sum_of_exon_lengths += exon.length
+        previous_exon = exon
+
+

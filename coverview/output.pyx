@@ -43,7 +43,7 @@ class PerBaseCoverageOutput(object):
         if config['only_fail_profiles']:
             self.only_output_profiles_for_failed_regions = True
 
-        if options.transcript_db is not None:
+        if options.transcript_db is not None and "transcript" in config and "profiles" in config['transcript']:
             self.out_poor = open(options.output + '_poor.txt', 'w')
 
         if config['direction']:
@@ -133,7 +133,7 @@ class RegionsOutput(object):
         self.config = config
         self.options = options
 
-        if options.transcript_db is not None:
+        if options.transcript_db is not None and "transcript" in config and "regions" in config['transcript']:
             self.output_transcript_data = True
         else:
             self.output_transcript_data = False

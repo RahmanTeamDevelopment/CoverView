@@ -13,6 +13,8 @@ _regions_value_type_map = {
     "Chromosome": lambda x: str(x).replace("chr", "").replace("CHR", ""),
     "Start_position": int,
     "End_position": int,
+    "Start_transcript": str,
+    "End_transcript": str,
     "Pass_or_fail": str,
     "RC": int,
     "MEDCOV": float_or_nan,
