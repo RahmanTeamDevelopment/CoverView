@@ -108,8 +108,13 @@ class Transcript(object):
             coding_end_genomic,
             exons
     ):
-        assert transcript_start == exons[0].start
-        assert transcript_end == exons[-1].end
+
+        if strand == 1:
+            assert transcript_start == exons[0].start
+            assert transcript_end == exons[-1].end
+        else:
+            assert transcript_start == exons[-1].start
+            assert transcript_end == exons[0].end
 
         self.ensembl_id = ensembl_id
         self.gene_symbol = gene_symbol
@@ -123,11 +128,27 @@ class Transcript(object):
         self.coding_end_genomic = coding_end_genomic
         self.exons = exons
 
-    def is_in_utr(self, pos):
+    def is_position_in_utr(self, pos):
         if self.strand == 1:
             return (pos < self.coding_start_genomic) or (pos >= self.coding_end_genomic)
         else:
-            return (pos > self.coding_start_genomic) or (pos < self.coding_end_genomic)
+            return (pos > self.coding_start_genomic) or (pos <= self.coding_end_genomic)
+
+    def get_distance_from_coding_region(self, position):
+        if self.strand == 1:
+            if position < self.coding_start_genomic:
+                return position - self.coding_start_genomic
+            elif position >= self.coding_end_genomic:
+                return position - (self.coding_end_genomic - 1)
+            else:
+                return 0
+        else:
+            if position > self.coding_start_genomic:
+                return self.coding_start_genomic - position
+            elif position <= self.coding_end_genomic:
+                return (self.coding_end_genomic - 1) - position
+            else:
+                return 0
 
 
 class Exon(object):
@@ -139,6 +160,34 @@ class Exon(object):
 
     def __contains__(self, position):
         return self.start <= position < self.end
+
+    def distance_from(self, position):
+        if position < self.start:
+            return position - self.start
+        elif position >= self.end:
+            return position - (self.end - 1)
+        else:
+            return 0
+
+    def get_coordinate_of_position_forward(self, position):
+        """
+        Returns the 0-based offset in this exon of the position when traversing the exon in the
+        forward direction.
+        """
+        if position not in self:
+            return None
+        else:
+            return position - self.start
+
+    def get_coordinate_of_position_reverse(self, position):
+        """
+        Returns the 0-based offset in this exon of the position when traversing the exon in the
+        reverse direction.
+        """
+        if position not in self:
+            return None
+        else:
+            return self.end - position - 1
 
 
 def find_transcripts(transcript_database, chrom, pos):
@@ -172,57 +221,107 @@ def get_transcript_coordinates(transcript_database, chrom, pos):
 
 
 def get_csn_coordinates(position, transcript):
-    x, y = transform_to_csn_coordinate(position, transcript)
-    transcript_coordinates = 'c.' + str(x)
 
-    if y != 0:
-        if y > 0:
-            transcript_coordinates += '+' + str(y)
-        else:
-            transcript_coordinates += str(y)
+    if transcript.is_position_in_utr(position):
+        distance_from_coding_region = transcript.get_distance_from_coding_region(position)
+        return "c.{0:+d}".format(distance_from_coding_region)
+    else:
+        coding_position, distance_to_exon = get_position_in_coding_sequence(
+            position,
+            transcript
+        )
 
-    return transcript_coordinates
+        transcript_coordinates = 'c.{}'.format(coding_position)
+
+        if distance_to_exon != 0:
+            transcript_coordinates += '{0:+d}'.format(distance_to_exon)
+
+        return transcript_coordinates
 
 
-def transform_to_csn_coordinate(pos, transcript):
+def get_position_in_coding_sequence(position, transcript):
 
-    if transcript.is_in_utr(pos):
-        if pos < transcript.coding_start_genomic:
-            return "{}".format(transcript.strand * (pos - transcript.coding_start_genomic)), 0
-        elif pos >= transcript.coding_end_genomic:
-            return "+{}".format(transcript.strand * (pos - (transcript.coding_end_genomic -1))), 0
-        else:
-            raise StandardError("This should not happen.")
-
+    # We always report 1-based positions in CSN
+    position_in_coding_sequence = 1 - transcript.coding_start
     previous_exon = None
-    sum_of_exon_lengths = -transcript.coding_start
 
-    for i in range(len(transcript.exons)):
-        exon = transcript.exons[i]
-        if i > 0:
+    for exon in transcript.exons:
+        if previous_exon is not None:
+            distance_from_left_exon = previous_exon.distance_from(position)
+            distance_from_right_exon = exon.distance_from(position)
+
             if transcript.strand == 1:
-                # Checking if genomic position is within intron
-                if previous_exon.end <= pos < exon.start:
-                    if pos <= (exon.start + 1 - previous_exon.end) / 2 + previous_exon.end:
-                        return sum_of_exon_lengths, pos - (previous_exon.end - 1)
-                    else:
-                        return sum_of_exon_lengths + 1, pos - exon.start
-            else:
-                # Checking if genomic position is within intron
-                if exon.end <= pos < previous_exon.start:
-                    if pos >= (previous_exon.start - exon.end + 1) / 2 + exon.end:
-                        return sum_of_exon_lengths + 1, previous_exon.start - pos
-                    else:
-                        return sum_of_exon_lengths, exon.end - pos
 
-        # Checking if genomic position is within exon
-        if pos in exon:
+                if distance_from_left_exon != 0 and distance_from_right_exon != 0:
+                    if abs(distance_from_left_exon) <= abs(distance_from_right_exon):
+                        return position_in_coding_sequence - 1, distance_from_left_exon
+                    else:
+                        return position_in_coding_sequence, distance_from_right_exon
+            else:
+                if distance_from_left_exon != 0 and distance_from_right_exon != 0:
+                    if abs(distance_from_right_exon) <= abs(distance_from_left_exon):
+                        return position_in_coding_sequence, distance_from_right_exon
+                    else:
+                        return position_in_coding_sequence - 1, distance_from_left_exon
+
+        if position in exon:
             if transcript.strand == 1:
-                return sum_of_exon_lengths + pos - exon.start + 1, 0
+                position_in_exon = exon.get_coordinate_of_position_forward(position)
             else:
-                return sum_of_exon_lengths + exon.end - pos + 1, 0
+                position_in_exon = exon.get_coordinate_of_position_reverse(position)
 
-        sum_of_exon_lengths += exon.length
+            return position_in_coding_sequence + position_in_exon, 0
+
+        # This takes us to the position of the first base in the next exon, so we need to -1 when referring back
+        # to the previous exon for intronic coordinates.
+        position_in_coding_sequence += exon.length
         previous_exon = exon
 
 
+def old_transform_to_csn_coordinate(pos, transcript):
+    prev_exon_end = 99999999
+    # Checking if genomic position is within translated region
+    if not transcript.is_position_in_utr(pos):
+        sum_of_exon_lengths = -transcript.coding_start + 1
+        # Iterating through exons
+        for i in range(len(transcript.exons)):
+            exon = transcript.exons[i]
+            if i > 0:
+                if transcript.strand == 1:
+                    # Checking if genomic position is within intron
+                    if prev_exon_end < pos < exon.start + 1:
+                        if pos <= (exon.start + 1 - prev_exon_end) / 2 + prev_exon_end:
+                            x, y = old_transform_to_csn_coordinate(prev_exon_end, transcript)
+                            return x, pos - prev_exon_end
+                        else:
+                            x, y = old_transform_to_csn_coordinate(exon.start + 1, transcript)
+                            return x, pos - exon.start - 1
+                else:
+                    # Checking if genomic position is within intron
+                    if exon.end < pos < prev_exon_end:
+                        if pos >= (prev_exon_end - exon.end + 1) / 2 + exon.end:
+                            x, y = old_transform_to_csn_coordinate(prev_exon_end, transcript)
+                            return x, prev_exon_end - pos
+                        else:
+                            x, y = old_transform_to_csn_coordinate(exon.end, transcript)
+                            return x, exon.end - pos
+            # Checking if genomic position is within exon
+            if exon.start + 1 <= pos <= exon.end:
+                if transcript.strand == 1:
+                    return sum_of_exon_lengths + pos - exon.start, 0
+                else:
+                    return sum_of_exon_lengths + exon.end - pos + 1, 0
+            # Calculating sum of exon lengths up to this point
+            sum_of_exon_lengths += exon.length
+            if transcript.strand == 1:
+                prev_exon_end = exon.end
+            else:
+                prev_exon_end = exon.start + 1
+    # If genomic position is within UTR
+    else:
+        if transcript.strand == 1:
+            if pos < transcript.coding_start_genomic: return pos - transcript.coding_start_genomic, 0
+            if pos > transcript.coding_end_genomic: return '+' + str(pos - transcript.coding_end_genomic), 0
+        else:
+            if pos > transcript.coding_start_genomic: return transcript.coding_start_genomic - pos, 0
+            if pos < transcript.coding_end_genomic: return '+' + str(transcript.coding_end_genomic - pos), 0
