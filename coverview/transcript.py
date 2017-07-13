@@ -56,6 +56,11 @@ def create_transcript_from_line_of_old_database(line):
     coding_start = int(cols[8]) - 1
     coding_start_genomic = int(cols[9]) - 1
 
+    for i in range(1, len(cols) - 11, 2):
+        exons.append(
+            Exon(int((i + 1) / 2), int(cols[10 + i]), int(cols[11 + i]))
+        )
+
     if strand == 1:
         # The value for 1-based inclusive is the same as for 0-based half-open
         coding_end_genomic = int(cols[10])
@@ -63,15 +68,16 @@ def create_transcript_from_line_of_old_database(line):
         # To convert to 0-based, half-open in reverse direction
         coding_end_genomic = int(cols[10]) - 2
 
+    # If the first exon is short then these assertion will not hold as the coding_start may be in the next
+    # exon with an intron between
     if strand == 1:
-        assert transcript_start + coding_start == coding_start_genomic
+        if exons[0].length >= coding_start and not transcript_start + coding_start == coding_start_genomic:
+            _logger.error("Invalid forward transcript data in input database")
+            _logger.error(line)
     else:
-        assert transcript_end - 1 - coding_start == coding_start_genomic
-
-    for i in range(1, len(cols) - 11, 2):
-        exons.append(
-            Exon(int((i + 1) / 2), int(cols[10 + i]), int(cols[11 + i]))
-        )
+        if exons[0].length >= coding_start and not transcript_end - 1 - coding_start == coding_start_genomic:
+            _logger.error("Invalid reverse transcript data in input database")
+            _logger.error(line)
 
     return Transcript(
         ensembl_id=ensembl_id,
@@ -233,7 +239,11 @@ class Exon(object):
 def find_transcripts(transcript_database, chrom, pos):
     overlapping_transcripts = OrderedDict()
     region = "{}:{}-{}".format(chrom, pos, pos+1)
-    hits = transcript_database.fetch(region=region)
+
+    try:
+        hits = transcript_database.fetch(region=region)
+    except ValueError:
+        return overlapping_transcripts
 
     for line in hits:
         transcript = create_transcript_from_line_of_old_database(

@@ -648,7 +648,7 @@ class PerBaseCoverageSummary(object):
                         )
 
                     low_quality_runs_output_file.write(
-                        "{}\t{]\t{}\t{}\t{}\t{}\n".format(
+                        "{}\t{}\t{}\t{}\t{}\t{}\n".format(
                             region_name,
                             chromosome,
                             low_qual_window_start,
