@@ -22,7 +22,7 @@ class TestExon(unittest.TestCase):
 
         assert exon.distance_from(start - 1) == -1
         assert exon.distance_from(start) == 0
-        assert exon.distance_from(end -1) == 0
+        assert exon.distance_from(end - 1) == 0
         assert exon.distance_from(end) == 1
         assert exon.distance_from(end + 1) == 2
 
@@ -79,7 +79,7 @@ class TestTranscript(unittest.TestCase):
             transcript_start=0,
             transcript_end=100,
             coding_start=10,
-            coding_start_genomic=91,
+            coding_start_genomic=89,
             coding_end_genomic=5,
             exons=[
                 coverview.transcript.Exon(1, 50, 100),
@@ -94,17 +94,68 @@ class TestTranscript(unittest.TestCase):
         assert self.forward_transcript.is_position_in_utr(89) is False
         assert self.forward_transcript.is_position_in_utr(90) is True
         assert self.forward_transcript.is_position_in_utr(100) is True
-    
+
     def test_is_position_in_utr_for_reverse_transcript(self):
         assert self.reverse_transcript.is_position_in_utr(0) is True
         assert self.reverse_transcript.is_position_in_utr(5) is True
         assert self.reverse_transcript.is_position_in_utr(6) is False
-        assert self.reverse_transcript.is_position_in_utr(91) is False
-        assert self.reverse_transcript.is_position_in_utr(92) is True
+        assert self.reverse_transcript.is_position_in_utr(89) is False
+        assert self.reverse_transcript.is_position_in_utr(90) is True
         assert self.reverse_transcript.is_position_in_utr(100) is True
 
     def test_get_distance_from_coding_region(self):
         pass
+
+
+class TestCreateTranscriptFromDataBaseTextLine(unittest.TestCase):
+
+    def test_create_forward_transcript_from_database_line(self):
+        line = "ENST00000379389\tISG15\tENSG00000187608\t+/1.1kb/2/0.7kb/165" \
+               "\t1\t1\t948802\t949920\t152\t948954\t949858\t948802\t948956\t949363\t949920"
+
+        transcript = coverview.transcript.create_transcript_from_line_of_old_database(
+            line
+        )
+
+        assert transcript.ensembl_id == "ENST00000379389"
+        assert transcript.gene_symbol == "ISG15"
+        assert transcript.gene_id == "ENSG00000187608"
+        assert transcript.chrom == "1"
+        assert transcript.strand == 1
+        assert transcript.transcript_start == 948802
+        assert transcript.transcript_end == 949920
+        assert transcript.coding_start == 151
+        assert transcript.coding_start_genomic == 948953
+        assert transcript.coding_start_genomic == transcript.transcript_start + transcript.coding_start
+        assert transcript.coding_end_genomic == 949858
+        assert len(transcript.exons) == 2
+        assert transcript.exons[0].start == 948802
+        assert transcript.exons[0].end == 948956
+        assert transcript.exons[1].start == 949363
+        assert transcript.exons[1].end == 949920
+
+    def test_create_reverse_transcript_from_database_line(self):
+        line = "ENST00000422725\tC1orf233\tENSG00000228594\t-/2.1kb/1/2.1kb/226" \
+               "\t1\t-1\t1533391\t1535476\t82\t1535395\t1534715\t1533391\t1535476"
+
+        transcript = coverview.transcript.create_transcript_from_line_of_old_database(
+            line
+        )
+
+        assert transcript.ensembl_id == "ENST00000422725"
+        assert transcript.gene_symbol == "C1orf233"
+        assert transcript.gene_id == "ENSG00000228594"
+        assert transcript.chrom == "1"
+        assert transcript.strand == -1
+        assert transcript.transcript_start == 1533391
+        assert transcript.transcript_end == 1535476
+        assert transcript.coding_start == 81
+        assert transcript.coding_start_genomic == 1535394
+        assert transcript.coding_start_genomic == transcript.transcript_end - 1 - transcript.coding_start
+        assert transcript.coding_end_genomic == 1534713
+        assert len(transcript.exons) == 1
+        assert transcript.exons[0].start == 1533391
+        assert transcript.exons[0].end == 1535476
 
 
 class TestCSNCalculationOnForwardTranscript(unittest.TestCase):
@@ -173,7 +224,7 @@ class TestCSNCalculationOnReverseTranscript(unittest.TestCase):
             transcript_start=0,
             transcript_end=100,
             coding_start=10,
-            coding_start_genomic=91,
+            coding_start_genomic=89,
             coding_end_genomic=5,
             exons=[
                 coverview.transcript.Exon(1, 50, 100),
@@ -188,31 +239,32 @@ class TestCSNCalculationOnReverseTranscript(unittest.TestCase):
         )
 
     def test_first_base_in_transcript(self):
-        assert self._get_csn(99) == "c.-8"
+        assert self._get_csn(99) == "c.-10"
 
     def test_first_coding_base_in_first_exon(self):
-        assert self._get_csn(91) == "c.1"
-    #
-    # def test_last_base_in_first_exon(self):
-    #     assert self._get_csn(50) == "c.50"
-    #
-    # def test_first_base_in_first_intron(self):
-    #     assert self._get_csn(49) == "c.50+1"
-    #
-    # def test_middle_base_in_first_intron(self):
-    #     assert self._get_csn(45) == "c.50+5"
-    #
-    # def test_last_base_in_first_intron(self):
-    #     assert self._get_csn(40) == "c.51-1"
-    #
-    # def test_first_base_in_second_exon(self):
-    #     assert self._get_csn(39) == "c.51"
-    #
-    # def test_last_coding_base_in_second_exon(self):
-    #     assert self._get_csn(6) == "c.84"
-    #
-    # def test_last_base_in_transcript(self):
-    #     assert self._get_csn(0) == "c.+5"
+        assert self._get_csn(89) == "c.1"
+
+    def test_last_base_in_first_exon(self):
+        assert self._get_csn(50) == "c.40"
+
+    def test_first_base_in_first_intron(self):
+        assert self._get_csn(49) == "c.40+1"
+
+    def test_middle_base_in_first_intron(self):
+        assert self._get_csn(45) == "c.40+5"
+
+    def test_last_base_in_first_intron(self):
+        assert self._get_csn(40) == "c.41-1"
+
+    def test_first_base_in_second_exon(self):
+        assert self._get_csn(39) == "c.41"
+
+    def test_last_coding_base_in_second_exon(self):
+        assert self._get_csn(6) == "c.74"
+
+    def test_last_base_in_transcript(self):
+        assert self._get_csn(0) == "c.+6"
+
 
 if __name__ == "__main__":
     unittest.main()

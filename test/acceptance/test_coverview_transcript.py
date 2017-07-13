@@ -19,7 +19,7 @@ class TestCoverViewWithTranscriptDatabase(unittest.TestCase):
                     strand=1,
                     transcript_start=50,
                     transcript_end=70,
-                    coding_start=50,
+                    coding_start=0,
                     coding_start_genomic=50,
                     coding_end_genomic=70,
                     exons=[
@@ -52,7 +52,7 @@ class TestCoverViewWithTranscriptDatabase(unittest.TestCase):
                     strand=1,
                     transcript_start=50,
                     transcript_end=70,
-                    coding_start=50,
+                    coding_start=0,
                     coding_start_genomic=50,
                     coding_end_genomic=70,
                     exons=[
@@ -71,9 +71,9 @@ class TestCoverViewWithTranscriptDatabase(unittest.TestCase):
 
             assert regions_output['Region_1']["Start_transcript"] == ""
             assert regions_output['Region_1']["End_transcript"] == ""
-            assert regions_output['Region_2']["Start_transcript"] == "50"
-            assert regions_output['Region_2']["End_transcript"] == ""
-            assert regions_output['Region_3']["Start_transcript"] == "50"
+            assert regions_output['Region_2']["Start_transcript"] == "TEST_GENE_1:TEST_TRANSCRIPT_1:c.1"
+            assert regions_output['Region_2']["End_transcript"] == "TEST_GENE_1:TEST_TRANSCRIPT_1:c.10+1"
+            assert regions_output['Region_3']["Start_transcript"] == "TEST_GENE_1:TEST_TRANSCRIPT_1:c.14"
             assert regions_output['Region_3']["End_transcript"] == ""
 
 
