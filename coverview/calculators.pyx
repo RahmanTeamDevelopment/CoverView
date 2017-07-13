@@ -641,22 +641,27 @@ class PerBaseCoverageSummary(object):
                         )
                 else:
                     if low_qual_window_start != -1:
+                        low_qual_window_end = start_position + i
+
                         transcripts_overlapping_end_of_low_qual_window = output.get_transcripts_overlapping_position(
                             transcript_database,
                             chromosome,
                             start_position + i - 1
                         )
 
-                    low_quality_runs_output_file.write(
-                        "{}\t{}\t{}\t{}\t{}\t{}\n".format(
-                            region_name,
-                            chromosome,
-                            low_qual_window_start,
-                            low_qual_window_end,
-                            transcripts_overlapping_start_of_low_qual_window,
-                            transcripts_overlapping_end_of_low_qual_window
+                        low_quality_runs_output_file.write(
+                            "{}\t{}\t{}\t{}\t{}\t{}\n".format(
+                                region_name,
+                                chromosome,
+                                low_qual_window_start,
+                                low_qual_window_end,
+                                transcripts_overlapping_start_of_low_qual_window,
+                                transcripts_overlapping_end_of_low_qual_window
+                            )
                         )
-                    )
+
+                        low_qual_window_start = -1
+                        low_qual_window_end = -1
 
 
 class RegionCoverageSummary(object):
