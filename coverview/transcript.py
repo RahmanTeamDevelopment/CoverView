@@ -170,13 +170,20 @@ class Transcript(object):
         self.coding_end_genomic = coding_end_genomic
         self.exons = exons
 
+        one_based_position, distance_to_exon = get_position_in_coding_sequence(
+            self.coding_end_genomic,
+            self
+        )
+
+        self.total_length_of_coding_sequence = one_based_position - 1
+
     def is_position_in_utr(self, pos):
         if self.strand == 1:
             return (pos < self.coding_start_genomic) or (pos >= self.coding_end_genomic)
         else:
             return (pos > self.coding_start_genomic) or (pos <= self.coding_end_genomic)
 
-    def get_distance_from_coding_region(self, position):
+    def get_exonic_distance_from_coding_region(self, position):
         """
         Return the distance from a position inside the UTR to the relevant
         coding region boundary.
@@ -272,21 +279,25 @@ def get_transcript_coordinates(transcript_database, chrom, pos):
 
 def get_csn_coordinates(position, transcript):
 
-    if transcript.is_position_in_utr(position):
-        distance_from_coding_region = transcript.get_distance_from_coding_region(position)
-        return "c.{0:+d}".format(distance_from_coding_region)
-    else:
-        coding_position, distance_to_exon = get_position_in_coding_sequence(
-            position,
-            transcript
-        )
+    coding_position, distance_to_exon = get_position_in_coding_sequence(
+        position,
+        transcript
+    )
 
+    if coding_position <= 0:
+        coding_position -= 1
+
+    if coding_position > transcript.total_length_of_coding_sequence:
+        transcript_coordinates = 'c.+{}'.format(
+            coding_position - transcript.total_length_of_coding_sequence
+        )
+    else:
         transcript_coordinates = 'c.{}'.format(coding_position)
 
-        if distance_to_exon != 0:
-            transcript_coordinates += '{0:+d}'.format(distance_to_exon)
+    if distance_to_exon != 0:
+        transcript_coordinates += '{0:+d}'.format(distance_to_exon)
 
-        return transcript_coordinates
+    return transcript_coordinates
 
 
 def get_position_in_coding_sequence(position, transcript):
@@ -298,22 +309,22 @@ def get_position_in_coding_sequence(position, transcript):
 
     for exon in transcript.exons:
         if previous_exon is not None:
-            distance_from_left_exon = previous_exon.distance_from(position)
-            distance_from_right_exon = exon.distance_from(position)
+            distance_from_previous_exon = previous_exon.distance_from(position)
+            distance_from_exon = exon.distance_from(position)
 
             if transcript.strand == 1:
 
-                if distance_from_left_exon != 0 and distance_from_right_exon != 0:
-                    if abs(distance_from_left_exon) <= abs(distance_from_right_exon):
-                        return position_in_coding_sequence - 1, distance_from_left_exon
+                if distance_from_previous_exon > 0 and distance_from_exon < 0:
+                    if abs(distance_from_previous_exon) <= abs(distance_from_exon):
+                        return position_in_coding_sequence - 1, distance_from_previous_exon
                     else:
-                        return position_in_coding_sequence, distance_from_right_exon
+                        return position_in_coding_sequence, distance_from_exon
             else:
-                if distance_from_left_exon != 0 and distance_from_right_exon != 0:
-                    if abs(distance_from_right_exon) <= abs(distance_from_left_exon):
-                        return position_in_coding_sequence, -1 * distance_from_right_exon
+                if distance_from_previous_exon < 0 and distance_from_exon > 0:
+                    if abs(distance_from_exon) <= abs(distance_from_previous_exon):
+                        return position_in_coding_sequence, -1 * distance_from_exon
                     else:
-                        return position_in_coding_sequence - 1, -1 * distance_from_left_exon
+                        return position_in_coding_sequence - 1, -1 * distance_from_previous_exon
 
         if position in exon:
             if transcript.strand == 1:
