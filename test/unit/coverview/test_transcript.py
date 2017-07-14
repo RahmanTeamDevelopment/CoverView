@@ -87,28 +87,9 @@ class TestTranscript(unittest.TestCase):
             ]
         )
 
-    def test_is_position_in_utr_for_forward_transcript(self):
-        assert self.forward_transcript.is_position_in_utr(0) is True
-        assert self.forward_transcript.is_position_in_utr(9) is True
-        assert self.forward_transcript.is_position_in_utr(10) is False
-        assert self.forward_transcript.is_position_in_utr(89) is False
-        assert self.forward_transcript.is_position_in_utr(90) is True
-        assert self.forward_transcript.is_position_in_utr(100) is True
-
-    def test_is_position_in_utr_for_reverse_transcript(self):
-        assert self.reverse_transcript.is_position_in_utr(0) is True
-        assert self.reverse_transcript.is_position_in_utr(5) is True
-        assert self.reverse_transcript.is_position_in_utr(6) is False
-        assert self.reverse_transcript.is_position_in_utr(89) is False
-        assert self.reverse_transcript.is_position_in_utr(90) is True
-        assert self.reverse_transcript.is_position_in_utr(100) is True
-
     def test_total_length_of_coding_sequence(self):
         assert self.forward_transcript.total_length_of_coding_sequence == 70
         assert self.reverse_transcript.total_length_of_coding_sequence == 74
-
-    def test_get_distance_from_coding_region(self):
-        pass
 
 
 class TestCreateTranscriptFromDataBaseTextLine(unittest.TestCase):

@@ -177,32 +177,6 @@ class Transcript(object):
 
         self.total_length_of_coding_sequence = one_based_position - 1
 
-    def is_position_in_utr(self, pos):
-        if self.strand == 1:
-            return (pos < self.coding_start_genomic) or (pos >= self.coding_end_genomic)
-        else:
-            return (pos > self.coding_start_genomic) or (pos <= self.coding_end_genomic)
-
-    def get_exonic_distance_from_coding_region(self, position):
-        """
-        Return the distance from a position inside the UTR to the relevant
-        coding region boundary.
-        """
-        if self.strand == 1:
-            if position < self.coding_start_genomic:
-                return position - self.coding_start_genomic
-            elif position >= self.coding_end_genomic:
-                return position - (self.coding_end_genomic - 1)
-            else:
-                return 0
-        else:
-            if position > self.coding_start_genomic:
-                return self.coding_start_genomic - position
-            elif position <= self.coding_end_genomic:
-                return (self.coding_end_genomic + 1) - position
-            else:
-                return 0
-
 
 class Exon(object):
     def __init__(self, index, start, end):
@@ -314,13 +288,13 @@ def get_position_in_coding_sequence(position, transcript):
 
             if transcript.strand == 1:
 
-                if distance_from_previous_exon > 0 and distance_from_exon < 0:
+                if distance_from_previous_exon > 0 > distance_from_exon:
                     if abs(distance_from_previous_exon) <= abs(distance_from_exon):
                         return position_in_coding_sequence - 1, distance_from_previous_exon
                     else:
                         return position_in_coding_sequence, distance_from_exon
             else:
-                if distance_from_previous_exon < 0 and distance_from_exon > 0:
+                if distance_from_previous_exon < 0 < distance_from_exon:
                     if abs(distance_from_exon) <= abs(distance_from_previous_exon):
                         return position_in_coding_sequence, -1 * distance_from_exon
                     else:
