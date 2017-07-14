@@ -43,7 +43,7 @@ class PerBaseCoverageOutput(object):
         if config['only_fail_profiles']:
             self.only_output_profiles_for_failed_regions = True
 
-        if options.transcript_db is not None and "transcript" in config and "profiles" in config['transcript']:
+        if options.transcript_db is not None and config['transcript'].get('poor') is True:
             self.out_poor = open(options.output + '_poor.txt', 'w')
 
         if config['direction']:
@@ -62,7 +62,8 @@ class PerBaseCoverageOutput(object):
             'Position'
         ]
 
-        if self.out_poor is not None:
+        if self.options.transcript_db is not None and self.config['transcript'].get('profiles') is True:
+            _logger.info("Transcript coordinates will be written in profiles output")
             profheader.append('Transcript_coordinate')
 
         profheader.extend([
@@ -110,6 +111,11 @@ class PerBaseCoverageOutput(object):
         else:
             per_base_summary = coverage_data.per_base_coverage_profile
 
+            if self.options.transcript_db is not None and self.config['transcript'].get('profiles') is True:
+                write_transcripts_in_profiles = 1
+            else:
+                write_transcripts_in_profiles = 0
+
             per_base_summary.print_to_file(
                 coverage_data.region_name,
                 coverage_data.chromosome,
@@ -118,7 +124,8 @@ class PerBaseCoverageOutput(object):
                 transcript_database,
                 self.output_directional_coverage_information,
                 self.out_profiles,
-                self.out_poor
+                self.out_poor,
+                write_transcripts_in_profiles
             )
 
 

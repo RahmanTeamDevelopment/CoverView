@@ -508,7 +508,8 @@ class PerBaseCoverageSummary(object):
             object transcript_database,
             int write_directional_summaries,
             object output_file,
-            object low_quality_runs_output_file
+            object low_quality_runs_output_file,
+            int write_transcripts_in_profiles
     ):
         """
         Output the contents of this class to a text file.        
@@ -587,24 +588,26 @@ class PerBaseCoverageSummary(object):
             flmq_r = FLMQ_r_array[i]
 
             if write_directional_summaries == 0:
-                output_line = "{}\t{}\t{}\t{}\t{}\t{:.3f}\t{}\t{:.3f}\n".format(
-                    chromosome,
-                    start_position + i,
-                    cov,
-                    qcov,
-                    medbq,
-                    flbq,
-                    medmq,
-                    flmq
-                )
+                if write_transcripts_in_profiles == 1:
+                    transcripts_overlapping = output.get_transcripts_overlapping_position(
+                        transcript_database,
+                        chromosome,
+                        start_position + i
+                    )
 
-                output_line = output_line.replace("nan", ".")
-                output_file.write(output_line)
-            else:
-                output_line = \
-                    "{}\t{}\t{}\t{}\t{}\t{:.3f}\t{}\t{:.3f}\t{}\t{}\t{}\t{:.3f}\t{}\t{:.3f}" \
-                    "\t{}\t{}\t{}\t{:.3f}\t{}\t{:.3f}\n" \
-                    "".format(
+                    output_line = "{}\t{}\t{}\t{}\t{}\t{:.3f}\t{}\t{:.3f}\n".format(
+                        chromosome,
+                        start_position + i,
+                        transcripts_overlapping,
+                        cov,
+                        qcov,
+                        medbq,
+                        flbq,
+                        medmq,
+                        flmq
+                    )
+                else:
+                    output_line = "{}\t{}\t{}\t{}\t{}\t{:.3f}\t{}\t{:.3f}\n".format(
                         chromosome,
                         start_position + i,
                         cov,
@@ -612,20 +615,69 @@ class PerBaseCoverageSummary(object):
                         medbq,
                         flbq,
                         medmq,
-                        flmq,
-                        cov_f,
-                        qcov_f,
-                        medbq_f,
-                        flbq_f,
-                        medmq_f,
-                        flmq_f,
-                        cov_r,
-                        qcov_r,
-                        medbq_r,
-                        flbq_r,
-                        medmq_r,
-                        flmq_r
+                        flmq
                     )
+
+                output_line = output_line.replace("nan", ".")
+                output_file.write(output_line)
+            else:
+                if write_transcripts_in_profiles == 1:
+                    transcripts_overlapping = output.get_transcripts_overlapping_position(
+                        transcript_database,
+                        chromosome,
+                        start_position + i
+                    )
+
+                    output_line = \
+                        "{}\t{}\t{}\t{}\t{}\t{:.3f}\t{}\t{:.3f}\t{}\t{}\t{}\t{:.3f}\t{}\t{:.3f}" \
+                        "\t{}\t{}\t{}\t{:.3f}\t{}\t{:.3f}\n".format(
+                            chromosome,
+                            start_position + i,
+                            transcripts_overlapping,
+                            cov,
+                            qcov,
+                            medbq,
+                            flbq,
+                            medmq,
+                            flmq,
+                            cov_f,
+                            qcov_f,
+                            medbq_f,
+                            flbq_f,
+                            medmq_f,
+                            flmq_f,
+                            cov_r,
+                            qcov_r,
+                            medbq_r,
+                            flbq_r,
+                            medmq_r,
+                            flmq_r
+                        )
+                else:
+                    output_line = \
+                        "{}\t{}\t{}\t{}\t{}\t{:.3f}\t{}\t{:.3f}\t{}\t{}\t{}\t{:.3f}\t{}\t{:.3f}" \
+                        "\t{}\t{}\t{}\t{:.3f}\t{}\t{:.3f}\n".format(
+                            chromosome,
+                            start_position + i,
+                            cov,
+                            qcov,
+                            medbq,
+                            flbq,
+                            medmq,
+                            flmq,
+                            cov_f,
+                            qcov_f,
+                            medbq_f,
+                            flbq_f,
+                            medmq_f,
+                            flmq_f,
+                            cov_r,
+                            qcov_r,
+                            medbq_r,
+                            flbq_r,
+                            medmq_r,
+                            flmq_r
+                        )
 
                 output_line = output_line.replace("nan", ".")
                 output_file.write(output_line)

@@ -264,6 +264,7 @@ def load_and_validate_config(config_file_name):
             else:
                 config[key] = value
 
+    _logger.debug(config)
     return config
 
 
@@ -374,9 +375,8 @@ def main(command_line_args):
 
             regions_with_unique_names = tgmi.interval.uniquify_region_names(all_regions)
 
-        number_of_targets = len(regions_with_unique_names)
-
-        _logger.info("There are {} target regions".format(number_of_targets))
+        # number_of_targets = len(regions_with_unique_names)
+        # _logger.info("There are {} target regions".format(number_of_targets))
 
         coverage_calculator = CoverageCalculator(options, config)
         coverage_calculator.calculate_coverage_summaries(
