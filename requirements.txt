@@ -11,4 +11,4 @@ pytest==3.0.7
 radon==2.0.2
 six==1.10.0
 pytest-cov>=2.2.0
-git+https://github.com/RahmanTeamDevelopment/TGMI#egg=TGMI
+git+https://github.com/RahmanTeamDevelopment/TGMI@v0.1.0#egg=TGMI

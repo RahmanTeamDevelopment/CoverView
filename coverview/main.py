@@ -375,18 +375,17 @@ def main(command_line_args):
 
             regions_with_unique_names = tgmi.interval.uniquify_region_names(all_regions)
 
-        # number_of_targets = len(regions_with_unique_names)
-        # _logger.info("There are {} target regions".format(number_of_targets))
+        number_of_targets = len(regions_with_unique_names)
+        _logger.info("There are {} target regions".format(number_of_targets))
 
         coverage_calculator = CoverageCalculator(options, config)
         coverage_calculator.calculate_coverage_summaries(
             regions_with_unique_names
         )
 
-        ids_of_failed_targets = coverage_calculator.ids_of_failed_targets
-        num_failed_targets = len(ids_of_failed_targets)
-
-        _logger.info("{} regions failed the coverage thresholds".format(num_failed_targets))
+        # ids_of_failed_targets = coverage_calculator.ids_of_failed_targets
+        # num_failed_targets = len(ids_of_failed_targets)
+        # _logger.info("{} regions failed the coverage thresholds".format(num_failed_targets))
 
         chromosome_coverage_metrics = calculate_chromosome_coverage_metrics(
             bam_file,
