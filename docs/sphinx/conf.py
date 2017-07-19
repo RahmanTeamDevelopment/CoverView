@@ -85,7 +85,7 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'classic'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -103,15 +103,15 @@ html_static_path = ['_static']
 #
 # This is required for the alabaster theme
 # refs: http://alabaster.readthedocs.io/en/latest/installation.html#sidebars
-html_sidebars = {
-    '**': [
-        'about.html',
-        'navigation.html',
-        'relations.html',  # needs 'show_related': True theme option to display
-        'searchbox.html',
-        'donate.html',
-    ]
-}
+#html_sidebars = {
+#    '**': [
+#        'about.html',
+#        'navigation.html',
+#        'relations.html',  # needs 'show_related': True theme option to display
+#        'searchbox.html',
+#        'donate.html',
+#    ]
+#}
 
 
 # -- Options for HTMLHelp output ------------------------------------------
@@ -122,7 +122,7 @@ htmlhelp_basename = 'CoverViewdoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
-latex_elements = {
+#latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',
@@ -138,6 +138,10 @@ latex_elements = {
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
+#}
+
+latex_elements = {
+      'classoptions': ',openany,oneside'
 }
 
 # Grouping the document tree into LaTeX files. List of tuples

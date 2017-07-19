@@ -1,16 +1,13 @@
-.. CoverView documentation master file, created by
-   sphinx-quickstart on Mon Jul 17 10:50:20 2017.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
-Welcome to CoverView's documentation!
-=====================================
+Welcome to CoverView 1.3.0 documentation!
+=========================================
 
 .. toctree::
+   :numbered:
    :maxdepth: 2
    :caption: Contents:
 
-
+   documentation
 
 Indices and tables
 ==================

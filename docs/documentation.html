@@ -1,0 +1,321 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>1. Introduction &#8212; CoverView 1.3.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.3.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Welcome to CoverView 1.3.0 documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to CoverView 1.3.0 documentation!"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">CoverView 1.3.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="introduction">
+<h1>1. Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>CoverView is a simple quality control tool for assessing the coverage and quality of mapped reads (.bam file)
+in a user-specified targeted panel or whole exome (.bed file). CoverView reports QC metrics in multiple output
+files with increasing levels of detail from a chromosome level summary to per base profiles. It also flags regions
+that do not pass pre-defined quality requirements.</p>
+</div>
+<div class="section" id="installation">
+<h1>2. Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>CoverView can be downloaded from Github and installed with the following commands:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">RahmanTeamDevelopment</span><span class="o">/</span><span class="n">CoverView</span>
+<span class="n">cd</span> <span class="n">CoverView</span>
+<span class="o">./</span><span class="n">install</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+<p>Once the installation script has finished successfully, CoverView is ready for use.</p>
+<div class="section" id="dependencies">
+<h2>2.1. Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<p>To install and run CoverView v1.3.0 you will need <code class="docutils literal"><span class="pre">Git</span></code>, <code class="docutils literal"><span class="pre">Python</span> <span class="pre">2.7.x</span></code> (<code class="docutils literal"><span class="pre">Python</span> <span class="pre">3</span></code> is not supported), and <code class="docutils literal"><span class="pre">Virtualenv</span></code>.</p>
+</div>
+</div>
+<div class="section" id="running-coverview">
+<h1>3. Running CoverView<a class="headerlink" href="#running-coverview" title="Permalink to this headline">¶</a></h1>
+<p>Once downloaded and correctly installed, CoverView can be run with the following simple command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>env/bin/coverview -c config.json -i input.bam –b panel.bed -o output
+</pre></div>
+</div>
+<p>By default, CoverView requires four command line arguments: the name of the configuration file (-c), the name of the input bam file (-i), the name of a bed file and the output file name prefix (-o).</p>
+<ul class="simple">
+<li>The configuration file should follow the JSON format (<a class="reference external" href="http://www.json.org">http://www.json.org</a>) and should contain the user-specified settings (see possible configuration options in Section 4).</li>
+<li>The input bam file should follow the format described on the Samtools website (<a class="reference external" href="http://samtools.github.io/hts-specs/SAMv1.pdf">http://samtools.github.io/hts-specs/SAMv1.pdf</a>) and should contain the mapped reads. The .bai index file should also be present in the same directory.</li>
+<li>The bed file should follow the format described on the UCSC Genome Bioinformatics website (<a class="reference external" href="http://genome.ucsc.edu/FAQ/FAQformat">http://genome.ucsc.edu/FAQ/FAQformat</a>) with each record corresponding to a region of interest (e.g. exon).</li>
+</ul>
+<div class="section" id="running-without-bed-file">
+<h2>3.1. Running without bed file<a class="headerlink" href="#running-without-bed-file" title="Permalink to this headline">¶</a></h2>
+<p>The -b command line flag is optional. If a bed file is not specified, only a simplified chromosome level read count summary will be outputted, e.g.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">env</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">coverview</span> <span class="o">-</span><span class="n">c</span> <span class="n">config</span><span class="o">.</span><span class="n">json</span> <span class="o">-</span><span class="n">i</span> <span class="nb">input</span><span class="o">.</span><span class="n">bam</span> <span class="o">-</span><span class="n">o</span> <span class="n">output</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="configuration-file">
+<h1>4. Configuration File<a class="headerlink" href="#configuration-file" title="Permalink to this headline">¶</a></h1>
+<p>The configuration JSON file should contain a single JSON object between curly brackets including
+the following optional keys (see also the value type of each key).</p>
+<div class="sidebar">
+<p class="first sidebar-title">Future Changes to CoverView Configuration</p>
+<p class="last">CoverView currently uses JSON (Javascript Object Notation) for configuration of complex input options. Whilst this is a very
+flexible format, it is not always the easiest for users to write. Therefore we will be switching
+to a new configuration style based on the .ini file format in a future release.</p>
+</div>
+<table border="1" class="docutils" id="id1">
+<caption><span class="caption-text">Configuration Options</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Option</th>
+<th class="head">Type</th>
+<th class="head">Default Value</th>
+<th class="head">Effect</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>count_duplicate_reads</td>
+<td>Boolean</td>
+<td>True</td>
+<td>if true then duplicate reads are included in the analysis. CoverView counts reads as duplicates if they have the duplicate bit set in the BAM record.</td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li>“count_duplicate_reads” (value = Boolean): if true, duplicate reads are included in the analysis. CoverView counts reads as duplicates if they have the duplicate bit set in the BAM record.</li>
+<li>“low_bq” (value = Integer): base quality cut-off used in the FLBQ metrics. Only bases with this value or higher will be counted as high-quality.</li>
+<li>“low_mq” (value = Integer): mapping quality cut-off used in the FLMQ metrics. Only reads with this mapping quality or higher will be counted as high-quality.</li>
+<li><dl class="first docutils">
+<dt>“outputs” (value = JSON object): can contain the following keys:</dt>
+<dd><ul class="first last">
+<li>“regions” (Boolean): if true, the _regions.txt output file is written</li>
+<li>“profiles” (Boolean): if true, the _profiles.txt and _poor.txt output files are written</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li>“direction” (value = Boolean): if true, summary metrics and profiles are also outputted for forward-stranded and reverse-stranded reads separately</li>
+<li><dl class="first docutils">
+<dt>“transcript” (value = JSON object): can contain the following two keys:</dt>
+<dd><ul class="first last">
+<li>“regions” (Boolean): if true, transcript coordinates are reported in the _regions.txt output file</li>
+<li>“profiles” (Boolean): if true, transcript coordinates are reported in the _profiles.txt output file</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li>“transcript_db” (value = String): Path to transcript database file. The transcript database file can be generated with the CAVA ensembl_prep tool. Both the .gz and .tbi files have to be present under the same path.</li>
+<li><dl class="first docutils">
+<dt>“pass” (value = JSON object): requirements a region has to satisfy to be flagged as “passed”. Can contain the following numerical fields:</dt>
+<dd><ul class="first last">
+<li>“MINCOV_MIN”:  minimum value allowed for MINCOV metrics</li>
+<li>“MEDCOV_MIN”:  minimum value allowed for MEDCOV metrics</li>
+<li>“MINQCOV_MIN”: minimum value allowed for MINQCOV metrics</li>
+<li>“MEDQCOV_MIN”: minimum value allowed for MEDQCOV metrics</li>
+<li>“MAXFLMQ_MAX”: maximum value allowed for MAXFLMQ metrics</li>
+<li>“MAXFLBQ_MAX”: maximum value allowed for MAXFLBQ metrics</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>For instance, if “pass”: {“MINQCOV_MIN”: 15, “MAXFLMQ_MAX”: 0.2} is set, regions with MINQCOV&gt;=15 and MAXFLMQ&lt;=0.2 are going to be flagged as passed.</p>
+<ul class="simple">
+<li>“only_fail_profiles” (value = Boolean): if true, the _profiles output file will only include failed regions</li>
+</ul>
+<p>Note that a template configuration file (config.json) is provided in the CoverView package.</p>
+</div>
+<div class="section" id="output">
+<h1>5. Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="chromosome-level-summary">
+<h2>5.1. Chromosome level summary<a class="headerlink" href="#chromosome-level-summary" title="Permalink to this headline">¶</a></h2>
+<p>The &lt;outputprefix&gt;_summary.txt output file provides chromosome level summary (read counts) and contains the following 4 columns:</p>
+<ul class="simple">
+<li>Chromosome name</li>
+<li>Total read count (RC): total number of reads mapped to the chromosome</li>
+<li>Read count in targeted regions (RCIN): total number of reads mapping to the chromosome that overlap targeted regions from the bed file</li>
+<li>Read count outside of targeted regions (RCOUT): total number of reads mapping to the chromosome that do not overlap targeted regions from the bed file</li>
+</ul>
+<p>In addition to the list of chromosomes, the outputted table also reports the mapped, unmapped and total read counts for the whole dataset.</p>
+</div>
+<div class="section" id="per-base-profiles">
+<h2>5.2. Per base profiles<a class="headerlink" href="#per-base-profiles" title="Permalink to this headline">¶</a></h2>
+<p>The &lt;outputprefix&gt;_profiles.txt output file provides per base profiles for the targeted regions of interest. Each position is described in a
+separate line with the following 8 compulsory columns:</p>
+<ul class="simple">
+<li>Chromosome</li>
+<li>Position</li>
+<li>Coverage (COV): number of reads covering the position</li>
+<li>Quality coverage (QCOV): number of reads covering the position with a read mapping quality larger than the threshold set by the “low_mq” configuration flag and a base quality larger than the threshold set by the “low_bq” configuration flag</li>
+<li>Median base quality (MEDBQ): median base quality of all read bases mapping to the position</li>
+<li>Fraction of low base quality (FLBQ): fraction of read bases mapping to the position with a base quality smaller or equal than the cutoff set by the “low_bq” configuration flag</li>
+<li>Median mapping quality (MEDMQ): median mapping quality of all reads covering the position</li>
+<li>Fraction of low mapping quality (FLMQ): fraction of reads covering the position with a mapping quality smaller or equal than the cutoff set by the “low_mq” configuration flag</li>
+</ul>
+<p>If set in the configuration file (see “transcript” key in Section 4), an additional column named “Transcript_coordinate” is included providing
+the transcript coordinate of the position with regards to the overlapping transcript. In case the position overlaps with multiple transcripts,
+the coordinates in all transcripts are reported separated by commas. Transcripts data are read from the user-specified transcript database (see “transcript_db” key in Section 4).</p>
+<p>Finally, if directionality information is requested in the configuration file (see “direction” key in Section 4), 12 additional columns are added to the _profiles.txt file:</p>
+<ul class="simple">
+<li>Columns COV+, QCOV+, MEDBQ+, FLBQ+, MEDMQ+ and FLMQ+ provide the same metrics as COV, QCOV, MEDBQ, FLBQ, MEDMQ and FLMQ defined above, however, considering only forward-stranded reads.</li>
+<li>Columns COV-, QCOV-, MEDBQ-, FLBQ-, MEDMQ- and FLMQ- provide the same information, considering only reverse-stranded reads.</li>
+</ul>
+</div>
+<div class="section" id="summary-metrics-for-targeted-regions">
+<h2>5.3. Summary metrics for targeted regions<a class="headerlink" href="#summary-metrics-for-targeted-regions" title="Permalink to this headline">¶</a></h2>
+<p>The &lt;outputprefix&gt;_regions.txt output file provides a number of different metrics summarizing the per base profiles of each region.
+These summary metrics give information on the overall quality of each region. In addition, regions are marked as ‘PASS’ or ‘FAIL’ based
+on the requirements set in the configuration file (see “pass” key in Section 4). Each line in the file corresponds to a region described
+by the following 12 columns:</p>
+<ul class="simple">
+<li>Region name</li>
+<li>Chromosome</li>
+<li>Start position of region</li>
+<li>End position of region</li>
+<li>‘PASS’ or ‘FAIL’: Does the region pass the user-specified requirements?</li>
+<li>Read count (RC): Total number of reads overlapping with the region</li>
+<li>Median coverage (MEDCOV): Median of coverage (COV) values across all positions in the region</li>
+<li>Minimum coverage (MINCOV): Minimum of coverage (COV) values across all positions in the region</li>
+<li>Median quality coverage (MEDQCOV): Median of quality coverage (QCOV) values across all positions in the region</li>
+<li>Minimum quality coverage (MINQCOV): Minimum of quality coverage (QCOV) values across all positions in the region</li>
+<li>Maximum fraction of low mapping quality (MAXFLMQ): Maximum of FLMQ values across all positions in the region</li>
+<li>Maximum fraction of low base quality (MAXFLBQ): Maximum of FLBQ values across all positions in the region</li>
+</ul>
+<p>Note that the MEDCOV, MINCOV, MEDQCOV, MINQCOV, MAXFLMQ and MAXFLBQ values are derived from the per-base COV, QCOV, FLMQ and FLBQ
+profiles defined in Section 5.2. The region name in the first column is taken from the 4th column of the BED file. If there are
+multiple regions in the BED file with the same name in their 4th column (e.g. the regions correspond to different exons of the
+same gene), CoverView adds an index to the region names joined by an underscore. For example, multiple regions of the BRCA2 gene
+would be referred to as BRCA2_1, BRCA2_2, BRCA2_3, etc.</p>
+<p>If set in the configuration file (see “transcript” key in Section 4), two additional columns named “Start_transcript” and
+“End_transcript” are included providing the transcript coordinates of the start and end positions of the region with regards to
+overlapping transcripts.</p>
+<p>Finally, if directionality information is requested in the configuration file (see “direction” key in Section 4), 12 additional columns are added to the _region.txt file:</p>
+<ul class="simple">
+<li>Columns MEDCOV+, MINCOV+, MEDQCOV+, MINQCOV+, MAXFLMQ+ and MAXFLBQ+ provide the same metrics as MEDCOV, MINCOV, MEDQCOV, MINQCOV, MAXFLMQ and MAXFLBQ defined above, however, considering only forward-stranded reads.</li>
+<li>Columns MEDCOV-, MINCOV-, MEDQCOV-, MINQCOV-, MAXFLMQ- and MAXFLBQ- provide the same information, considering only reverse-stranded reads.</li>
+</ul>
+</div>
+<div class="section" id="poor-quality-ranges">
+<h2>5.4. Poor quality ranges<a class="headerlink" href="#poor-quality-ranges" title="Permalink to this headline">¶</a></h2>
+<p>If the _profiles.txt file is outputted (see “output” key in Section 4), an additional file named &lt;outputprefix&gt;_poor.txt is also created.
+The _poor.txt file provides a comprehensive list of all continuous ranges within the regions of interest with QCOV&lt;15 for all bases (referred
+to as ‘poor quality’ ranges). Note that multiple such ranges may exist in a single region. Each line in the file corresponds to a ‘poor quality’
+range with the following 6 columns:</p>
+<ul class="simple">
+<li>Region name</li>
+<li>Chromosome</li>
+<li>Start position of region</li>
+<li>End position of region</li>
+<li>Start coordinate of region in transcript</li>
+<li>End coordinate of region in transcript</li>
+</ul>
+<p>In case the start or end position overlaps with multiple transcripts, the coordinates in all transcripts are reported separated by commas.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">1. Introduction</a></li>
+<li><a class="reference internal" href="#installation">2. Installation</a><ul>
+<li><a class="reference internal" href="#dependencies">2.1. Dependencies</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#running-coverview">3. Running CoverView</a><ul>
+<li><a class="reference internal" href="#running-without-bed-file">3.1. Running without bed file</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuration-file">4. Configuration File</a></li>
+<li><a class="reference internal" href="#output">5. Output</a><ul>
+<li><a class="reference internal" href="#chromosome-level-summary">5.1. Chromosome level summary</a></li>
+<li><a class="reference internal" href="#per-base-profiles">5.2. Per base profiles</a></li>
+<li><a class="reference internal" href="#summary-metrics-for-targeted-regions">5.3. Summary metrics for targeted regions</a></li>
+<li><a class="reference internal" href="#poor-quality-ranges">5.4. Poor quality ranges</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to CoverView 1.3.0 documentation!</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/documentation.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to CoverView 1.3.0 documentation!"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">CoverView 1.3.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Marton Munz and Andy Rimmer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+    </div>
+  </body>
+</html>

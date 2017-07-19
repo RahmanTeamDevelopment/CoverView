@@ -18,8 +18,13 @@ cleanAll: clean cleanDocs
 cleanDocs:
 	cd docs/sphinx; make clean
 
-docs:
-	cd docs/sphinx; make html; make latexpdf
+.PHONY:
+pdfdocs: docs/sphinx/*.rst
+	cd docs/sphinx; make latexpdf
+
+.PHONY:
+docs: docs/sphinx/*.rst
+	cd docs/sphinx; make html;
 	cp -rf docs/sphinx/_build/html/* docs/
 
 wheels:
