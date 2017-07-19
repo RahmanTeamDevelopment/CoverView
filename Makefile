@@ -10,9 +10,14 @@ flake8:
 clean:
 	pip uninstall -y CoverView
 	find . -name __pycache__ | xargs rm -rf
+	cd doc/sphinx; make clean
 
 cleanAll: clean
 	rm -rf env
+
+docs:
+	cd doc/sphinx; make html; make latexpdf
+	cp -rf doc/sphinx/_build/html/* doc/
 
 wheels:
 	pip wheel .
