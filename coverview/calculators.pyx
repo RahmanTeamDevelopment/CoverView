@@ -595,7 +595,7 @@ class PerBaseCoverageSummary(object):
                         start_position + i
                     )
 
-                    output_line = "{}\t{}\t{}\t{}\t{}\t{:.3f}\t{}\t{:.3f}\n".format(
+                    output_line = "{}\t{}\t{}\t{}\t{}\t{}\t{:.3f}\t{}\t{:.3f}\n".format(
                         chromosome,
                         start_position + i,
                         transcripts_overlapping,
@@ -629,7 +629,7 @@ class PerBaseCoverageSummary(object):
                     )
 
                     output_line = \
-                        "{}\t{}\t{}\t{}\t{}\t{:.3f}\t{}\t{:.3f}\t{}\t{}\t{}\t{:.3f}\t{}\t{:.3f}" \
+                        "{}\t{}\t{}\t{}\t{}\t{}\t{:.3f}\t{}\t{:.3f}\t{}\t{}\t{}\t{:.3f}\t{}\t{:.3f}" \
                         "\t{}\t{}\t{}\t{:.3f}\t{}\t{:.3f}\n".format(
                             chromosome,
                             start_position + i,
