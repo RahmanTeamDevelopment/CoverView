@@ -185,40 +185,91 @@ this will result in a run-time error. An example configuration is shown below, w
 <tr class="row-odd"><td>direction</td>
 <td>Boolean</td>
 <td>false</td>
-<td>If this is true then summary metrics and profiles are output for forward and reverse-stranded reads separately</td>
+<td>If this is true then summary metrics and profiles are output for forward and reverse-stranded reads separately.</td>
 </tr>
 <tr class="row-even"><td>transcript {“regions”}</td>
 <td>Boolean</td>
 <td>true</td>
-<td>If this is true then transcript coordinates are reported in the _regions.txt file (N.B. this options requires that a transcript database be provided)</td>
+<td>If this is true then transcript coordinates are reported in the _regions.txt file (N.B. this options requires that a transcript database be provided).</td>
 </tr>
 <tr class="row-odd"><td>transcript {“profiles”}</td>
 <td>Boolean</td>
 <td>true</td>
-<td>If this is true then transcript coordinates are reported in the _profiles.txt file (N.B. this options requires that a transcript database be provided)</td>
+<td>If this is true then transcript coordinates are reported in the _profiles.txt file (N.B. this options requires that a transcript database be provided).</td>
+</tr>
+<tr class="row-even"><td>only_fail_profiles</td>
+<td>Boolean</td>
+<td>false</td>
+<td>If this is true then the _profiles.txt output file will only contain regions that failed the PASS criteria.</td>
+</tr>
+<tr class="row-odd"><td>pass</td>
+<td>JSON Object</td>
+<td>None</td>
+<td>See below for explanation.</td>
 </tr>
 </tbody>
 </table>
-<ul class="simple">
-<li><dl class="first docutils">
-<dt>“pass” (value = JSON object): requirements a region has to satisfy to be flagged as “passed”. Can contain the following numerical fields:</dt>
-<dd><ul class="first last">
-<li>“MINCOV_MIN”:  minimum value allowed for MINCOV metrics</li>
-<li>“MEDCOV_MIN”:  minimum value allowed for MEDCOV metrics</li>
-<li>“MINQCOV_MIN”: minimum value allowed for MINQCOV metrics</li>
-<li>“MEDQCOV_MIN”: minimum value allowed for MEDQCOV metrics</li>
-<li>“MAXFLMQ_MAX”: maximum value allowed for MAXFLMQ metrics</li>
-<li>“MAXFLBQ_MAX”: maximum value allowed for MAXFLBQ metrics</li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
-<p>For instance, if “pass”: {“MINQCOV_MIN”: 15, “MAXFLMQ_MAX”: 0.2} is set, regions with MINQCOV&gt;=15 and MAXFLMQ&lt;=0.2 are going to be flagged as passed.</p>
-<ul class="simple">
-<li>“only_fail_profiles” (value = Boolean): if true, the _profiles output file will only include failed regions</li>
-</ul>
-<p>Note that a template configuration file (config.json) is provided in the CoverView package.</p>
+<p>The <em>pass</em> argument specifies a set of one or more requirements that a region must satisfy in order to be labelled as <em>PASS</em> in the output. Each requirement is given as
+as key-value pair, with commas between each requirement. The values are string with a specific format which is <em>METRIC_MIN</em> (to set a minimum requirement)
+or <em>METRIC_MAX</em> (to set a maximum requirement). An example config file that just contains the <em>pass</em> config is shown below.</p>
+<div class="highlight-json"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;pass&quot;</span><span class="p">:</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;MINQCOV_MIN&quot;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+        <span class="nt">&quot;MAXFLMQ_MAX&quot;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
+        <span class="nt">&quot;MAXFLBQ_MAX&quot;</span><span class="p">:</span> <span class="mf">0.15</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>this specifies that, for a region to <em>PASS</em> it must have minimum MINQCOV of 50, maximum MAXFLMQ of 0.05 and maximum MAXFLBQ of 0.15. The set of metrics that it is possible to
+filter on are listed in the table below.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Metric</th>
+<th class="head">Meaning</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>MINCOV</td>
+<td>Minumum coverage in a region</td>
+</tr>
+<tr class="row-odd"><td>MEDCOV</td>
+<td>Median coverage in a region</td>
+</tr>
+<tr class="row-even"><td>MINQCOV</td>
+<td>Minumum high-quality coverage in a region</td>
+</tr>
+<tr class="row-odd"><td>MEDQCOV</td>
+<td>Median high-quality coverage in a region</td>
+</tr>
+<tr class="row-even"><td>MINQCOV</td>
+<td>Minumum high-quality coverage in a region</td>
+</tr>
+<tr class="row-odd"><td>MAXFLMQ</td>
+<td>Maximum fraction of low mapping quality reads in a region</td>
+</tr>
+<tr class="row-even"><td>MAXFLBQ</td>
+<td>Maximum fraction of low base qualities in a region</td>
+</tr>
+</tbody>
+</table>
+<p>So, as a final example, if you want to fail all regions that have a minimum coverage of &lt;= 30 or that have a maximum fraction of low base qualities &gt;= 20% then you could use
+the following config file.</p>
+<div class="highlight-json"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;pass&quot;</span><span class="p">:</span>
+    <span class="p">{</span>
+        <span class="nt">&quot;MINCOV_MIN&quot;</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span>
+        <span class="nt">&quot;MAXFLBQ_MAX&quot;</span><span class="p">:</span> <span class="mf">0.20</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Finally, note that a template configuration file (<code class="docutils literal"><span class="pre">config/example_config.json</span></code>) is provided in the CoverView package.</p>
 </div>
 <div class="section" id="output">
 <h1>5. Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h1>

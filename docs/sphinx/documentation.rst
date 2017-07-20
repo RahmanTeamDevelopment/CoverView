@@ -125,24 +125,61 @@ The following options may be specified in the configuration file
     low_mq”,Integer, 20, The mapping quality cut-off used in the FLMQ metrics. Only reads with this mapping quality or higher will be counted as high-quality.
 	outputs {"regions"}, Boolean, true,  If this is true then the _regions.txt output file will be written.
 	outputs {"profiles"}, Boolean, true,  If this is true then the _profiles.txt and _poor.txt output files will be written.
-	direction, Boolean, false, If this is true then summary metrics and profiles are output for forward and reverse-stranded reads separately
-	transcript {"regions"}, Boolean, true, If this is true then transcript coordinates are reported in the _regions.txt file (N.B. this options requires that a transcript database be provided)
-	transcript {"profiles"}, Boolean, true, If this is true then transcript coordinates are reported in the _profiles.txt file (N.B. this options requires that a transcript database be provided)
+	direction, Boolean, false, If this is true then summary metrics and profiles are output for forward and reverse-stranded reads separately.
+	transcript {"regions"}, Boolean, true, If this is true then transcript coordinates are reported in the _regions.txt file (N.B. this options requires that a transcript database be provided).
+	transcript {"profiles"}, Boolean, true, If this is true then transcript coordinates are reported in the _profiles.txt file (N.B. this options requires that a transcript database be provided).
+	only_fail_profiles, Boolean, false, If this is true then the _profiles.txt output file will only contain regions that failed the PASS criteria.
+	pass, JSON Object, None, See below for explanation.
 
+
+The *pass* argument specifies a set of one or more requirements that a region must satisfy in order to be labelled as *PASS* in the output. Each requirement is given as
+as key-value pair, with commas between each requirement. The values are string with a specific format which is *METRIC_MIN* (to set a minimum requirement)
+or *METRIC_MAX* (to set a maximum requirement). An example config file that just contains the *pass* config is shown below.
  
-* “pass” (value = JSON object): requirements a region has to satisfy to be flagged as “passed”. Can contain the following numerical fields:
-    *   “MINCOV_MIN":  minimum value allowed for MINCOV metrics
-    *   “MEDCOV_MIN":  minimum value allowed for MEDCOV metrics
-    *   “MINQCOV_MIN": minimum value allowed for MINQCOV metrics
-    *   “MEDQCOV_MIN": minimum value allowed for MEDQCOV metrics
-    *   “MAXFLMQ_MAX”: maximum value allowed for MAXFLMQ metrics
-    *   “MAXFLBQ_MAX”: maximum value allowed for MAXFLBQ metrics
+.. highlight:: json
 
-For instance, if “pass”: {“MINQCOV_MIN”: 15, “MAXFLMQ_MAX”: 0.2} is set, regions with MINQCOV>=15 and MAXFLMQ<=0.2 are going to be flagged as passed.
+::
 
-* “only_fail_profiles” (value = Boolean): if true, the _profiles output file will only include failed regions
+    {
+        "pass": 
+        { 
+            "MINQCOV_MIN": 50, 
+            "MAXFLMQ_MAX": 0.05, 
+            "MAXFLBQ_MAX": 0.15 
+        }
+    }
 
-Note that a template configuration file (config.json) is provided in the CoverView package.
+this specifies that, for a region to *PASS* it must have minimum MINQCOV of 50, maximum MAXFLMQ of 0.05 and maximum MAXFLBQ of 0.15. The set of metrics that it is possible to
+filter on are listed in the table below.
+
+.. csv-table::
+    :header: "Metric", "Meaning"
+
+	MINCOV, Minumum coverage in a region
+	MEDCOV, Median coverage in a region
+	MINQCOV, Minumum high-quality coverage in a region
+	MEDQCOV, Median high-quality coverage in a region
+	MINQCOV, Minumum high-quality coverage in a region
+	MAXFLMQ, Maximum fraction of low mapping quality reads in a region
+	MAXFLBQ, Maximum fraction of low base qualities in a region
+
+
+So, as a final example, if you want to fail all regions that have a minimum coverage of <= 30 or that have a maximum fraction of low base qualities >= 20% then you could use
+the following config file.
+
+.. highlight:: json
+
+::
+
+    {
+        "pass": 
+        { 
+            "MINCOV_MIN": 30,
+            "MAXFLBQ_MAX": 0.20
+        }
+    }
+
+Finally, note that a template configuration file (``config/example_config.json``) is provided in the CoverView package.
 
 
 ******
