@@ -37,6 +37,7 @@ _summary_value_type_map = {
 _profile_value_type_map = {
     "#Chromosome": lambda x: x,
     "Position": int,
+    "Transcript_coordinate": str,
     "COV": int,
     "QCOV": int,
     "MEDBQ": float_or_nan,
@@ -94,7 +95,7 @@ def load_coverview_summary_output(file_name):
         return data
 
 
-def load_coveriew_regions_output(file_name):
+def load_coverview_regions_output(file_name):
     with open(file_name, 'r') as regions_file:
         data = {}
         regions_file_reader = csv.DictReader(regions_file, delimiter='\t')

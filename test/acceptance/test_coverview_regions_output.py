@@ -12,7 +12,7 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             status_code = runner.run_coverview_and_get_exit_code()
             assert status_code == 0
 
-            regions_output = testutils.output_checkers.load_coveriew_regions_output(
+            regions_output = testutils.output_checkers.load_coverview_regions_output(
                 "output_regions.txt"
             )
 
@@ -38,7 +38,7 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             status_code = runner.run_coverview_and_get_exit_code()
             assert status_code == 0
 
-            regions_output = testutils.output_checkers.load_coveriew_regions_output(
+            regions_output = testutils.output_checkers.load_coverview_regions_output(
                 "output_regions.txt"
             )
 
@@ -61,7 +61,7 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             status_code = runner.run_coverview_and_get_exit_code()
             assert status_code == 0
 
-            regions_output = testutils.output_checkers.load_coveriew_regions_output(
+            regions_output = testutils.output_checkers.load_coverview_regions_output(
                 "output_regions.txt"
             )
 
@@ -84,7 +84,7 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             status_code = runner.run_coverview_and_get_exit_code()
             assert status_code == 0
 
-            regions_output = testutils.output_checkers.load_coveriew_regions_output(
+            regions_output = testutils.output_checkers.load_coverview_regions_output(
                 "output_regions.txt"
             )
 
@@ -109,7 +109,7 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             status_code = runner.run_coverview_and_get_exit_code()
             assert status_code == 0
 
-            regions_output = testutils.output_checkers.load_coveriew_regions_output(
+            regions_output = testutils.output_checkers.load_coverview_regions_output(
                 "output_regions.txt"
             )
 
@@ -147,7 +147,7 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             status_code = runner.run_coverview_and_get_exit_code()
             assert status_code == 0
 
-            regions_output = testutils.output_checkers.load_coveriew_regions_output(
+            regions_output = testutils.output_checkers.load_coverview_regions_output(
                 "output_regions.txt"
             )
 
@@ -185,7 +185,7 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             status_code = runner.run_coverview_and_get_exit_code()
             assert status_code == 0
 
-            regions_output = testutils.output_checkers.load_coveriew_regions_output(
+            regions_output = testutils.output_checkers.load_coverview_regions_output(
                 "output_regions.txt"
             )
 
@@ -207,7 +207,7 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             status_code = runner.run_coverview_and_get_exit_code()
             assert status_code == 0
 
-            regions_output = testutils.output_checkers.load_coveriew_regions_output(
+            regions_output = testutils.output_checkers.load_coverview_regions_output(
                 "output_regions.txt"
             )
 

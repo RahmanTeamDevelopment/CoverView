@@ -20,7 +20,7 @@ class TestCoverViewProfileOutput(unittest.TestCase):
             assert "Region_1" in profile_output
             assert "1:40" not in profile_output['Region_1']
 
-            for position in [36, 37, 38, 39]:
+            for position in [35, 36, 37, 38, 39]:
                 chrom_pos = "1:{}".format(position)
                 assert profile_output['Region_1'][chrom_pos]['#Chromosome'] == "1"
                 assert profile_output['Region_1'][chrom_pos]['Position'] == position
@@ -46,7 +46,7 @@ class TestCoverViewProfileOutput(unittest.TestCase):
             assert "Region_1" in profile_output
             assert "1:40" not in profile_output['Region_1']
 
-            for position in [36, 37, 38, 39]:
+            for position in [35, 36, 37, 38, 39]:
                 chrom_pos = "1:{}".format(position)
                 assert profile_output['Region_1'][chrom_pos]['#Chromosome'] == "1"
                 assert profile_output['Region_1'][chrom_pos]['Position'] == position
@@ -72,7 +72,7 @@ class TestCoverViewProfileOutput(unittest.TestCase):
             assert "Region_1" in profile_output
             assert "1:40" not in profile_output['Region_1']
 
-            for position in [36, 37, 38, 39]:
+            for position in [35, 36, 37, 38, 39]:
                 chrom_pos = "1:{}".format(position)
                 assert profile_output['Region_1'][chrom_pos]['#Chromosome'] == "1"
                 assert profile_output['Region_1'][chrom_pos]['Position'] == position
