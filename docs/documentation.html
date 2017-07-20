@@ -92,20 +92,20 @@ name of the input bam file (-i), the name of a bed file (-b) and the output file
 <ul class="simple">
 <li>The input bam file (-i) should follow the <a class="reference external" href="http://samtools.github.io/hts-specs/SAMv1.pdf">BAM format</a> and should contain the mapped reads. The .bai index file should also be present in the same directory.</li>
 <li>The bed file (-b) should follow the <a class="reference external" href="http://genome.ucsc.edu/FAQ/FAQformat">BED format</a> with each record corresponding to a region of interest (e.g. exon).</li>
-<li>The configuration file (-c) should follow the <a class="reference external" href="http://www.json.org">JSON</a> format  and should contain the user-specified settings (see possible configuration options in Section 4).</li>
+<li>The configuration file (-c) should follow the <a class="reference external" href="http://www.json.org">JSON</a> format  and should contain the user-specified settings (see possible configuration options in <a class="reference internal" href="#config-section"><span class="std std-ref">Configuration File</span></a>).</li>
 <li>The transcript database (-t) is optional, but if supplied must be compressed with <a class="reference external" href="http://www.htslib.org/doc/tabix.html">bgzip</a> and indexed with <a class="reference external" href="http://www.htslib.org/doc/tabix.html">tabix</a></li>
 </ul>
 <div class="section" id="running-without-bed-file">
 <h2>3.1. Running without bed file<a class="headerlink" href="#running-without-bed-file" title="Permalink to this headline">¶</a></h2>
-<p>The -b command line flag is optional. If a bed file is not specified, only a simplified chromosome level read count summary will be outputted, e.g.:</p>
+<p>The -b command line flag is optional. If a bed file is not specified, only a simplified chromosome level read count summary will be outputted:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">env</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">coverview</span> <span class="o">-</span><span class="n">c</span> <span class="n">config</span><span class="o">.</span><span class="n">json</span> <span class="o">-</span><span class="n">i</span> <span class="nb">input</span><span class="o">.</span><span class="n">bam</span> <span class="o">-</span><span class="n">o</span> <span class="n">output</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="configuration-file">
-<h1>4. Configuration File<a class="headerlink" href="#configuration-file" title="Permalink to this headline">¶</a></h1>
-<p>The configuration file uses the JSON format. An example configuration is shown below.</p>
+<span id="config-section"></span><h1>4. Configuration File<a class="headerlink" href="#configuration-file" title="Permalink to this headline">¶</a></h1>
+<p>The configuration file uses the <a class="reference external" href="http://www.json.org">JSON</a> format. An example configuration is shown below.</p>
 <div class="highlight-json"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="nt">&quot;count_duplicate_reads&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
     <span class="nt">&quot;outputs&quot;</span><span class="p">:</span>
@@ -229,7 +229,7 @@ to a new configuration style based on the .ini file format in a future release.<
 <p>In addition to the list of chromosomes, the outputted table also reports the mapped, unmapped and total read counts for the whole dataset.</p>
 </div>
 <div class="section" id="per-base-profiles">
-<h2>5.2. Per base profiles<a class="headerlink" href="#per-base-profiles" title="Permalink to this headline">¶</a></h2>
+<span id="profiles-subsection"></span><h2>5.2. Per base profiles<a class="headerlink" href="#per-base-profiles" title="Permalink to this headline">¶</a></h2>
 <p>The &lt;outputprefix&gt;_profiles.txt output file provides per base profiles for the targeted regions of interest. Each position is described in a
 separate line with the following 8 compulsory columns:</p>
 <ul class="simple">
@@ -242,10 +242,10 @@ separate line with the following 8 compulsory columns:</p>
 <li>Median mapping quality (MEDMQ): median mapping quality of all reads covering the position</li>
 <li>Fraction of low mapping quality (FLMQ): fraction of reads covering the position with a mapping quality smaller or equal than the cutoff set by the “low_mq” configuration flag</li>
 </ul>
-<p>If set in the configuration file (see “transcript” key in Section 4), an additional column named “Transcript_coordinate” is included providing
+<p>If set in the configuration file (see “transcript” key in <a class="reference internal" href="#config-section"><span class="std std-ref">Configuration File</span></a>), an additional column named “Transcript_coordinate” is included providing
 the transcript coordinate of the position with regards to the overlapping transcript. In case the position overlaps with multiple transcripts,
-the coordinates in all transcripts are reported separated by commas. Transcripts data are read from the user-specified transcript database (see “transcript_db” key in Section 4).</p>
-<p>Finally, if directionality information is requested in the configuration file (see “direction” key in Section 4), 12 additional columns are added to the _profiles.txt file:</p>
+the coordinates in all transcripts are reported separated by commas. Transcripts data are read from the user-specified transcript database (see “transcript_db” key in <a class="reference internal" href="#config-section"><span class="std std-ref">Configuration File</span></a>).</p>
+<p>Finally, if directionality information is requested in the configuration file (see “direction” key in <a class="reference internal" href="#config-section"><span class="std std-ref">Configuration File</span></a>), 12 additional columns are added to the _profiles.txt file:</p>
 <ul class="simple">
 <li>Columns COV+, QCOV+, MEDBQ+, FLBQ+, MEDMQ+ and FLMQ+ provide the same metrics as COV, QCOV, MEDBQ, FLBQ, MEDMQ and FLMQ defined above, however, considering only forward-stranded reads.</li>
 <li>Columns COV-, QCOV-, MEDBQ-, FLBQ-, MEDMQ- and FLMQ- provide the same information, considering only reverse-stranded reads.</li>
@@ -255,7 +255,7 @@ the coordinates in all transcripts are reported separated by commas. Transcripts
 <h2>5.3. Summary metrics for targeted regions<a class="headerlink" href="#summary-metrics-for-targeted-regions" title="Permalink to this headline">¶</a></h2>
 <p>The &lt;outputprefix&gt;_regions.txt output file provides a number of different metrics summarizing the per base profiles of each region.
 These summary metrics give information on the overall quality of each region. In addition, regions are marked as ‘PASS’ or ‘FAIL’ based
-on the requirements set in the configuration file (see “pass” key in Section 4). Each line in the file corresponds to a region described
+on the requirements set in the configuration file (see “pass” key in <a class="reference internal" href="#config-section"><span class="std std-ref">Configuration File</span></a>). Each line in the file corresponds to a region described
 by the following 12 columns:</p>
 <ul class="simple">
 <li>Region name</li>
@@ -272,14 +272,14 @@ by the following 12 columns:</p>
 <li>Maximum fraction of low base quality (MAXFLBQ): Maximum of FLBQ values across all positions in the region</li>
 </ul>
 <p>Note that the MEDCOV, MINCOV, MEDQCOV, MINQCOV, MAXFLMQ and MAXFLBQ values are derived from the per-base COV, QCOV, FLMQ and FLBQ
-profiles defined in Section 5.2. The region name in the first column is taken from the 4th column of the BED file. If there are
+profiles defined in <a class="reference internal" href="#profiles-subsection"><span class="std std-ref">Per base profiles</span></a>. The region name in the first column is taken from the 4th column of the BED file. If there are
 multiple regions in the BED file with the same name in their 4th column (e.g. the regions correspond to different exons of the
 same gene), CoverView adds an index to the region names joined by an underscore. For example, multiple regions of the BRCA2 gene
 would be referred to as BRCA2_1, BRCA2_2, BRCA2_3, etc.</p>
-<p>If set in the configuration file (see “transcript” key in Section 4), two additional columns named “Start_transcript” and
+<p>If set in the configuration file (see “transcript” key in <a class="reference internal" href="#config-section"><span class="std std-ref">Configuration File</span></a>), two additional columns named “Start_transcript” and
 “End_transcript” are included providing the transcript coordinates of the start and end positions of the region with regards to
 overlapping transcripts.</p>
-<p>Finally, if directionality information is requested in the configuration file (see “direction” key in Section 4), 12 additional columns are added to the _region.txt file:</p>
+<p>Finally, if directionality information is requested in the configuration file (see “direction” key in <a class="reference internal" href="#config-section"><span class="std std-ref">Configuration File</span></a>), 12 additional columns are added to the _region.txt file:</p>
 <ul class="simple">
 <li>Columns MEDCOV+, MINCOV+, MEDQCOV+, MINQCOV+, MAXFLMQ+ and MAXFLBQ+ provide the same metrics as MEDCOV, MINCOV, MEDQCOV, MINQCOV, MAXFLMQ and MAXFLBQ defined above, however, considering only forward-stranded reads.</li>
 <li>Columns MEDCOV-, MINCOV-, MEDQCOV-, MINQCOV-, MAXFLMQ- and MAXFLBQ- provide the same information, considering only reverse-stranded reads.</li>
@@ -287,7 +287,7 @@ overlapping transcripts.</p>
 </div>
 <div class="section" id="poor-quality-ranges">
 <h2>5.4. Poor quality ranges<a class="headerlink" href="#poor-quality-ranges" title="Permalink to this headline">¶</a></h2>
-<p>If the _profiles.txt file is outputted (see “output” key in Section 4), an additional file named &lt;outputprefix&gt;_poor.txt is also created.
+<p>..If the _profiles.txt file is outputted (see “output” key in <a class="reference internal" href="#config-section"><span class="std std-ref">Configuration File</span></a>), an additional file named &lt;outputprefix&gt;_poor.txt is also created.
 The _poor.txt file provides a comprehensive list of all continuous ranges within the regions of interest with QCOV&lt;15 for all bases (referred
 to as ‘poor quality’ ranges). Note that multiple such ranges may exist in a single region. Each line in the file corresponds to a ‘poor quality’
 range with the following 6 columns:</p>
