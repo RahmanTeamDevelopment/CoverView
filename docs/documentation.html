@@ -53,16 +53,28 @@ that do not pass pre-defined quality requirements.</p>
 </div>
 <div class="section" id="installation">
 <h1>2. Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<p>CoverView can be downloaded from Github and installed with the following commands:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">RahmanTeamDevelopment</span><span class="o">/</span><span class="n">CoverView</span>
-<span class="n">cd</span> <span class="n">CoverView</span>
+<p>Stable releases of CoverView can be downloaded from Github <a class="reference external" href="https://github.com/RahmanTeamDevelopment/CoverView/releases">here</a>
+in either <code class="docutils literal"><span class="pre">.zip</span></code> or <code class="docutils literal"><span class="pre">.tar.gz</span></code> format. To unpack these run one of the following commands:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">unzip</span> <span class="n">CoverView_X</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">zip</span>
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">tar</span> <span class="o">-</span><span class="n">xvzf</span> <span class="n">CoverView_X</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+</pre></div>
+</div>
+<p>and then you can install CoverView with the following commands:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">CoverView</span>
 <span class="o">./</span><span class="n">install</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
-<p>Once the installation script has finished successfully, CoverView is ready for use.</p>
+<p>CoverView uses <code class="docutils literal"><span class="pre">virtualenv</span></code> and <code class="docutils literal"><span class="pre">pip</span></code> to manage all its extra dependencies, which means that it will not clutter up your system by installing
+things globally. Everthing it installs will go into a sub-directory in the <code class="docutils literal"><span class="pre">CoverView</span></code> directory (specifically, <code class="docutils literal"><span class="pre">CoverView_X.X.X/env</span></code>). If
+you delete CoverView then everything it has installed will also be deleted. Once the installation script has finished successfully,
+CoverView is ready for use.</p>
 <div class="section" id="dependencies">
 <h2>2.1. Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
-<p>To install and run CoverView v1.3.0 you will need <code class="docutils literal"><span class="pre">Git</span></code>, <code class="docutils literal"><span class="pre">Python</span> <span class="pre">2.7.x</span></code> (<code class="docutils literal"><span class="pre">Python</span> <span class="pre">3</span></code> is not supported), and <code class="docutils literal"><span class="pre">Virtualenv</span></code>.</p>
+<p>To install and run CoverView v1.3.0 you will need <a class="reference external" href="https://git-scm.com">Git</a>, <a class="reference external" href="https://www.python.org">Python</a> (only
+version 2.7.X is currently supported), and <a class="reference external" href="https://virtualenv.pypa.io/en/stable/">Virtualenv</a>.</p>
 </div>
 </div>
 <div class="section" id="running-coverview">
@@ -71,11 +83,17 @@ that do not pass pre-defined quality requirements.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>env/bin/coverview -c config.json -i input.bam –b panel.bed -o output
 </pre></div>
 </div>
-<p>By default, CoverView requires four command line arguments: the name of the configuration file (-c), the name of the input bam file (-i), the name of a bed file and the output file name prefix (-o).</p>
+<p>or you can optionally supply a transcript database:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>env/bin/coverview -c config.json -i input.bam –b panel.bed -o output -t transcript_database.gz
+</pre></div>
+</div>
+<p>By default, CoverView takes four command line arguments: the name of the configuration file (-c), the
+name of the input bam file (-i), the name of a bed file (-b) and the output file name prefix (-o).</p>
 <ul class="simple">
-<li>The configuration file should follow the JSON format (<a class="reference external" href="http://www.json.org">http://www.json.org</a>) and should contain the user-specified settings (see possible configuration options in Section 4).</li>
-<li>The input bam file should follow the format described on the Samtools website (<a class="reference external" href="http://samtools.github.io/hts-specs/SAMv1.pdf">http://samtools.github.io/hts-specs/SAMv1.pdf</a>) and should contain the mapped reads. The .bai index file should also be present in the same directory.</li>
-<li>The bed file should follow the format described on the UCSC Genome Bioinformatics website (<a class="reference external" href="http://genome.ucsc.edu/FAQ/FAQformat">http://genome.ucsc.edu/FAQ/FAQformat</a>) with each record corresponding to a region of interest (e.g. exon).</li>
+<li>The input bam file (-i) should follow the <a class="reference external" href="http://samtools.github.io/hts-specs/SAMv1.pdf">BAM format</a> and should contain the mapped reads. The .bai index file should also be present in the same directory.</li>
+<li>The bed file (-b) should follow the <a class="reference external" href="http://genome.ucsc.edu/FAQ/FAQformat">BED format</a> with each record corresponding to a region of interest (e.g. exon).</li>
+<li>The configuration file (-c) should follow the <a class="reference external" href="http://www.json.org">JSON</a> format  and should contain the user-specified settings (see possible configuration options in Section 4).</li>
+<li>The transcript database (-t) is optional, but if supplied must be compressed with <a class="reference external" href="http://www.htslib.org/doc/tabix.html">bgzip</a> and indexed with <a class="reference external" href="http://www.htslib.org/doc/tabix.html">tabix</a></li>
 </ul>
 <div class="section" id="running-without-bed-file">
 <h2>3.1. Running without bed file<a class="headerlink" href="#running-without-bed-file" title="Permalink to this headline">¶</a></h2>
@@ -87,16 +105,39 @@ that do not pass pre-defined quality requirements.</p>
 </div>
 <div class="section" id="configuration-file">
 <h1>4. Configuration File<a class="headerlink" href="#configuration-file" title="Permalink to this headline">¶</a></h1>
-<p>The configuration JSON file should contain a single JSON object between curly brackets including
-the following optional keys (see also the value type of each key).</p>
+<p>The configuration file uses the JSON format. An example configuration is shown below.</p>
+<div class="highlight-json"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;count_duplicate_reads&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="nt">&quot;outputs&quot;</span><span class="p">:</span>
+        <span class="p">{</span>
+                <span class="nt">&quot;regions&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+                <span class="nt">&quot;profiles&quot;</span><span class="p">:</span> <span class="kc">true</span>
+        <span class="p">},</span>
+    <span class="nt">&quot;low_bq&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="nt">&quot;low_mq&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+    <span class="nt">&quot;pass&quot;</span><span class="p">:</span>
+        <span class="p">{</span>
+                <span class="nt">&quot;MINQCOV_MIN&quot;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+                <span class="nt">&quot;MAXFLMQ_MAX&quot;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
+                <span class="nt">&quot;MAXFLBQ_MAX&quot;</span><span class="p">:</span> <span class="mf">0.15</span>
+        <span class="p">},</span>
+    <span class="nt">&quot;transcript&quot;</span><span class="p">:</span>
+        <span class="p">{</span>
+                <span class="nt">&quot;regions&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                <span class="nt">&quot;profiles&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                <span class="nt">&quot;poor&quot;</span><span class="p">:</span> <span class="kc">true</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The following options may be specified in the configuration file</p>
 <div class="sidebar">
 <p class="first sidebar-title">Future Changes to CoverView Configuration</p>
 <p class="last">CoverView currently uses JSON (Javascript Object Notation) for configuration of complex input options. Whilst this is a very
 flexible format, it is not always the easiest for users to write. Therefore we will be switching
 to a new configuration style based on the .ini file format in a future release.</p>
 </div>
-<table border="1" class="docutils" id="id1">
-<caption><span class="caption-text">Configuration Options</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
+<table border="1" class="docutils">
 <colgroup>
 <col width="25%" />
 <col width="25%" />
@@ -113,35 +154,47 @@ to a new configuration style based on the .ini file format in a future release.<
 <tbody valign="top">
 <tr class="row-even"><td>count_duplicate_reads</td>
 <td>Boolean</td>
-<td>True</td>
+<td>true</td>
 <td>if true then duplicate reads are included in the analysis. CoverView counts reads as duplicates if they have the duplicate bit set in the BAM record.</td>
+</tr>
+<tr class="row-odd"><td>low_bq</td>
+<td>Integer</td>
+<td>10</td>
+<td>The base quality cut-off used in the FLBQ metrics. Only bases with this value or higher will be counted as high-quality.</td>
+</tr>
+<tr class="row-even"><td>low_mq”</td>
+<td>Integer</td>
+<td>20</td>
+<td>The mapping quality cut-off used in the FLMQ metrics. Only reads with this mapping quality or higher will be counted as high-quality.</td>
+</tr>
+<tr class="row-odd"><td>outputs {“regions”}</td>
+<td>Boolean</td>
+<td>true</td>
+<td>If this is true then the _regions.txt output file will be written.</td>
+</tr>
+<tr class="row-even"><td>outputs {“profiles”}</td>
+<td>Boolean</td>
+<td>true</td>
+<td>If this is true then the _profiles.txt and _poor.txt output files will be written.</td>
+</tr>
+<tr class="row-odd"><td>direction</td>
+<td>Boolean</td>
+<td>false</td>
+<td>If this is true then summary metrics and profiles are output for forward and reverse-stranded reads separately</td>
+</tr>
+<tr class="row-even"><td>transcript {“regions”}</td>
+<td>Boolean</td>
+<td>true</td>
+<td>If this is true then transcript coordinates are reported in the _regions.txt file (N.B. this options requires that a transcript database be provided)</td>
+</tr>
+<tr class="row-odd"><td>transcript {“profiles”}</td>
+<td>Boolean</td>
+<td>true</td>
+<td>If this is true then transcript coordinates are reported in the _profiles.txt file (N.B. this options requires that a transcript database be provided)</td>
 </tr>
 </tbody>
 </table>
 <ul class="simple">
-<li>“count_duplicate_reads” (value = Boolean): if true, duplicate reads are included in the analysis. CoverView counts reads as duplicates if they have the duplicate bit set in the BAM record.</li>
-<li>“low_bq” (value = Integer): base quality cut-off used in the FLBQ metrics. Only bases with this value or higher will be counted as high-quality.</li>
-<li>“low_mq” (value = Integer): mapping quality cut-off used in the FLMQ metrics. Only reads with this mapping quality or higher will be counted as high-quality.</li>
-<li><dl class="first docutils">
-<dt>“outputs” (value = JSON object): can contain the following keys:</dt>
-<dd><ul class="first last">
-<li>“regions” (Boolean): if true, the _regions.txt output file is written</li>
-<li>“profiles” (Boolean): if true, the _profiles.txt and _poor.txt output files are written</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li>“direction” (value = Boolean): if true, summary metrics and profiles are also outputted for forward-stranded and reverse-stranded reads separately</li>
-<li><dl class="first docutils">
-<dt>“transcript” (value = JSON object): can contain the following two keys:</dt>
-<dd><ul class="first last">
-<li>“regions” (Boolean): if true, transcript coordinates are reported in the _regions.txt output file</li>
-<li>“profiles” (Boolean): if true, transcript coordinates are reported in the _profiles.txt output file</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li>“transcript_db” (value = String): Path to transcript database file. The transcript database file can be generated with the CAVA ensembl_prep tool. Both the .gz and .tbi files have to be present under the same path.</li>
 <li><dl class="first docutils">
 <dt>“pass” (value = JSON object): requirements a region has to satisfy to be flagged as “passed”. Can contain the following numerical fields:</dt>
 <dd><ul class="first last">

@@ -4,7 +4,10 @@
 /bamgen/.cache
 /bamgen/.idea
 *.pyc
+*.swpc
 */*.pyc
+*/*.swp
+*/*/*.swp
 /__pycache__
 /*/__pycache__
 /*/*/__pycache__

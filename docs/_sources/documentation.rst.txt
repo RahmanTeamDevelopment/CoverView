@@ -13,18 +13,31 @@ that do not pass pre-defined quality requirements.
 Installation
 ************
 
-CoverView can be downloaded from Github and installed with the following commands::
+Stable releases of CoverView can be downloaded from Github `here <https://github.com/RahmanTeamDevelopment/CoverView/releases>`_
+in either ``.zip`` or ``.tar.gz`` format. To unpack these run one of the following commands::
 
-    git clone https://github.com/RahmanTeamDevelopment/CoverView
+	unzip CoverView_X.X.X.zip
+
+or::
+
+	tar -xvzf CoverView_X.X.X.tar.gz
+
+and then you can install CoverView with the following commands::
+
     cd CoverView
     ./install.sh
 
-Once the installation script has finished successfully, CoverView is ready for use.
+CoverView uses ``virtualenv`` and ``pip`` to manage all its extra dependencies, which means that it will not clutter up your system by installing
+things globally. Everthing it installs will go into a sub-directory in the ``CoverView`` directory (specifically, ``CoverView_X.X.X/env``). If
+you delete CoverView then everything it has installed will also be deleted. Once the installation script has finished successfully,
+CoverView is ready for use. 
+
 
 Dependencies
 ============
 
-To install and run CoverView v1.3.0 you will need ``Git``, ``Python 2.7.x`` (``Python 3`` is not supported), and ``Virtualenv``. 
+To install and run CoverView v1.3.0 you will need `Git <https://git-scm.com>`_, `Python <https://www.python.org>`_ (only
+version 2.7.X is currently supported), and `Virtualenv <https://virtualenv.pypa.io/en/stable/>`_. 
 
 
 *****************
@@ -35,11 +48,17 @@ Once downloaded and correctly installed, CoverView can be run with the following
 
     env/bin/coverview -c config.json -i input.bam –b panel.bed -o output
 
-By default, CoverView requires four command line arguments: the name of the configuration file (-c), the name of the input bam file (-i), the name of a bed file and the output file name prefix (-o). 
+or you can optionally supply a transcript database::
 
-*   The configuration file should follow the JSON format (http://www.json.org) and should contain the user-specified settings (see possible configuration options in Section 4).
-*   The input bam file should follow the format described on the Samtools website (http://samtools.github.io/hts-specs/SAMv1.pdf) and should contain the mapped reads. The .bai index file should also be present in the same directory.
-*   The bed file should follow the format described on the UCSC Genome Bioinformatics website (http://genome.ucsc.edu/FAQ/FAQformat) with each record corresponding to a region of interest (e.g. exon).
+    env/bin/coverview -c config.json -i input.bam –b panel.bed -o output -t transcript_database.gz
+
+By default, CoverView takes four command line arguments: the name of the configuration file (-c), the
+name of the input bam file (-i), the name of a bed file (-b) and the output file name prefix (-o). 
+
+* The input bam file (-i) should follow the `BAM format <http://samtools.github.io/hts-specs/SAMv1.pdf>`_ and should contain the mapped reads. The .bai index file should also be present in the same directory.
+* The bed file (-b) should follow the `BED format <http://genome.ucsc.edu/FAQ/FAQformat>`_ with each record corresponding to a region of interest (e.g. exon).
+* The configuration file (-c) should follow the `JSON <http://www.json.org>`_ format  and should contain the user-specified settings (see possible configuration options in Section 4).
+* The transcript database (-t) is optional, but if supplied must be compressed with `bgzip <http://www.htslib.org/doc/tabix.html>`_ and indexed with `tabix <http://www.htslib.org/doc/tabix.html>`_
 
 
 Running without bed file
@@ -54,8 +73,36 @@ The -b command line flag is optional. If a bed file is not specified, only a sim
 Configuration File
 ******************
 
-The configuration JSON file should contain a single JSON object between curly brackets including
-the following optional keys (see also the value type of each key).
+The configuration file uses the JSON format. An example configuration is shown below.
+
+.. highlight:: json
+
+::
+
+	{
+	    "count_duplicate_reads": true,
+	    "outputs": 
+		{ 
+			"regions": true, 
+			"profiles": true 
+		},
+	    "low_bq": 10,
+	    "low_mq": 20,
+	    "pass": 
+		{ 
+			"MINQCOV_MIN": 50, 
+			"MAXFLMQ_MAX": 0.05, 
+			"MAXFLBQ_MAX": 0.15 
+		},
+	    "transcript":  
+		{
+			"regions": false, 
+			"profiles": false, 
+			"poor": true 
+		}
+	}
+
+The following options may be specified in the configuration file
 
 .. sidebar:: Future Changes to CoverView Configuration
     
@@ -64,28 +111,18 @@ the following optional keys (see also the value type of each key).
     to a new configuration style based on the .ini file format in a future release.
 
 
-.. csv-table:: Configuration Options
+.. csv-table::
     :header: "Option", "Type", "Default Value", "Effect"
 
-    count_duplicate_reads,  Boolean, True, if true then duplicate reads are included in the analysis. CoverView counts reads as duplicates if they have the duplicate bit set in the BAM record. 
+    count_duplicate_reads,  Boolean, true, if true then duplicate reads are included in the analysis. CoverView counts reads as duplicates if they have the duplicate bit set in the BAM record. 
+    low_bq, Integer, 10, The base quality cut-off used in the FLBQ metrics. Only bases with this value or higher will be counted as high-quality.
+    low_mq”,Integer, 20, The mapping quality cut-off used in the FLMQ metrics. Only reads with this mapping quality or higher will be counted as high-quality.
+	outputs {"regions"}, Boolean, true,  If this is true then the _regions.txt output file will be written.
+	outputs {"profiles"}, Boolean, true,  If this is true then the _profiles.txt and _poor.txt output files will be written.
+	direction, Boolean, false, If this is true then summary metrics and profiles are output for forward and reverse-stranded reads separately
+	transcript {"regions"}, Boolean, true, If this is true then transcript coordinates are reported in the _regions.txt file (N.B. this options requires that a transcript database be provided)
+	transcript {"profiles"}, Boolean, true, If this is true then transcript coordinates are reported in the _profiles.txt file (N.B. this options requires that a transcript database be provided)
 
-* “count_duplicate_reads” (value = Boolean): if true, duplicate reads are included in the analysis. CoverView counts reads as duplicates if they have the duplicate bit set in the BAM record. 
-
-*  “low_bq” (value = Integer): base quality cut-off used in the FLBQ metrics. Only bases with this value or higher will be counted as high-quality.
-
-* “low_mq” (value = Integer): mapping quality cut-off used in the FLMQ metrics. Only reads with this mapping quality or higher will be counted as high-quality.
-
-* “outputs” (value = JSON object): can contain the following keys:
-   *   “regions” (Boolean): if true, the _regions.txt output file is written
-   *   “profiles” (Boolean): if true, the _profiles.txt and _poor.txt output files are written
-
-* “direction” (value = Boolean): if true, summary metrics and profiles are also outputted for forward-stranded and reverse-stranded reads separately
-
-* “transcript” (value = JSON object): can contain the following two keys:
-    *   “regions” (Boolean): if true, transcript coordinates are reported in the _regions.txt output file
-    *   “profiles” (Boolean): if true, transcript coordinates are reported in the _profiles.txt output file
-
-* “transcript_db” (value = String): Path to transcript database file. The transcript database file can be generated with the CAVA ensembl_prep tool. Both the .gz and .tbi files have to be present under the same path.
  
 * “pass” (value = JSON object): requirements a region has to satisfy to be flagged as “passed”. Can contain the following numerical fields:
     *   “MINCOV_MIN":  minimum value allowed for MINCOV metrics

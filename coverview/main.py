@@ -274,6 +274,7 @@ def get_input_options(command_line_args):
     parser.add_argument(
         "-i",
         "--input",
+        default=None,
         dest='input',
         action='store',
         help="Input (BAM) filename",
