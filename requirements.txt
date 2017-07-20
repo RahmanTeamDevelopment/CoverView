@@ -12,3 +12,4 @@ radon==2.0.2
 six==1.10.0
 pytest-cov>=2.2.0
 git+https://github.com/RahmanTeamDevelopment/TGMI@v0.1.0#egg=TGMI
+flask==0.12.1

@@ -80,12 +80,15 @@ setup(
     packages=[
         'coverview',
         'bamgen',
-        'testutils'
+        'testutils',
+        'gui'
     ],
     scripts=[
         "bin/CoverView.py",
         "bin/coverview",
-        "test/smoke/check_installation_succeeded.bash"
+        "test/smoke/check_installation_succeeded.bash",
+        "bin/CoverViewGUI.py",
+        "bin/gui"
     ],
     zip_safe=False,
     install_requires = [
