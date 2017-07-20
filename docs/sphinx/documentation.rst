@@ -75,7 +75,18 @@ The -b command line flag is optional. If a bed file is not specified, only a sim
 Configuration File
 ******************
 
-The configuration file uses the `JSON <http://www.json.org>`_ format. An example configuration is shown below.
+.. sidebar:: Future Changes to CoverView Configuration
+    
+    CoverView uses JSON (Javascript Object Notation) for configuration of complex input options. Whilst this is a
+    flexible format, it is not the easiest for users to write, and we will be switching to a new configuration style
+    based on the `.ini file <https://en.wikipedia.org/wiki/INI_file>`_ format in a future release.
+
+The configuration file uses the `JSON <http://www.json.org>`_ format, which allows nested configuration options to be input. ``JSON``
+looks a lot like a set of nested ``Python`` dictionaries, but is actually a part of the ``Javascipt`` language (one obvious difference is
+that boolean values must be *true* or *false* as in ``Javascript`` and not *True* or *False* as in ``Python``). The config file must 
+contain at least one pair of curly braces, and all option names must be surrounded by double quotes and separated by commas. Option names and
+values are written as `` "option_name": option_value``. If the config file is not correctly formatted, or contains incorrect option names then
+this will result in a run-time error. An example configuration is shown below, with a table of valid option names.
 
 .. highlight:: json
 
@@ -105,13 +116,6 @@ The configuration file uses the `JSON <http://www.json.org>`_ format. An example
 	}
 
 The following options may be specified in the configuration file
-
-.. sidebar:: Future Changes to CoverView Configuration
-    
-    CoverView currently uses JSON (Javascript Object Notation) for configuration of complex input options. Whilst this is a very 
-    flexible format, it is not always the easiest for users to write. Therefore we will be switching
-    to a new configuration style based on the .ini file format in a future release.
-
 
 .. csv-table::
     :header: "Option", "Type", "Default Value", "Effect"

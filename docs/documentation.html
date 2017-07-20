@@ -105,7 +105,18 @@ name of the input bam file (-i), the name of a bed file (-b) and the output file
 </div>
 <div class="section" id="configuration-file">
 <span id="config-section"></span><h1>4. Configuration File<a class="headerlink" href="#configuration-file" title="Permalink to this headline">¶</a></h1>
-<p>The configuration file uses the <a class="reference external" href="http://www.json.org">JSON</a> format. An example configuration is shown below.</p>
+<div class="sidebar">
+<p class="first sidebar-title">Future Changes to CoverView Configuration</p>
+<p class="last">CoverView uses JSON (Javascript Object Notation) for configuration of complex input options. Whilst this is a
+flexible format, it is not the easiest for users to write, and we will be switching to a new configuration style
+based on the <a class="reference external" href="https://en.wikipedia.org/wiki/INI_file">.ini file</a> format in a future release.</p>
+</div>
+<p>The configuration file uses the <a class="reference external" href="http://www.json.org">JSON</a> format, which allows nested configuration options to be input. <code class="docutils literal"><span class="pre">JSON</span></code>
+looks a lot like a set of nested <code class="docutils literal"><span class="pre">Python</span></code> dictionaries, but is actually a part of the <code class="docutils literal"><span class="pre">Javascipt</span></code> language (one obvious difference is
+that boolean values must be <em>true</em> or <em>false</em> as in <code class="docutils literal"><span class="pre">Javascript</span></code> and not <em>True</em> or <em>False</em> as in <code class="docutils literal"><span class="pre">Python</span></code>). The config file must
+contain at least one pair of curly braces, and all option names must be surrounded by double quotes and separated by commas. Option names and
+values are written as `` “option_name”: option_value``. If the config file is not correctly formatted, or contains incorrect option names then
+this will result in a run-time error. An example configuration is shown below, with a table of valid option names.</p>
 <div class="highlight-json"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="nt">&quot;count_duplicate_reads&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
     <span class="nt">&quot;outputs&quot;</span><span class="p">:</span>
@@ -131,12 +142,6 @@ name of the input bam file (-i), the name of a bed file (-b) and the output file
 </pre></div>
 </div>
 <p>The following options may be specified in the configuration file</p>
-<div class="sidebar">
-<p class="first sidebar-title">Future Changes to CoverView Configuration</p>
-<p class="last">CoverView currently uses JSON (Javascript Object Notation) for configuration of complex input options. Whilst this is a very
-flexible format, it is not always the easiest for users to write. Therefore we will be switching
-to a new configuration style based on the .ini file format in a future release.</p>
-</div>
 <table border="1" class="docutils">
 <colgroup>
 <col width="25%" />
