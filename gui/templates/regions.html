@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, shrink-to-fit=no, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>CoverView GUI</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="static/css/simple-sidebar.css" rel="stylesheet">
+
+    <link href="static/css/tables.css" rel="stylesheet">
+    <link href="static/css/radio.css" rel="stylesheet">
+
+
+
+    <style style="text/css">
+
+        html, body { margin: 0; padding: 0}
+
+        div.scroll  {
+            width: 100%;
+            overflow-y: scroll;
+            max-height: 380px;
+        }
+
+        td.column1 {
+            width: 14%;
+        }
+
+        td.column2 {
+            width: 10%;
+        }
+
+        td.column3 {
+            width: 12%;
+        }
+
+        td.column4 {
+            width: 8%;
+        }
+
+
+        .option input[type='radio'] {
+            border: 0;
+            clip: rect(0 0 0 0);
+            height: 1px;
+            margin: -1px;
+            overflow: hidden;
+            padding: 0;
+            position: absolute;
+            width: 1px;
+        }
+        .option label:not(.titlelabel){
+            font-size: 17px;
+            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+            display:inline-block;
+            width:5em;
+            margin:0 0em;
+            border-radius:6px;
+            background:#dae1ed;
+            color:#000;
+            border:3px solid #ccc;
+            text-align:center;
+            line-height:1.8em;
+            cursor:pointer;
+        }
+        .option input[type='radio']:checked + label{
+            font-size: 17px;
+            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+            background:#0b5c8e;
+            color: white;
+            border:1px solid #000;
+        }
+
+        .titlelabel {
+            color: black;
+            font-size: 22px;
+            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+            display:inline-block;
+            width:100px;
+            margin:0 0em;
+            text-align:right;
+            line-height:1.8em;
+            cursor:pointer;
+            padding: 5px;
+        }
+
+        #myInput {
+            background-image: url('/css/searchicon.png');
+            background-position: 10px 10px;
+            background-repeat: no-repeat;
+            width: 300px;
+            font-size: 16px;
+            padding: 12px 20px 12px 40px;
+            border: 1px solid #ddd;
+            margin-bottom: 12px;
+        }
+
+    </style>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+</head>
+
+<body>
+
+
+<script type="text/javascript">
+
+	$(document).ready(function(){
+
+		$("#contentrows tr").click(function() {
+    		var selected = $(this).hasClass("selected");
+    		$("#contentrows tr").removeClass("selected");
+    		if(!selected)
+           	    $(this).addClass("selected");
+		});
+
+	});
+
+    function myFunction() {
+          var input, filter, table, tr, td, i;
+          input = document.getElementById("myInput");
+          filter = input.value.toUpperCase();
+          table = document.getElementById("contentrows");
+          tr = table.getElementsByTagName("tr");
+          for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[0];
+            if (td) {
+              if (td.innerHTML.toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+              } else {
+                tr[i].style.display = "none";
+              }
+    }
+  }
+};
+
+</script>
+
+
+    <div id="wrapper">
+
+        <!-- Sidebar -->
+        <div id="sidebar-wrapper">
+            <ul class="sidebar-nav">
+                <li class="sidebar-brand"><a href="/">CoverView GUI</a></li>
+                <li><a href="/info">Info</a></li>
+                <li><a href="/summary">Summary</a></li>
+                <li><a href="/genes">Genes</a></li>
+                <li><a href="/regions">Regions</a></li>
+                <li><a href="/profiles">Profiles</a></li>
+            </ul>
+        </div>
+        <!-- /#sidebar-wrapper -->
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <div class="container-fluid" style="position: relative; top: 40px">
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h1>Regions</h1>
+                        <br/>
+
+                        <table class="table" rows=1 style="margin: 0px;">
+                            <tr style="border-collapse:collapse; text-align:center; table-layout: fixed; background-color: #0b5c8e; color: white; font-size: 19px; border: black 1px solid;">
+                                <td class="column1">Region name</td>
+                                <td class="column2">RC</td>
+                                <td class="column2">MEDCOV</td>
+                                <td class="column2">MINCOV</td>
+                                <td class="column3">MEDQCOV</td>
+                                <td class="column3">MINQCOV</td>
+                                <td class="column3">MAXFLBQ</td>
+                                <td class="column3">MAXFLMQ</td>
+                                <td class="column4">PASS?</td>
+                            </tr>
+                        </table>
+
+
+                    </div>
+                </div>
+
+                <div class="row" style="position: relative; top: 0px">
+                    <div class="col-lg-12">
+                        <div class='scroll' style="margin-top: 0px; margin-bottom: 0px; text-align:right;">
+                            <table id="contentrows" class="table hoverTable" rows=7 id="resultsTable">
+                                {% for record in results %}
+
+                                    <tr>
+                                        <td class="column1">{{ record.region }} </td>
+                                        <td class="column2">{{ record.rc }}</td>
+                                        <td class="column2">{{ record.medcov }}</td>
+                                        <td class="column2">{{ record.mincov }}</td>
+                                        <td class="column3">{{ record.medqcov }}</td>
+                                        <td class="column3">{{ record.minqcov }}</td>
+                                        <td class="column3">{{ record.maxflbq }}</td>
+                                        <td class="column3">{{ record.maxflmq }}</td>
+                                        <td class="column4">{{ record.pass }}</td>
+                                    </tr>
+
+                                {% endfor %}
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="row" style="position: relative; top: 5px">
+                    <div class="col-lg-12">
+
+
+
+                        <form class="option">
+
+                            <input type="text" id="myInput" onkeyup="myFunction()" placeholder="Search for region..." title="Type in a name">
+
+                            <label class="titlelabel">Regions:</label>
+
+		                    <input type="radio" name="option" id="all" value="all" checked>
+		                    <label for="all">All</label>
+
+		                    <input type="radio" name="option" id="passed" value="passed">
+		                    <label for="passed">Passed</label>
+
+		                    <input type="radio" name="option" id="failed" value="failed">
+		                    <label for="failed">Failed</label>
+
+
+                            <span style="position: relative; left: 50px;">
+                            <label class="titlelabel">Reads:</label>
+
+		                    <input type="radio" name="option2" id="allreads" value="all" checked>
+		                    <label for="allreads">All</label>
+
+		                    <input type="radio" name="option2" id="forward" value="forward">
+		                    <label for="forward">Forward</label>
+
+		                    <input type="radio" name="option2" id="reverse" value="reverse">
+		                    <label for="reverse">Reverse</label>
+
+                            </span>
+
+
+
+
+                        </form>
+
+
+
+
+
+
+
+
+
+                    </div>
+                </div>
+
+
+
+
+            </div>
+
+        </div>
+
+    </div>
+    <!-- /#wrapper -->
+
+    <!-- jQuery -->
+    <script src="static/js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="static/js/bootstrap.min.js"></script>
+
+</body>
+
+</html>

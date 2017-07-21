@@ -1,0 +1,2 @@
+recursive-include gui/templates *
+recursive-include gui/static *

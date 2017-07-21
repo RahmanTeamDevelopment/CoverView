@@ -1,0 +1,45 @@
+
+.hoverTable{
+    width:100%;
+    border-collapse:collapse;
+    overflow: scroll;
+    table-layout: fixed;
+    position: relative;
+    top:0px;
+    margin-bottom: 0px;
+    padding:0px;
+}
+
+.hoverTable td{
+    padding: 0px;
+    border: black 1px solid;
+    max-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.hoverTable tr:not(.selected){
+    background: #c1bfbf;
+    color: black;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 18px;
+}
+
+.hoverTable tr:hover:not(.selected){
+    background-color: #9ca0a3;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 18px;
+}
+
+tr.selected {
+    background:#4E5066;
+    color:#FFFFFF;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 18px;
+}
+
+
+
+

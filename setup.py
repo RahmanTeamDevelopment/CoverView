@@ -93,6 +93,7 @@ setup(
     zip_safe=False,
     install_requires = [
         "pysam==0.10.0"
-    ]
+    ],
+    include_package_data=True
 )
 
