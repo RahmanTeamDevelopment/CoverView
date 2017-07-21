@@ -51,3 +51,23 @@ def regions():
         results.append(record)
 
     return render_template('regions.html', results=results)
+
+
+@app.route('/profiles', methods=['GET', 'POST'])
+def profiles():
+    return render_template('profiles.html')
+
+
+@app.route('/genes', methods=['GET', 'POST'])
+def genes():
+    return render_template('genes.html')
+
+
+@app.route('/summary', methods=['GET', 'POST'])
+def summary():
+    return render_template('summary.html')
+
+
+@app.route('/info', methods=['GET', 'POST'])
+def info():
+    return render_template('info.html')
