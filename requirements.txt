@@ -8,8 +8,9 @@ pylint==1.7.2
 pyparsing==2.2.0
 pysam==0.10.0
 pytest==3.0.7
+pytest-cov>=2.2.0
 radon==2.0.2
 six==1.10.0
-pytest-cov>=2.2.0
+sphinx==1.6.3
 git+https://github.com/RahmanTeamDevelopment/TGMI@v0.1.0#egg=TGMI
 flask==0.12.1
