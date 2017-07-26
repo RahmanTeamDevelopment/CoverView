@@ -13,7 +13,7 @@ def read_data(prefix):
 def read_regions_data(prefix):
     """Read _region output file into dict"""
 
-    ret = {}
+    ret = []
     idx = {}
     columns = []
     for line in open(prefix+'_regions.txt'):
@@ -36,15 +36,19 @@ def read_regions_data(prefix):
             continue
 
         cols = line.split()
-        record = {}
+        record = {'region': cols[0]}
         for c in columns:
             value = cols[idx[c]]
             if value == '.':
-                value = None
-            elif value not in ['FAIL', 'PASS']:
+                value = '--'
+            elif c == 'RC' or c.startswith('MIN'):
+                value = int(value)
+            elif c != 'Pass_or_fail':
                 value = float(value)
-            record[c] = value
-        ret[cols[0]] = record
+            if c.startswith('MED') and value == int(value):
+                value = int(value)
+            record[c.lower()] = value
+        ret.append(record)
 
     return ret
 

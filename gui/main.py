@@ -21,6 +21,8 @@ def index():
 
 @app.route('/regions', methods=['GET', 'POST'])
 def regions():
+
+    '''
     record = {
         'region': 'ERCC5_15',
         'rc': '494',
@@ -49,8 +51,9 @@ def regions():
     }
     for _ in range(100):
         results.append(record)
+    '''
 
-    return render_template('regions.html', results=results)
+    return render_template('regions.html', results=app.config.get('data')['regions'])
 
 
 @app.route('/profiles', methods=['GET', 'POST'])

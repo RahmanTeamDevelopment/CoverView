@@ -23,21 +23,20 @@
     background: #c1bfbf;
     color: black;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 18px;
+    font-size: 16px;
 }
 
 .hoverTable tr:hover:not(.selected){
-    background-color: #9ca0a3;
-    color: white;
+    background-color: #b1b5b8;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 18px;
+    font-size: 16px;
 }
 
 tr.selected {
-    background:#4E5066;
+    background: #9ca0a3;
     color:#FFFFFF;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 18px;
+    font-size: 16px;
 }
 
 

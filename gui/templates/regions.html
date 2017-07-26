@@ -95,11 +95,13 @@
         }
 
         #myInput {
-            background-image: url('/css/searchicon.png');
-            background-position: 10px 10px;
+            background-image: url('/static/searchicon.png');
             background-repeat: no-repeat;
-            width: 300px;
-            font-size: 16px;
+            background-position: 2px 4px;
+            background-size: 35px auto;
+
+            width: 170px;
+            font-size: 17px;
             padding: 12px 20px 12px 40px;
             border: 1px solid #ddd;
             margin-bottom: 12px;
@@ -116,34 +118,150 @@
 
 <script type="text/javascript">
 
+
+    var strandShown = 'both';
+    var listed = 'all';
+    var searched = '';
+
 	$(document).ready(function(){
 
-		$("#contentrows tr").click(function() {
-    		var selected = $(this).hasClass("selected");
-    		$("#contentrows tr").removeClass("selected");
-    		if(!selected)
-           	    $(this).addClass("selected");
-		});
+        var data =  {{ results|tojson }}
+        loadTable('contentrows', window.strandShown,  window.listed, data);
 
 	});
 
-    function myFunction() {
+    function swapRowSelection(row) {
+        var selected = $(row).hasClass("selected");
+        $("#contentrows tr").removeClass("selected");
+        if(!selected)
+            $(row).addClass("selected");
+    };
+
+
+    function switchToBothStrands() {
+        var data =  {{ results|tojson }}
+        window.strandShown = 'both';
+        loadTable('contentrows', window.strandShown, window.listed, data);
+    };
+
+    function switchToForwardStrand() {
+        var data =  {{ results|tojson }}
+        window.strandShown = 'forward';
+        loadTable('contentrows', window.strandShown, window.listed, data);
+    };
+
+    function switchToReverseStrand() {
+        var data =  {{ results|tojson }}
+        window.strandShown = 'reverse';
+        loadTable('contentrows', window.strandShown, window.listed, data);
+    };
+
+
+    function switchToAllListed() {
+        var data =  {{ results|tojson }}
+        window.listed = 'all';
+        loadTable('contentrows', window.strandShown, window.listed, data);
+    };
+
+    function switchToPassedListed() {
+        var data =  {{ results|tojson }}
+        window.listed = 'passed';
+        loadTable('contentrows', window.strandShown, window.listed, data);
+    };
+
+    function switchToFailedListed() {
+        var data =  {{ results|tojson }}
+        window.listed = 'failed';
+        loadTable('contentrows', window.strandShown, window.listed, data);
+    };
+
+
+
+    function doSearch() {
+          $('#noregion').hide()
           var input, filter, table, tr, td, i;
           input = document.getElementById("myInput");
-          filter = input.value.toUpperCase();
+          window.searched = input.value.toUpperCase();
+          filter = window.searched
           table = document.getElementById("contentrows");
+          var counter = 0;
           tr = table.getElementsByTagName("tr");
           for (i = 0; i < tr.length; i++) {
             td = tr[i].getElementsByTagName("td")[0];
             if (td) {
               if (td.innerHTML.toUpperCase().indexOf(filter) > -1) {
                 tr[i].style.display = "";
+                  counter = counter + 1;
               } else {
                 tr[i].style.display = "none";
               }
-    }
-  }
+            }
+          }
+          if (counter==0)
+              $('#noregion').show();
 };
+
+
+function loadTable(tableId, strand, listed, data) {
+
+    $('#noregion').hide()
+
+    var sel = '';
+    $('.selected').each(function() {
+        sel = $(this).find('td:first').text();
+    });
+
+    $('#' + tableId + ' tr').remove();
+
+    if (strand=='both') {
+        var fields = ['region','rc','medcov','mincov','medqcov','minqcov','maxflbq','maxflmq','pass_or_fail']
+    }
+    else if (strand=='forward') {
+        var fields = ['region','rc','medcov+','mincov+','medqcov+','minqcov+','maxflbq+','maxflmq+','pass_or_fail']
+    }
+    else {
+        var fields = ['region','rc','medcov-','mincov-','medqcov-','minqcov-','maxflbq-','maxflmq-','pass_or_fail']
+    }
+
+    var rows = '';
+    $.each(data, function(index, item) {
+
+
+        if (item[fields[8]] == "PASS" && listed == 'failed')
+            return true;
+
+        if (item[fields[8]] == "FAIL" && listed == 'passed')
+            return true;
+
+        var row =  '<tr onclick="swapRowSelection(this);" >';
+
+        row += '<td class="column1">' + item[fields[0]] + '</td>';
+        row += '<td class="column2">' + item[fields[1]] + '</td>';
+        row += '<td class="column2">' + item[fields[2]] + '</td>';
+        row += '<td class="column2">' + item[fields[3]] + '</td>';
+        row += '<td class="column3">' + item[fields[4]] + '</td>';
+        row += '<td class="column3">' + item[fields[5]] + '</td>';
+        row += '<td class="column3">' + item[fields[6]] + '</td>';
+        row += '<td class="column3">' + item[fields[7]] + '</td>';
+
+        if (item[fields[8]] == "PASS")
+            row += '<td class="column4">' + item[fields[8]] + '</td>';
+        else
+            row += '<td class="column4" style="color: #e22c11; font-weight: bold;">' + item[fields[8]] + '</td>';
+
+        rows += row + '</tr>';
+    });
+    $('#' + tableId).html(rows);
+
+
+    $('#' + tableId + ' tr').each(function() {
+        if ($(this).find('td:first').text() == sel)
+            swapRowSelection(this);
+    });
+
+    if (window.searched != "")
+        doSearch();
+}
 
 </script>
 
@@ -165,7 +283,7 @@
 
         <!-- Page Content -->
         <div id="page-content-wrapper">
-            <div class="container-fluid" style="position: relative; top: 40px">
+            <div class="container-fluid" style="position: relative; top: 10px">
 
                 <div class="row">
                     <div class="col-lg-12">
@@ -173,7 +291,7 @@
                         <br/>
 
                         <table class="table" rows=1 style="margin: 0px;">
-                            <tr style="border-collapse:collapse; text-align:center; table-layout: fixed; background-color: #0b5c8e; color: white; font-size: 19px; border: black 1px solid;">
+                            <tr style="border-collapse:collapse; text-align:center; table-layout: fixed; background-color: #0b5c8e; color: white; font-size: 17px; border: black 1px solid;">
                                 <td class="column1">Region name</td>
                                 <td class="column2">RC</td>
                                 <td class="column2">MEDCOV</td>
@@ -193,26 +311,20 @@
                 <div class="row" style="position: relative; top: 0px">
                     <div class="col-lg-12">
                         <div class='scroll' style="margin-top: 0px; margin-bottom: 0px; text-align:right;">
-                            <table id="contentrows" class="table hoverTable" rows=7 id="resultsTable">
-                                {% for record in results %}
+                            <table id="contentrows" class="table hoverTable" rows=10 style="cursor: pointer; -webkit-touch-callout: none;
+                            -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
 
-                                    <tr>
-                                        <td class="column1">{{ record.region }} </td>
-                                        <td class="column2">{{ record.rc }}</td>
-                                        <td class="column2">{{ record.medcov }}</td>
-                                        <td class="column2">{{ record.mincov }}</td>
-                                        <td class="column3">{{ record.medqcov }}</td>
-                                        <td class="column3">{{ record.minqcov }}</td>
-                                        <td class="column3">{{ record.maxflbq }}</td>
-                                        <td class="column3">{{ record.maxflmq }}</td>
-                                        <td class="column4">{{ record.pass }}</td>
-                                    </tr>
-
-                                {% endfor %}
                             </table>
                         </div>
                     </div>
                 </div>
+
+                <div id="noregion" align="center" class="row" style="position: relative;">
+                    <div class="col-lg-12">
+                        <h3>No regions to show</h3>
+                    </div>
+                </div>
+
 
 
                 <div class="row" style="position: relative; top: 5px">
@@ -220,32 +332,34 @@
 
 
 
-                        <form class="option">
+                        <form id="settings" class="option">
 
-                            <input type="text" id="myInput" onkeyup="myFunction()" placeholder="Search for region..." title="Type in a name">
+                            <input type="text" id="myInput" onkeyup="doSearch();" placeholder="Search..." title="Type in a name">
+
+                            <span style="position: relative; left: 25px;">
 
                             <label class="titlelabel">Regions:</label>
 
-		                    <input type="radio" name="option" id="all" value="all" checked>
+		                    <input type="radio" name="option" id="all" value="all" onclick="switchToAllListed();" checked>
 		                    <label for="all">All</label>
 
-		                    <input type="radio" name="option" id="passed" value="passed">
+		                    <input type="radio" name="option" id="passed" value="passed" onclick="switchToPassedListed();">
 		                    <label for="passed">Passed</label>
 
-		                    <input type="radio" name="option" id="failed" value="failed">
+		                    <input type="radio" name="option" id="failed" value="failed" onclick="switchToFailedListed();">
 		                    <label for="failed">Failed</label>
 
 
-                            <span style="position: relative; left: 50px;">
+                            <span style="position: relative; left: 5px;">
                             <label class="titlelabel">Reads:</label>
 
-		                    <input type="radio" name="option2" id="allreads" value="all" checked>
+		                    <input type="radio" name="option2" id="allreads" value="all" onclick="switchToBothStrands();" checked>
 		                    <label for="allreads">All</label>
 
-		                    <input type="radio" name="option2" id="forward" value="forward">
+		                    <input type="radio" name="option2" id="forward" value="forward" onclick="switchToForwardStrand();">
 		                    <label for="forward">Forward</label>
 
-		                    <input type="radio" name="option2" id="reverse" value="reverse">
+		                    <input type="radio" name="option2" id="reverse" value="reverse" onclick="switchToReverseStrand();">
 		                    <label for="reverse">Reverse</label>
 
                             </span>
