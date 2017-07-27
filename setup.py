@@ -5,7 +5,7 @@ from setuptools import setup, Extension
 from Cython.Distutils import build_ext
 from Cython.Build import cythonize
 
-compile_flags=[
+compile_flags = [
     '-fgnu89-inline'
 ]
 
@@ -19,14 +19,14 @@ include_dirs.extend(
 
 cython_directives = {
     "boundscheck": False,
-    "nonecheck" : False,
-    "cdivision" : True,
-    "profile" : False,
-    "initializedcheck" : False,
-    "wraparound" : True
+    "nonecheck": False,
+    "cdivision": True,
+    "profile": False,
+    "initializedcheck": False,
+    "wraparound": True
 }
 
-pysam_library_dirs= list(set(os.path.dirname(x) for x in pysam.get_libraries()))
+pysam_library_dirs = list(set(os.path.dirname(x) for x in pysam.get_libraries()))
 
 modules = [
     Extension(
@@ -75,8 +75,8 @@ setup(
     author='RahmanTeam',
     author_email='rahmanlab@icr.ac.uk',
     license='MIT',
-    cmdclass = {'build_ext': build_ext},
-    ext_modules = cythonize(modules, compiler_directives=cython_directives),
+    cmdclass={'build_ext': build_ext},
+    ext_modules=cythonize(modules, compiler_directives=cython_directives),
     packages=[
         'coverview',
         'bamgen',
@@ -91,9 +91,8 @@ setup(
         "bin/gui"
     ],
     zip_safe=False,
-    install_requires = [
+    install_requires=[
         "pysam==0.10.0"
     ],
     include_package_data=True
 )
-
