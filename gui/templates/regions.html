@@ -20,6 +20,7 @@
     <link href="static/css/tables.css" rel="stylesheet">
     <link href="static/css/radio.css" rel="stylesheet">
 
+    <link href="static/css/buttons.css" rel="stylesheet">
 
 
     <style style="text/css">
@@ -125,6 +126,7 @@
 
 	$(document).ready(function(){
 
+        $("#linker").hide();
         var data =  {{ results|tojson }}
         loadTable('contentrows', window.strandShown,  window.listed, data);
 
@@ -133,8 +135,11 @@
     function swapRowSelection(row) {
         var selected = $(row).hasClass("selected");
         $("#contentrows tr").removeClass("selected");
-        if(!selected)
+        $("#linker").hide();
+        if(!selected) {
             $(row).addClass("selected");
+            $("#linker").show();
+        }
     };
 
 
@@ -204,7 +209,7 @@
 
 function loadTable(tableId, strand, listed, data) {
 
-    $('#noregion').hide()
+    $('#noregion').hide();
 
     var sel = '';
     $('.selected').each(function() {
@@ -272,11 +277,11 @@ function loadTable(tableId, strand, listed, data) {
         <div id="sidebar-wrapper">
             <ul class="sidebar-nav">
                 <li class="sidebar-brand"><a href="/">CoverView GUI</a></li>
-                <li><a href="/info">Info</a></li>
-                <li><a href="/summary">Summary</a></li>
-                <li><a href="/genes">Genes</a></li>
-                <li><a href="/regions">Regions</a></li>
-                <li><a href="/profiles">Profiles</a></li>
+                <li><a href="/analysis">Analysis View</a></li>
+                <li><a href="/chromosomes">Chromosomes View</a></li>
+                <li><a href="/genes">Genes View</a></li>
+                <li id="thispage"><a href="/regions">Regions View</a></li>
+                <li><a href="/profiles">Profiles View</a></li>
             </ul>
         </div>
         <!-- /#sidebar-wrapper -->
@@ -284,6 +289,7 @@ function loadTable(tableId, strand, listed, data) {
         <!-- Page Content -->
         <div id="page-content-wrapper">
             <div class="container-fluid" style="position: relative; top: 10px">
+
 
                 <div class="row">
                     <div class="col-lg-12">
@@ -380,6 +386,13 @@ function loadTable(tableId, strand, listed, data) {
                     </div>
                 </div>
 
+                <div id="linker" align="left" class="row" style="position: relative; top: 10px;">
+                    <div class="col-lg-12">
+                        <button class="btn">Show Profiles</button>
+                        <button class="btn">Show Gene</button>
+                        <button class="btn">Show Chromosome</button>
+                    </div>
+                </div>
 
 
 

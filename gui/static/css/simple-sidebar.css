@@ -100,6 +100,12 @@
     background: none;
 }
 
+#thispage {
+    text-decoration: none;
+    color: #fff;
+    background: rgba(255,255,255,0.2);
+}
+
 @media(min-width:768px) {
     #wrapper {
         padding-left: 250px;
