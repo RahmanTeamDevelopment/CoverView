@@ -19,7 +19,7 @@ def run(prefix):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    return 'data:{}'.format(app.config.get('data'))
+    return redirect('regions')
 
 
 @app.route('/regions', methods=['GET', 'POST'])
@@ -43,7 +43,10 @@ def genes():
 
 @app.route('/chromosomes', methods=['GET', 'POST'])
 def chromosomes():
-    return render_template('chromosomes.html', region=session['region'])
+    return render_template('chroms.html', region=session['region'])
 
 
+@app.route('/analysis', methods=['GET', 'POST'])
+def analysis():
+    return render_template('analysis.html')
 
