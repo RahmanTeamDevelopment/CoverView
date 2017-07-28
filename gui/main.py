@@ -1,7 +1,10 @@
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, session, redirect, url_for, jsonify, send_file
 import parsers
 
 app = Flask(__name__)
+
+app.secret_key = "something-from-os.urandom(24)"
+
 
 import logging
 log = logging.getLogger('werkzeug')
@@ -21,56 +24,26 @@ def index():
 
 @app.route('/regions', methods=['GET', 'POST'])
 def regions():
-
-    '''
-    record = {
-        'region': 'ERCC5_15',
-        'rc': '494',
-        'medcov': '72',
-        'mincov': '22',
-        'medqcov': '69',
-        'minqcov': '22',
-        'maxflbq': '0.141',
-        'maxflmq': '0.019',
-        'pass': 'PASS'
-    }
-    results = []
-    for _ in range(100):
-        results.append(record)
-
-    record = {
-        'region': 'BRCA2_8',
-        'rc': '494',
-        'medcov': '72',
-        'mincov': '22',
-        'medqcov': '69',
-        'minqcov': '22',
-        'maxflbq': '0.141',
-        'maxflmq': '0.019',
-        'pass': 'PASS'
-    }
-    for _ in range(100):
-        results.append(record)
-    '''
-
-    return render_template('regions.html', results=app.config.get('data')['regions'])
+    if request.method == 'POST':
+        session['region'] = request.form['region']
+        return request.form['region']
+    else:
+        return render_template('regions.html', results=app.config.get('data')['regions'])
 
 
 @app.route('/profiles', methods=['GET', 'POST'])
 def profiles():
-    return render_template('profiles.html')
+    return render_template('profiles.html', region=session['region'])
 
 
 @app.route('/genes', methods=['GET', 'POST'])
 def genes():
-    return render_template('genes.html')
+    return render_template('genes.html', region=session['region'])
 
 
-@app.route('/summary', methods=['GET', 'POST'])
-def summary():
-    return render_template('summary.html')
+@app.route('/chromosomes', methods=['GET', 'POST'])
+def chromosomes():
+    return render_template('chromosomes.html', region=session['region'])
 
 
-@app.route('/info', methods=['GET', 'POST'])
-def info():
-    return render_template('info.html')
+

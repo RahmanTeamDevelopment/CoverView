@@ -16,6 +16,11 @@
 }
 
 .btn:hover {
-  background: #4769b4;
-    color: #ffffff;
+  background: #3e5a9c;
+  color: #ffffff;
+}
+
+.btn:active {
+  background: #5379d1;
+  color: #ffffff;
 }
