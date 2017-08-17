@@ -184,6 +184,8 @@ class RegionsOutput(object):
 
         header.extend([
             'RC',
+            'RC+',
+            'RC-',
             'MEDCOV',
             'MINCOV',
             'MEDQCOV',
@@ -253,6 +255,8 @@ class RegionsOutput(object):
 
         output_record.extend([
             coverage_data.per_base_coverage_profile.num_reads_in_region,
+            coverage_data.per_base_coverage_profile.num_forward_reads_in_region,
+            coverage_data.per_base_coverage_profile.num_reverse_reads_in_region,
             coverage_summary['MEDCOV'],
             coverage_summary['MINCOV'],
             coverage_summary['MEDQCOV'],

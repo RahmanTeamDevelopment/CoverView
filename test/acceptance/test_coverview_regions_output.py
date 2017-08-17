@@ -23,6 +23,8 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             assert regions_output['Region_1']["End_position"] == 132
 
             assert regions_output['Region_1']["RC"] == 0
+            assert regions_output['Region_1']["RC+"] == 0
+            assert regions_output['Region_1']["RC-"] == 0
             assert regions_output['Region_1']["MEDCOV"] == 0
             assert regions_output['Region_1']["MINCOV"] == 0
             assert regions_output['Region_1']["MEDQCOV"] == 0
@@ -47,6 +49,8 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             assert regions_output['Region_1']["Start_position"] == 32
             assert regions_output['Region_1']["End_position"] == 132
             assert regions_output['Region_1']["RC"] == 1
+            assert regions_output['Region_1']["RC+"] == 1
+            assert regions_output['Region_1']["RC-"] == 0
             assert regions_output['Region_1']["MEDCOV"] == 1
             assert regions_output['Region_1']["MINCOV"] == 1
             assert regions_output['Region_1']["MEDQCOV"] == 1
@@ -70,6 +74,8 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             assert regions_output['Region_1']["Start_position"] == 32
             assert regions_output['Region_1']["End_position"] == 132
             assert regions_output['Region_1']["RC"] == 2
+            assert regions_output['Region_1']["RC+"] == 2
+            assert regions_output['Region_1']["RC-"] == 0
             assert regions_output['Region_1']["MEDCOV"] == 2
             assert regions_output['Region_1']["MINCOV"] == 2
             assert regions_output['Region_1']["MEDQCOV"] == 2
@@ -93,6 +99,8 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             assert regions_output['Region_1']["Start_position"] == 32
             assert regions_output['Region_1']["End_position"] == 132
             assert regions_output['Region_1']["RC"] == 100
+            assert regions_output['Region_1']["RC+"] == 100
+            assert regions_output['Region_1']["RC-"] == 0
             assert regions_output['Region_1']["MEDCOV"] == 100
             assert regions_output['Region_1']["MINCOV"] == 100
             assert regions_output['Region_1']["MEDQCOV"] == 100
@@ -120,6 +128,8 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             assert regions_output['Region_1']["Start_position"] == 32
             assert regions_output['Region_1']["End_position"] == 132
             assert regions_output['Region_1']["RC"] == 1
+            assert regions_output['Region_1']["RC+"] == 1
+            assert regions_output['Region_1']["RC-"] == 0
             assert regions_output['Region_1']["MEDCOV"] == 1
             assert regions_output['Region_1']["MINCOV"] == 1
             assert regions_output['Region_1']["MEDQCOV"] == 1
@@ -131,6 +141,8 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             assert regions_output['Region_2']["Start_position"] == 1000
             assert regions_output['Region_2']["End_position"] == 1100
             assert regions_output['Region_2']["RC"] == 1
+            assert regions_output['Region_2']["RC+"] == 1
+            assert regions_output['Region_2']["RC-"] == 0
             assert regions_output['Region_2']["MEDCOV"] == 1
             assert regions_output['Region_2']["MINCOV"] == 1
             assert regions_output['Region_2']["MEDQCOV"] == 1
@@ -158,6 +170,8 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             assert regions_output['Region_1']["Start_position"] == 32
             assert regions_output['Region_1']["End_position"] == 132
             assert regions_output['Region_1']["RC"] == 1
+            assert regions_output['Region_1']["RC+"] == 1
+            assert regions_output['Region_1']["RC-"] == 0
             assert regions_output['Region_1']["MEDCOV"] == 1
             assert regions_output['Region_1']["MINCOV"] == 1
             assert regions_output['Region_1']["MEDQCOV"] == 1
@@ -169,6 +183,8 @@ class TestCoverViewRegionsOutput(unittest.TestCase):
             assert regions_output['Region_2']["Start_position"] == 132
             assert regions_output['Region_2']["End_position"] == 232
             assert regions_output['Region_2']["RC"] == 10
+            assert regions_output['Region_2']["RC+"] == 10
+            assert regions_output['Region_2']["RC-"] == 0
             assert regions_output['Region_2']["MEDCOV"] == 10
             assert regions_output['Region_2']["MINCOV"] == 10
             assert regions_output['Region_2']["MEDQCOV"] == 10

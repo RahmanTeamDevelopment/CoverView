@@ -18,6 +18,8 @@ _regions_value_type_map = {
     "End_transcript": str,
     "Pass_or_fail": str,
     "RC": int,
+    "RC+": int,
+    "RC-": int,
     "MEDCOV": float_or_nan,
     "MINCOV": float_or_nan,
     "MEDQCOV": float_or_nan,
