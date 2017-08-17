@@ -19,7 +19,8 @@ def remove_if_exists(file_name):
 def make_command_line_arguments(bam_file_name,
                                 bed_file_name,
                                 config_file_name,
-                                transcript_file_name):
+                                transcript_file_name,
+                                gui_output_file_name):
     """
     Utility function to construct a list of command-line arguments in the form that is stored
     in sys.argv. This can then be fed to the main function and used to run CoverView.
@@ -45,6 +46,12 @@ def make_command_line_arguments(bam_file_name,
         arguments_list.extend([
             "-t",
             transcript_file_name
+        ])
+
+    if gui_output_file_name is not None:
+        arguments_list.extend([
+            "--gui_json_output_file",
+            gui_output_file_name
         ])
 
     return arguments_list
@@ -117,6 +124,7 @@ class CoverViewTestRunner(object):
         self.transcript_file_name = self.bam_file_name.replace(".bam", "_transcript_db.txt")
         self.compressed_transcript_file_name = self.bam_file_name.replace(".bam", "_transcript_db.txt.gz")
         self.transcript_file_index_name = self.bam_file_name.replace(".bam", "_transcript_db.txt.gz.tbi")
+        self.gui_output_file_name = None
         self.read_sets = []
         self.regions = []
         self.transcripts = []
@@ -143,6 +151,9 @@ class CoverViewTestRunner(object):
 
     def add_transcript(self, transcript):
         self.transcripts.append(transcript)
+
+    def add_gui_output_file(self, file_name):
+        self.gui_output_file_name = file_name
 
     def generate_input_files(self):
         bamgen.bamgen.make_bam_file(
@@ -183,13 +194,11 @@ class CoverViewTestRunner(object):
         remove_if_exists(self.transcript_file_name)
 
     def clean_up_output_files(self):
-        for file_name in {
-            "output_regions.txt",
-            "output_profiles.txt",
-            "output_summary.txt",
-            "output_poor.txt"
-        }:
-            remove_if_exists(file_name)
+        remove_if_exists("output_regions.txt")
+        remove_if_exists("output_profiles.txt")
+        remove_if_exists("output_summary.txt")
+        remove_if_exists("output_poor.txt")
+        remove_if_exists(self.gui_output_file_name)
 
     def run_coverview_and_get_exit_code(self):
         self.generate_input_files()
@@ -198,7 +207,8 @@ class CoverViewTestRunner(object):
             bam_file_name=self.bam_file_name,
             bed_file_name=self.bed_file_name,
             config_file_name=self.config_file_name,
-            transcript_file_name=self.compressed_transcript_file_name
+            transcript_file_name=self.compressed_transcript_file_name,
+            gui_output_file_name=self.gui_output_file_name
         )
 
         return coverview.main.main(command_line_args)

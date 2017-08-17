@@ -1,4 +1,5 @@
 import csv
+import json
 
 
 def float_or_nan(x):
@@ -45,6 +46,11 @@ _profile_value_type_map = {
     "MEDMQ": float_or_nan,
     "FLMQ": float_or_nan
 }
+
+
+def load_gui_json_output(file_name):
+    with open(file_name, 'r') as json_file:
+        return json.load(json_file)
 
 
 def load_coverview_profile_output(file_name):

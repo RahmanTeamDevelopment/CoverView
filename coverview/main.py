@@ -317,6 +317,14 @@ def get_input_options(command_line_args):
         help="Tabix-indexed database of transcripts"
     )
 
+    parser.add_argument(
+        "--gui_json_output_file",
+        default=None,
+        dest='gui_json_output_file',
+        action='store',
+        help="If provided, a JSON file containing data needed for the GUI will be created with this name"
+    )
+
     options = parser.parse_args(command_line_args)
     config = load_and_validate_config(options.config)
 
@@ -349,6 +357,22 @@ def main(command_line_args):
     _logger.debug("Running CoverView {} with options".format(_version))
     _logger.debug(options)
     _logger.debug(config)
+
+    if options.gui_json_output_file:
+        with open(options.gui_json_output_file, 'w') as json_file:
+            json_output_dict = {
+                "command_line_opts": vars(options),
+                "config_opts": config
+            }
+
+            json.dump(
+                json_output_dict,
+                json_file,
+                sort_keys=True,
+                indent=4,
+                separators=(',', ':')
+
+            )
 
     bam_file = pysam.Samfile(options.input, "rb")
 
