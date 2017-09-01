@@ -284,18 +284,15 @@ function makeReferenceBar(sequence) {
 				}
     }
 
-
+    $("#toleft").removeAttr('disabled');
+    $("#toright").removeAttr('disabled');
+    var plotData =  window.plot.series[0].data;
+    if (window.plot.axes.xaxis.min - 1 < plotData[0][0])
+        $("#toleft").attr('disabled','disabled');
+    if (window.plot.axes.xaxis.max + 1 > plotData[plotData.length-1][0])
+        $("#toright").attr('disabled','disabled');
 
 };
-
-
-
-
-
-
-
-
-
 
 
 function scaleYAxes(miny1,maxy1,miny2,maxy2,totalmaxy,totalmaxy2){
@@ -423,3 +420,19 @@ function handleZoomOut(){
     makeReferenceBar(window.sequences[window.region]);
     $("#zoombuttons").hide();
 };
+
+
+function goLeft(){
+    window.plot.axes.xaxis.min=window.plot.axes.xaxis.min-1;
+    window.plot.axes.xaxis.max=window.plot.axes.xaxis.max-1;
+    window.plot.replot();
+    makeReferenceBar(window.sequences[window.region]);
+};
+
+function goRight(){
+    window.plot.axes.xaxis.min=window.plot.axes.xaxis.min+1;
+    window.plot.axes.xaxis.max=window.plot.axes.xaxis.max+1;
+    window.plot.replot();
+    makeReferenceBar(window.sequences[window.region]);
+};
+

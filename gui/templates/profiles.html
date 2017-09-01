@@ -157,10 +157,13 @@
                             <canvas id="canvas" height=20px width=900px style="align: center;"></canvas>
                         </div>
 
-                         <div hidden id="zoombuttons"; style="text-align: center; position: relative; top: 5px">
-                             <button id="toleft" name="goto"  class="btnsmall"><</button>
-                            <button id="zoomout" onclick="handleZoomOut();" name="goto"  class="btnsmall">Zoom out</button>
-                            <button id="toright" name="goto"  class="btnsmall">></button>
+                         <div hidden id="zoombuttons"; style="text-align: center; position: relative; top: 5px;">
+                             <button id="toleft" onclick="goLeft();" name="goto"  class="btnsmall" style="-webkit-touch-callout: none;
+                            -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;"><</button>
+                            <button id="zoomout" onclick="handleZoomOut();" name="goto"  class="btnsmall" style="-webkit-touch-callout: none;
+                            -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">Zoom out</button>
+                            <button id="toright" onclick="goRight();" name="goto"  class="btnsmall" style="-webkit-touch-callout: none;
+                            -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">></button>
 
                         </div>
 
@@ -170,21 +173,6 @@
                 </div>
 
 
-                 <div class="row">
-                     <div class="col-md-2"></div>
-
-                    <div class="col-md-9">
-                        <div hidden id="zoombuttonsx"; style="text-align: center; position: relative; top: 5px">
-                             <button id="toleftx" name="goto"  class="btnsmall"><</button>
-                            <button id="zoomoutx" onclick="handleZoomOut();" name="goto"  class="btnsmall">Zoom out</button>
-                            <button id="torightx" name="goto"  class="btnsmall">></button>
-
-                        </div>
-
-                    </div>
-
-                     <div class="col-md-1"></div>
-                </div>
 
 
 
