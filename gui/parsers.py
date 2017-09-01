@@ -3,9 +3,12 @@
 def read_data(prefix):
     """Read all CoverView output data required by the GUI"""
 
+    profiles, region_coords = read_profiles_data(prefix)
+
     return {
         'regions': read_regions_data(prefix),
-        'profiles': read_profiles_data(prefix),
+        'profiles': profiles,
+        'region_coords': region_coords,
         'summary': read_summary_data(prefix)
     }
 
@@ -57,10 +60,14 @@ def read_profiles_data(prefix):
     """Read _profiles output file into dict"""
 
     ret = {}
+    ret_coords = {}
     idx = {}
     columns = []
     region_data = {}
     region = None
+    region_chrom = None
+    region_start = None
+    region_end = None
     for line in open(prefix+'_profiles.txt'):
         line = line.strip()
         if line == '':
@@ -83,11 +90,19 @@ def read_profiles_data(prefix):
         if line[0] == '[':
             if region is not None:
                 ret[region] = region_data
+                ret_coords[region] = [region_chrom, int(region_start), int(region_end)+1]
             region = line[1:-1]
             region_data = {}
+            region_chrom = region_start = region_end = None
             continue
 
         cols = line.split()
+
+        if region_start is None:
+            region_chrom = cols[0]
+            region_start = cols[1]
+        region_end = cols[1]
+
         for c in columns:
             if c not in region_data:
                 region_data[c] = []
@@ -101,7 +116,8 @@ def read_profiles_data(prefix):
             region_data[c].append(value)
 
     ret[region] = region_data
-    return ret
+    ret_coords[region] = [region_chrom, int(region_start), int(region_end)+1]
+    return ret, ret_coords
 
 
 def read_summary_data(prefix):

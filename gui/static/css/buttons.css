@@ -24,3 +24,29 @@
   background: #5379d1;
   color: #ffffff;
 }
+
+
+.btnsmall {
+  background: white;
+  -webkit-border-radius: 8;
+  -moz-border-radius: 8;
+  border-radius: 8px;
+
+  border-style: solid;
+  border-width: 1px;
+  border-color: black;
+
+  font-family: Arial;
+  font-size: 16px;
+  text-decoration: none;
+}
+
+.btnsmall:hover {
+  background: #3e5a9c;
+  color: #ffffff;
+}
+
+.btnsmall:active {
+  background: #5379d1;
+  color: #ffffff;
+}

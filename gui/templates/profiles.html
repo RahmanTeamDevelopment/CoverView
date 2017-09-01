@@ -11,6 +11,12 @@
 
     <title>CoverView GUI</title>
 
+
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+
+
+
     <!-- Bootstrap Core CSS -->
     <link href="static/css/bootstrap.min.css" rel="stylesheet">
 
@@ -22,17 +28,46 @@
 
     <link href="static/css/buttons.css" rel="stylesheet">
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+
+
+    <style style="text/css">
+
+        html, body { margin: 0; padding: 0}
+
+        div.scroll  {
+            width: 100%;
+            overflow-y: scroll;
+            max-height: 470px;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        td.column1 {
+            width: 14%;
+        }
+
+
+    </style>
+
 
 </head>
 
 <body>
 
 
-<script type="text/javascript">
+    <script>
 
+        $(document).ready(function(){
 
-</script>
+            var ctx = $('#canvas')[0].getContext("2d");
+
+            entry("{{region}}", {{regionlist|tojson}}, {{passedregions|tojson}}, {{regioncoords|tojson}}, {{sequences|tojson}}, ctx);
+        });
+
+    </script>
 
 
     <div id="wrapper">
@@ -56,16 +91,114 @@
 
 
                 <div class="row">
-                    <div class="col-lg-12">
+                    <div class="col-md-2">
                         <h1>Profiles</h1>
-                        <br/>
 
-                        {{ region }}
                     </div>
+                    <div class="col-md-9">
+                        <div style="text-align: center; position: relative; top: 20px;">
+                            <h3 id="title"></h3>
+                        </div>
+                    </div>
+
+                    <div class="col-md-1"></div>
                 </div>
 
 
+                <div class="row">
+                    <div class="col-md-2" style="position: relative; top: 15px;">
+
+                        <table class="table" rows=1 style="margin: 0px;">
+                            <tr style="border-collapse:collapse; text-align:center; table-layout: fixed; background-color: #0b5c8e; color: white; font-size: 17px; border: black 1px solid;">
+                                <td class="column1">Region name</td>
+                            </tr>
+                        </table>
+
+                        <div id="scroller" class='scroll' style="margin-top: 0px; margin-bottom: 0px; text-align:left;">
+                            <table id="contentrows" class="table hoverTable" rows=11 style="cursor: pointer; -webkit-touch-callout: none;
+                            -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
+
+
+                            </table>
+                        </div>
+
+                    </div>
+
+                     <div class="col-md-9">
+
+                         <div>
+
+                             <select>
+                                <option value="1" selected="selected">COV</option>
+                                <option value="2">QCOV</option>
+                                 <option value="3">FLMQ</option>
+                                 <option value="4">MEDMQ</option>
+                                 <option value="5">FLBQ</option>
+                                 <option value="6">MEDBQ</option>
+                            </select>
+
+                             <select class="pull-right">
+                                 <option value="0">---</option>
+                                <option value="1" selected="selected">COV</option>
+                                <option value="2">QCOV</option>
+                                 <option value="3">FLMQ</option>
+                                 <option value="4">MEDMQ</option>
+                                 <option value="5">FLBQ</option>
+                                 <option value="6">MEDBQ</option>
+                            </select>
+
+                         </div>
+
+
+                        <div id="myplot" style="height: 500px; -webkit-touch-callout: none;
+                            -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;"></div>
+
+                        <div width=100% style="align: center;">
+                            <canvas id="canvas" height=20px width=900px style="align: center;"></canvas>
+                        </div>
+
+                         <div hidden id="zoombuttons"; style="text-align: center; position: relative; top: 5px">
+                             <button id="toleft" name="goto"  class="btnsmall"><</button>
+                            <button id="zoomout" onclick="handleZoomOut();" name="goto"  class="btnsmall">Zoom out</button>
+                            <button id="toright" name="goto"  class="btnsmall">></button>
+
+                        </div>
+
+                     </div>
+
+                    <div class="col-md-1"></div>
+                </div>
+
+
+                 <div class="row">
+                     <div class="col-md-2"></div>
+
+                    <div class="col-md-9">
+                        <div hidden id="zoombuttonsx"; style="text-align: center; position: relative; top: 5px">
+                             <button id="toleftx" name="goto"  class="btnsmall"><</button>
+                            <button id="zoomoutx" onclick="handleZoomOut();" name="goto"  class="btnsmall">Zoom out</button>
+                            <button id="torightx" name="goto"  class="btnsmall">></button>
+
+                        </div>
+
+                    </div>
+
+                     <div class="col-md-1"></div>
+                </div>
+
+
+
+
+
+
+
+
+
+
             </div>
+
+
+
 
         </div>
 
@@ -77,6 +210,22 @@
 
     <!-- Bootstrap Core JavaScript -->
     <script src="static/js/bootstrap.min.js"></script>
+
+    <script type="text/javascript" src="static/js/profiles.js"></script>
+
+
+    <script type="text/javascript" src="static/jqplot/jquery.jqplot.js"></script>
+    <script type="text/javascript" src="static/jqplot/plugins/jqplot.barRenderer.js"></script>
+    <script type="text/javascript" src="static/jqplot/plugins/jqplot.pieRenderer.js"></script>
+    <script type="text/javascript" src="static/jqplot/plugins/jqplot.categoryAxisRenderer.js"></script>
+    <script type="text/javascript" src="static/jqplot/plugins/jqplot.pointLabels.js"></script>
+    <script type="text/javascript" src="static/jqplot/plugins/jqplot.canvasTextRenderer.js"></script>
+    <script type="text/javascript" src="static/jqplot/plugins/jqplot.canvasAxisLabelRenderer.js"></script>
+    <script type="text/javascript" src="static/jqplot/plugins/jqplot.cursor.js"></script>
+	<script type="text/javascript" src="static/jqplot/plugins/jqplot.highlighter.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="static/jqplot/jquery.jqplot.css" />
+
 
 </body>
 
