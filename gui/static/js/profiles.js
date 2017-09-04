@@ -44,29 +44,15 @@ function entry(region, regionlist, passedregions, regioncoords, sequences, ctx) 
     container.scrollTop( rowToSelect.offset().top - container.offset().top - 220);
 
 
-    var intervalId_l;
-    $("#toleft").mousedown(function() {
-        intervalId_l = setInterval(goLeft, 100);
-    }).mouseup(function() {
-        clearInterval(intervalId_l);
-    });
-
-    var intervalId_r;
-    $("#toright").mousedown(function() {
-        intervalId_r = setInterval(goRight, 100);
-    }).mouseup(function() {
-        clearInterval(intervalId_r);
-    });
-
 };
 
 function makePlot(){
 
-    data = prepareDataForPlotting(window.data[window.y_profile]);
+    data1 = prepareDataForPlotting(window.data[window.y_profile]);
 
     $("#title").html(window.region+' ('+regionAsString(window.regioncoords[window.region])+')');
 
-    window.plot = $.jqplot('myplot', [data],
+    window.plot = $.jqplot('myplot', [data1],
         {
 
                 cursor: {
@@ -107,7 +93,7 @@ function makePlot(){
 					},
                     yaxis: {
 						min: 0,
-                        max: getMaxY(data)*1.1,
+                        max: getMaxY(data1)*1.1,
                         numberTicks: 6,
                         tickOptions: { showLabel:true, formatString: "%.2f", fontSize: 14 }
 					},
@@ -125,6 +111,8 @@ function makePlot(){
     var x=$("#myplot").offset().left;
     var y=$("#myplot").offset().top;
     $('#canvas').offset({top:y+500,left:x});
+
+
 
 
 };
@@ -297,14 +285,6 @@ function makeReferenceBar(sequence) {
 				}
     }
 
-    $("#toleft").removeAttr('disabled');
-    $("#toright").removeAttr('disabled');
-    var plotData =  window.plot.series[0].data;
-    if (window.plot.axes.xaxis.min - 1 < plotData[0][0])
-        $("#toleft").attr('disabled','disabled');
-    if (window.plot.axes.xaxis.max + 1 > plotData[plotData.length-1][0])
-        $("#toright").attr('disabled','disabled');
-
 };
 
 
@@ -385,12 +365,12 @@ function prepareDataForPlotting(profile){
     var start = window.regioncoords[window.region][1];
     var end = window.regioncoords[window.region][2];
 
-    var data = [];
+    var ret = [];
     for (var i = start; i < end; i++) {
-        data.push([i,profile[i-start]]);
+        ret.push([i,profile[i-start]]);
     };
 
-    return data;
+    return ret;
 };
 
 
@@ -436,6 +416,11 @@ function handleZoomOut(){
 
 
 function goLeft(){
+
+    var plotData =  window.plot.series[0].data;
+    if (window.plot.axes.xaxis.min - 1 < plotData[0][0])
+        return;
+
     window.plot.axes.xaxis.min=window.plot.axes.xaxis.min-1;
     window.plot.axes.xaxis.max=window.plot.axes.xaxis.max-1;
     window.plot.replot();
@@ -443,9 +428,21 @@ function goLeft(){
 };
 
 function goRight(){
+
+    var plotData =  window.plot.series[0].data;
+    if (window.plot.axes.xaxis.max + 1 > plotData[plotData.length-1][0])
+        return;
+
     window.plot.axes.xaxis.min=window.plot.axes.xaxis.min+1;
     window.plot.axes.xaxis.max=window.plot.axes.xaxis.max+1;
     window.plot.replot();
     makeReferenceBar(window.sequences[window.region]);
+};
+
+function changeMetrics(){
+    window.y_profile = $("#metrics :selected").text();
+    makePlot();
+    makeReferenceBar(window.sequences[window.region]);
+    $("#zoombuttons").hide();
 };
 
