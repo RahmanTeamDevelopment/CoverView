@@ -44,6 +44,19 @@ function entry(region, regionlist, passedregions, regioncoords, sequences, ctx) 
     container.scrollTop( rowToSelect.offset().top - container.offset().top - 220);
 
 
+    var intervalId_l;
+    $("#toleft").mousedown(function() {
+        intervalId_l = setInterval(goLeft, 100);
+    }).mouseup(function() {
+        clearInterval(intervalId_l);
+    });
+
+    var intervalId_r;
+    $("#toright").mousedown(function() {
+        intervalId_r = setInterval(goRight, 100);
+    }).mouseup(function() {
+        clearInterval(intervalId_r);
+    });
 
 };
 

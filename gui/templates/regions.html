@@ -267,10 +267,10 @@ function loadTable(tableId, strand, listed, data) {
         var fields = ['region','rc','medcov','mincov','medqcov','minqcov','maxflbq','maxflmq','pass_or_fail']
     }
     else if (strand=='forward') {
-        var fields = ['region','rc','medcov+','mincov+','medqcov+','minqcov+','maxflbq+','maxflmq+','pass_or_fail']
+        var fields = ['region','rc+','medcov+','mincov+','medqcov+','minqcov+','maxflbq+','maxflmq+','pass_or_fail']
     }
     else {
-        var fields = ['region','rc','medcov-','mincov-','medqcov-','minqcov-','maxflbq-','maxflmq-','pass_or_fail']
+        var fields = ['region','rc-','medcov-','mincov-','medqcov-','minqcov-','maxflbq-','maxflmq-','pass_or_fail']
     }
 
     var rows = '';
