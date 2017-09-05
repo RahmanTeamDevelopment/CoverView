@@ -19,7 +19,7 @@ function entry(region, regionlist, passedregions, regioncoords, sequences, ctx) 
     window.ctx = ctx;
 
     window.y_profile = 'COV';
-    window.y2_profile = null;
+    window.y2_profile = '---';
 
     $.jqplot.config.enablePlugins = true;
 
@@ -46,15 +46,10 @@ function entry(region, regionlist, passedregions, regioncoords, sequences, ctx) 
 
 };
 
-function makePlot(){
 
-    data1 = prepareDataForPlotting(window.data[window.y_profile]);
-
-    $("#title").html(window.region+' ('+regionAsString(window.regioncoords[window.region])+')');
-
-    window.plot = $.jqplot('myplot', [data1],
+function singleGraphPlot(data1){
+    return $.jqplot('myplot', [data1],
         {
-
                 cursor: {
 					show: true,
 					zoom:true,
@@ -73,15 +68,18 @@ function makePlot(){
 					sizeAdjust: 12,
 					tooltipAxes: "xy",
 					tooltipLocation: 'n',
-					formatString: "Position: %d; Value: %g",
+					formatString: "%d; %g",
 					bringSeriesToFront:true,
                     fadeTooltip: true,
                     tooltipFadeSpeed: "fast",
 				},
 
+                seriesColors: ['#00749F'],
+
                 seriesDefaults: {
-                    showMarker: true,
-                    pointLabels: { show: false }
+                    showMarker: false,
+                    pointLabels: { show: false },
+                    lineWidth:3
                 },
 
                 axes: {
@@ -103,8 +101,87 @@ function makePlot(){
 				}
         }
     );
+}
 
-    //window.plot.redraw();
+
+function doubleGraphPlot(data1, data2){
+    return $.jqplot('myplot', [data1, data2],
+        {
+                cursor: {
+					show: true,
+					zoom:true,
+					looseZoom: true,
+					showTooltip:false,
+					showTooltipUnitPosition:true,
+					constrainZoomTo:'x',
+					constrainOutsideZoom:true,
+					showVerticalLine:true,
+					dblClickReset:false,
+					tooltipLocation:'sw'
+				},
+
+                seriesColors: ['#00749F', '#e0ab5c'],
+
+                highlighter: {
+					show: true,
+					sizeAdjust: 12,
+					tooltipAxes: "xy",
+					tooltipLocation: 'n',
+					bringSeriesToFront:true,
+                    fadeTooltip: true,
+                    tooltipFadeSpeed: "fast",
+                    formatString: "%d; %g",
+				},
+
+                seriesDefaults: {
+                    showMarker: false,
+                    pointLabels: { show: false },
+                    lineWidth:3
+                },
+
+                axes: {
+					xaxis: {
+						min: window.regioncoords[window.region][1],
+				 		max: window.regioncoords[window.region][2],
+                        numberTicks: 6,
+                        tickOptions: { showLabel:true, formatString: '%d', fontSize: 14 }
+					},
+                    yaxis: {
+						min: 0,
+                        max: getMaxY(data1)*1.1,
+                        numberTicks: 6,
+                        tickOptions: { showLabel:true, formatString: "%.2f", fontSize: 14 }
+					},
+					y2axis: {
+						min: 0,
+                        max: getMaxY(data2)*1.1,
+                        numberTicks: 6,
+                        tickOptions: { showLabel:true, formatString: "%.2f", fontSize: 14 }
+					}
+				},
+
+                series:
+                    [
+						{yaxis:'yaxis'},
+						{yaxis:'y2axis'}
+                    ]
+        }
+    );
+}
+
+function makePlot(){
+
+    data1 = prepareDataForPlotting(window.data[window.y_profile]);
+
+    if (window.y2_profile == '---'){
+        window.plot = singleGraphPlot(data1);
+    }
+    else {
+        data2 = prepareDataForPlotting(window.data[window.y2_profile]);
+        window.plot = doubleGraphPlot(data1, data2);
+    }
+
+    $("#title").html(window.region+' ('+regionAsString(window.regioncoords[window.region])+')');
 
     window.plot.replot();
 
@@ -441,6 +518,13 @@ function goRight(){
 
 function changeMetrics(){
     window.y_profile = $("#metrics :selected").text();
+    makePlot();
+    makeReferenceBar(window.sequences[window.region]);
+    $("#zoombuttons").hide();
+};
+
+function changeMetrics2(){
+    window.y2_profile = $("#metrics2 :selected").text();
     makePlot();
     makeReferenceBar(window.sequences[window.region]);
     $("#zoombuttons").hide();

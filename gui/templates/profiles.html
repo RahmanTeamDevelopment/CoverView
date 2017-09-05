@@ -49,6 +49,13 @@
             width: 14%;
         }
 
+        .cursor-size {
+            font-size: 12px;
+        }
+
+        .jqplot-cursor-tooltip {
+            font-size: 0.5em;
+        }
 
     </style>
 
@@ -137,9 +144,9 @@
                                  <option value="6">MEDBQ</option>
                             </select>
 
-                             <select class="pull-right">
-                                 <option value="0">---</option>
-                                <option value="1" selected="selected">COV</option>
+                             <select id="metrics2" onchange="changeMetrics2();" class="pull-right">
+                                 <option value="0" selected="selected">---</option>
+                                <option value="1">COV</option>
                                 <option value="2">QCOV</option>
                                  <option value="3">FLMQ</option>
                                  <option value="4">MEDMQ</option>

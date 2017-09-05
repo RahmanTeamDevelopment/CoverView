@@ -27,7 +27,8 @@
 
 
 .btnsmall {
-  background: white;
+  background: #cccccc;
+  color: black;
   -webkit-border-radius: 8;
   -moz-border-radius: 8;
   border-radius: 8px;
@@ -42,11 +43,11 @@
 }
 
 .btnsmall:hover {
-  background: #3e5a9c;
+  background: #3E4349;
   color: #ffffff;
 }
 
 .btnsmall:active {
-  background: #5379d1;
+  background: black;
   color: #ffffff;
 }
