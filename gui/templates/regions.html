@@ -135,6 +135,19 @@
         var data =  {{ results|tojson }}
         loadTable('contentrows', window.strandShown,  window.listed, data);
 
+        if ("{{region}}" != ''){
+
+            var rowToSelect = $("tr").filter(function() {
+                return $(this).find('td:first').text() == "{{region}}" ;
+            }).closest("tr");
+
+            swapRowSelection(rowToSelect);
+
+            var container = $('#scroller');
+            container.scrollTop(0);
+            container.scrollTop(rowToSelect.offset().top - container.offset().top - 200);
+        }
+
 	});
 
     function swapRowSelection(row) {
@@ -229,7 +242,7 @@
           var input, filter, table, tr, td, i;
           input = document.getElementById("myInput");
           window.searched = input.value.toUpperCase();
-          filter = window.searched
+          filter = window.searched;
           table = document.getElementById("contentrows");
           var counter = 0;
           tr = table.getElementsByTagName("tr");
@@ -362,7 +375,7 @@ function loadTable(tableId, strand, listed, data) {
 
                 <div class="row" style="position: relative; top: 0px">
                     <div class="col-lg-12">
-                        <div class='scroll' style="margin-top: 0px; margin-bottom: 0px; text-align:right;">
+                        <div class='scroll' id="scroller" style="margin-top: 0px; margin-bottom: 0px; text-align:right;">
                             <table id="contentrows" class="table hoverTable" rows=11 style="cursor: pointer; -webkit-touch-callout: none;
                             -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
 
@@ -435,9 +448,9 @@ function loadTable(tableId, strand, listed, data) {
                 <div hidden id="linker" align="left" class="row" style="position: relative; top: 10px;">
                     <div class="col-lg-12">
 
-                            <button name="goto" onclick="goToProfilesView();" class="btn"">Show Profiles</button>
-                            <button name="goto" onclick="goToGenesView();" class="btn">Show Gene</button>
-                            <button name="goto" onclick="goToChromosomesView();" class="btn">Show Chromosome</button>
+                            <button name="goto" onclick="goToProfilesView();" class="btn"">&#8599; Show Profiles</button>
+                            <button name="goto" onclick="goToGenesView();" class="btn">&#8599; Show Gene</button>
+                            <button name="goto" onclick="goToChromosomesView();" class="btn">&#8599; Show Chromosome</button>
 
                     </div>
                 </div>

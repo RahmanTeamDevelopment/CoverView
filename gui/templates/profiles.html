@@ -57,6 +57,51 @@
             font-size: 0.5em;
         }
 
+
+        .option input[type='radio'] {
+            border: 0;
+            clip: rect(0 0 0 0);
+            height: 1px;
+            margin: -1px;
+            overflow: hidden;
+            padding: 0;
+            position: absolute;
+            width: 1px;
+        }
+        .option label:not(.titlelabel){
+            font-size: 16px;
+            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+            display:inline-block;
+            width:5em;
+            margin:0 0em;
+            border-radius:6px;
+            background:#dae1ed;
+            color:#000;
+            border:3px solid #ccc;
+            text-align:center;
+            line-height:1.8em;
+            cursor:pointer;
+        }
+        .option input[type='radio']:checked + label{
+            font-size: 17px;
+            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+            background:#0b5c8e;
+            color: white;
+            border:1px solid #000;
+        }
+
+        .titlelabel {
+            color: black;
+            font-size: 19px;
+            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+            display:inline-block;
+            margin:0 0em;
+            text-align:right;
+            line-height:1.8em;
+            cursor:pointer;
+            padding: 5px;
+        }
+
     </style>
 
 
@@ -135,7 +180,7 @@
 
                          <div>
 
-                             <select id="metrics" onchange="changeMetrics();">
+                             <select id="metrics" onchange="changeMetrics();" style="background-color: #00749F; color: white">
                                 <option value="1" selected="selected">COV</option>
                                 <option value="2">QCOV</option>
                                  <option value="3">FLMQ</option>
@@ -144,7 +189,7 @@
                                  <option value="6">MEDBQ</option>
                             </select>
 
-                             <select id="metrics2" onchange="changeMetrics2();" class="pull-right">
+                             <select id="metrics2" onchange="changeMetrics2();" class="pull-right" style="background-color: darkred; color: white">
                                  <option value="0" selected="selected">---</option>
                                 <option value="1">COV</option>
                                 <option value="2">QCOV</option>
@@ -167,17 +212,80 @@
                          <div hidden id="zoombuttons"; style="text-align: center; position: relative; top: 5px;">
                              <button id="toleft" onclick="goLeft();" name="goto"  class="btnsmall" style="-webkit-touch-callout: none;
                             -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;"><</button>
-                            <button id="zoomout" onclick="handleZoomOut();" name="goto"  class="btnsmall" style="-webkit-touch-callout: none;
+                            <label id="zoomedcoords" class="labelsmall" >32930554-32930756</label>
+                             <button id="zoomout" onclick="handleZoomOut();" name="goto"  class="btnsmall" style="-webkit-touch-callout: none;
                             -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">Zoom out</button>
                             <button id="toright" onclick="goRight();" name="goto"  class="btnsmall" style="-webkit-touch-callout: none;
                             -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">></button>
 
                         </div>
 
+                         <div style="position: relative; top: 20px;">
+                         <form class="option">
+
+
+                            <span style="position: relative; left: 25px;">
+                            <label class="titlelabel" >Reads:</label>
+
+		                    <input type="radio" name="option2" id="allreads" value="all" onclick="switchToBothStrands();" checked>
+		                    <label for="allreads">All</label>
+
+		                    <input type="radio" name="option2" id="forward" value="forward" onclick="switchToForwardStrand();">
+		                    <label for="forward">Forward</label>
+
+		                    <input type="radio" name="option2" id="reverse" value="reverse" onclick="switchToReverseStrand();">
+		                    <label for="reverse">Reverse</label>
+                                </span>
+
+                             <span style="position: relative; left: 35px;">
+                               <label class="titlelabel">Cut-off:</label>
+
+		                    <input type="radio" name="option3" id="cutoffshow" value="all" onclick="switchCutoff();" checked>
+		                    <label for="cutoffshow">Show</label>
+
+		                    <input type="radio" name="option3" id="cutoffhide" value="forward" onclick="switchCutoff();">
+		                    <label for="cutoffhide">Hide</label>
+
+                             </span>
+
+
+                             <span style="position: relative; left: 45px;">
+
+                                 <label class="titlelabel">Axes:</label>
+
+		                    <input type="radio" name="option1" id="axesnormal" value="all" onclick="switchNorm();">
+		                    <label for="axesnormal">Normal</label>
+
+		                    <input type="radio" name="option1" id="rescale" value="forward" checked onclick="switchNorm();">
+		                    <label for="rescale">Re-scale</label>
+
+
+                                 </span>
+
+
+
+                        </form>
+                             </div>
+
                      </div>
 
                     <div class="col-md-1"></div>
                 </div>
+
+
+
+                <div class="row">
+                    <div class="col-md-2"  style="text-align: center">
+                        <button name="goto" class="btn" onclick="goToRegionsView();">&#8599; Show Region</button>
+
+                    </div>
+                    <div class="col-md-9"></div>
+                    <div class="col-md-1"></div>
+                </div>
+
+
+
+
 
 
 

@@ -6,17 +6,16 @@ app = Flask(__name__)
 
 app.secret_key = "something-from-os.urandom(24)"
 
-'''
 import logging
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
-'''
 
 def run(prefix, reffn):
     app.config['prefix'] = prefix
     app.config['data'] = parsers.read_data(prefix)
     app.config['regionlist'] = [x['region'] for x in app.config['data']['regions']]
     app.config['passedregions'] = [x['region'] for x in app.config['data']['regions'] if x['pass_or_fail'] == 'PASS']
+    app.config['region'] = ''
 
     sequences = {}
     ref = reference.Reference(reffn)
@@ -38,7 +37,7 @@ def regions():
         app.config['region'] = request.form['region']
         return request.form['region']
     else:
-        return render_template('regions.html', results=app.config.get('data')['regions'])
+        return render_template('regions.html', region=app.config['region'], results=app.config.get('data')['regions'])
 
 
 @app.route('/profiles', methods=['GET', 'POST'])

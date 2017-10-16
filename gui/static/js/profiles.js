@@ -8,8 +8,9 @@ function entry(region, regionlist, passedregions, regioncoords, sequences, ctx) 
 
     window.plot = null;
 
-    window.normtotal = false;
-    window.normmax = false;
+    window.norm = true;
+
+    window.reads = 'all';
 
     window.region = region;
     window.regionlist = regionlist;
@@ -17,6 +18,16 @@ function entry(region, regionlist, passedregions, regioncoords, sequences, ctx) 
     window.regioncoords = regioncoords;
     window.sequences = sequences;
     window.ctx = ctx;
+
+    window.yaxis_min_saved = null;
+    window.yaxis_max_saved = null;
+    window.yaxis_tickinterval_saved = null;
+    window.yaxis_numberticks_saved = null;
+
+    window.y2axis_min_saved = null;
+    window.y2axis_max_saved = null;
+    window.y2axis_tickinterval_saved = null;
+    window.y2axis_numberticks_saved = null;
 
     window.y_profile = 'COV';
     window.y2_profile = '---';
@@ -41,7 +52,7 @@ function entry(region, regionlist, passedregions, regioncoords, sequences, ctx) 
 
     var container = $('#scroller');
     container.scrollTop(0);
-    container.scrollTop( rowToSelect.offset().top - container.offset().top - 220);
+    container.scrollTop( rowToSelect.offset().top - container.offset().top - 200);
 
 
 };
@@ -120,7 +131,7 @@ function doubleGraphPlot(data1, data2){
 					tooltipLocation:'sw'
 				},
 
-                seriesColors: ['#00749F', '#e0ab5c'],
+                seriesColors: ['#00749F', 'darkred'],
 
                 highlighter: {
 					show: true,
@@ -171,14 +182,40 @@ function doubleGraphPlot(data1, data2){
 
 function makePlot(){
 
-    data1 = prepareDataForPlotting(window.data[window.y_profile]);
+
+    var prof = window.y_profile;
+    if (window.reads == 'forward'){
+        prof = prof + '+';
+    }
+    if (window.reads == 'reverse'){
+        prof = prof + '-';
+    }
+
+    var prof2 = window.y2_profile;
+    if (window.reads == 'forward'){
+        prof2 = prof2 + '+';
+    }
+    if (window.reads == 'reverse'){
+        prof2 = prof2 + '-';
+    }
+
+
+    data1 = prepareDataForPlotting(window.data[prof]);
 
     if (window.y2_profile == '---'){
         window.plot = singleGraphPlot(data1);
     }
     else {
-        data2 = prepareDataForPlotting(window.data[window.y2_profile]);
+        data2 = prepareDataForPlotting(window.data[prof2]);
         window.plot = doubleGraphPlot(data1, data2);
+
+        if (((window.y_profile == 'COV') && (window.y2_profile == 'QCOV')) || ((window.y_profile == 'QCOV') && (window.y2_profile == 'COV'))) {
+            var m = Math.max(window.plot.axes.yaxis.max, window.plot.axes.y2axis.max);
+            window.plot.axes.yaxis.max = m;
+            window.plot.axes.y2axis.max = m;
+            window.plot.axes.yaxis.tickInterval = (window.plot.axes.yaxis.max - window.plot.axes.yaxis.min) / 5;
+            window.plot.axes.y2axis.tickInterval = (window.plot.axes.y2axis.max - window.plot.axes.y2axis.min) / 5;
+        }
     }
 
     $("#title").html(window.region+' ('+regionAsString(window.regioncoords[window.region])+')');
@@ -189,8 +226,7 @@ function makePlot(){
     var y=$("#myplot").offset().top;
     $('#canvas').offset({top:y+500,left:x});
 
-
-
+    save_normal_scale_values();
 
 };
 
@@ -200,56 +236,25 @@ function regionAsString(coords){
 
 
 function handleZooming(){
-    var plotData =  window.plot.series[0].data;
-    var maxy = -1;
-    var miny = 9999999;
-    var totalmaxy = -1;
-    for (var i=0; i<plotData.length; i++){
-        if (plotData[i][1]>totalmaxy)
-                totalmaxy=plotData[i][1];
-        if (plotData[i][0] >= window.plot.axes.xaxis.min && plotData[i][0] <= window.plot.axes.xaxis.max){
-            if (plotData[i][1]>maxy)
-                maxy=plotData[i][1];
-            if (plotData[i][1]<miny)
-                miny=plotData[i][1];
+
+    if (window.norm) {
+
+        normalizeY();
+        if (window.y2_profile != '---') {
+            normalizeY2();
         }
-    }
 
-    if (maxy==miny){
-        var w=maxy;
-        miny=w*0.8;
-        maxy=w*1.2;
-    }
-
-    var maxy2=-1;
-    var miny2=9999999;
-    var totalmaxy2 = -1;
-    if (window.plot.series.length==2) {
-        var plotData2 =  window.plot.series[1].data;
-        for (var i=0; i<plotData.length; i++){
-            if (plotData2[i][1]>totalmaxy2)
-                totalmaxy2=plotData2[i][1];
-            if (plotData[i][0] >= window.plot.axes.xaxis.min && plotData[i][0] <= window.plot.axes.xaxis.max){
-                if (plotData2[i][1]>maxy2)
-                    maxy2=plotData2[i][1];
-                if (plotData2[i][1]<miny2)
-                    miny2=plotData2[i][1];
-            }
-        }
-    }
-
-    if (maxy2==miny2){
-        var w=maxy2;
-        miny2=w*0.8;
-        maxy2=w*1.1;
     }
 
 
     scaleXAxis();
 
-    scaleYAxes(miny,maxy,miny2,maxy2,totalmaxy,totalmaxy2);
+    window.plot.replot();
 
     makeReferenceBar(window.sequences[window.region]);
+
+    x_array = get_x_array();
+    $("#zoomedcoords").text(x_array[0]+"-"+x_array[x_array.length-1]);
 
     $("#zoombuttons").show();
 };
@@ -365,45 +370,6 @@ function makeReferenceBar(sequence) {
 };
 
 
-function scaleYAxes(miny1,maxy1,miny2,maxy2,totalmaxy,totalmaxy2){
-
-    if (window.normtotal){
-        window.plot.axes.yaxis.max=totalmaxy;
-        window.plot.axes.yaxis.min=0;
-        window.plot.axes.y2axis.max=totalmaxy2;
-        window.plot.axes.y2axis.min=0;
-    }
-    else {
-        window.plot.axes.yaxis.max=maxy1;
-        window.plot.axes.yaxis.min=miny1;
-        window.plot.axes.y2axis.max=maxy2;
-        window.plot.axes.y2axis.min=miny2;
-    }
-
-    if (window.normmax){
-        window.plot.axes.yaxis.max=Math.max(window.plot.axes.yaxis.max,window.plot.axes.y2axis.max)
-        window.plot.axes.y2axis.max=window.plot.axes.yaxis.max
-        window.plot.axes.yaxis.min=Math.min(window.plot.axes.yaxis.min,window.plot.axes.y2axis.min)
-        window.plot.axes.y2axis.min=window.plot.axes.yaxis.min
-    }
-
-
-    var delta=(window.plot.axes.yaxis.max-window.plot.axes.yaxis.min)*0.1;
-    window.plot.axes.yaxis.min=Math.max(window.plot.axes.yaxis.min-delta,0);
-    window.plot.axes.yaxis.max=window.plot.axes.yaxis.max+delta;
-    window.plot.axes.yaxis.tickInterval=(window.plot.axes.yaxis.max-window.plot.axes.yaxis.min)/5;
-    window.plot.axes.yaxis.numberTicks=6;
-
-    var delta=(window.plot.axes.y2axis.max-window.plot.axes.y2axis.min)*0.1;
-    window.plot.axes.y2axis.min=Math.max(window.plot.axes.y2axis.min-delta,0);
-    window.plot.axes.y2axis.max=window.plot.axes.y2axis.max+delta;
-    window.plot.axes.y2axis.tickInterval=(window.plot.axes.y2axis.max-window.plot.axes.y2axis.min)/5;
-    window.plot.axes.y2axis.numberTicks=6;
-
-    window.plot.replot();
-
-};
-
 
 function loadSideList(){
 
@@ -487,6 +453,14 @@ function readProfilesData(){
 
 function handleZoomOut(){
     window.plot.resetZoom();
+
+    var m = Math.max(window.plot.axes.yaxis.max, window.plot.axes.y2axis.max);
+    window.plot.axes.yaxis.max = m;
+    window.plot.axes.y2axis.max = m;
+    window.plot.axes.yaxis.tickInterval = (window.plot.axes.yaxis.max - window.plot.axes.yaxis.min) / 5;
+    window.plot.axes.y2axis.tickInterval = (window.plot.axes.y2axis.max - window.plot.axes.y2axis.min) / 5;
+    window.plot.replot();
+
     makeReferenceBar(window.sequences[window.region]);
     $("#zoombuttons").hide();
 };
@@ -500,8 +474,21 @@ function goLeft(){
 
     window.plot.axes.xaxis.min=window.plot.axes.xaxis.min-1;
     window.plot.axes.xaxis.max=window.plot.axes.xaxis.max-1;
+
+    if (window.norm) {
+
+        normalizeY();
+        if (window.y2_profile != '---') {
+            normalizeY2();
+        }
+
+    }
+
     window.plot.replot();
     makeReferenceBar(window.sequences[window.region]);
+
+    x_array = get_x_array();
+    $("#zoomedcoords").text(x_array[0]+"-"+x_array[x_array.length-1]);
 };
 
 function goRight(){
@@ -512,8 +499,19 @@ function goRight(){
 
     window.plot.axes.xaxis.min=window.plot.axes.xaxis.min+1;
     window.plot.axes.xaxis.max=window.plot.axes.xaxis.max+1;
+
+    if (window.norm) {
+        normalizeY();
+        if (window.y2_profile != '---') {
+            normalizeY2();
+        }
+    }
+
     window.plot.replot();
     makeReferenceBar(window.sequences[window.region]);
+
+    x_array = get_x_array();
+    $("#zoomedcoords").text(x_array[0]+"-"+x_array[x_array.length-1]);
 };
 
 function changeMetrics(){
@@ -530,3 +528,174 @@ function changeMetrics2(){
     $("#zoombuttons").hide();
 };
 
+function normalizeY(){
+    var plotData =  window.plot.series[0].data;
+    var y=[];
+    for (i=0;i<plotData.length;i++) {
+        if (plotData[i][0] >= window.plot.axes.xaxis.min && plotData[i][0] <= window.plot.axes.xaxis.max)
+            y.push(plotData[i][1]);
+    }
+    var maxtotal_y = Math.max.apply(null, y);
+    var mintotal_y = Math.min.apply(null, y);
+
+    if (maxtotal_y==mintotal_y){
+        var w=maxtotal_y;
+        mintotal_y=w*0.8;
+        maxtotal_y=w*1.2;
+    }
+
+    window.plot.axes.yaxis.max=maxtotal_y;
+    window.plot.axes.yaxis.min=mintotal_y;
+
+    var delta=(window.plot.axes.yaxis.max-window.plot.axes.yaxis.min)*0.1;
+    window.plot.axes.yaxis.min=Math.max(window.plot.axes.yaxis.min-delta,0);
+    window.plot.axes.yaxis.max=window.plot.axes.yaxis.max+delta;
+    window.plot.axes.yaxis.tickInterval=(window.plot.axes.yaxis.max-window.plot.axes.yaxis.min)/5;
+    window.plot.axes.yaxis.numberTicks=6;
+
+};
+
+
+function save_normal_scale_values(){
+
+    window.yaxis_min_saved = window.plot.axes.yaxis.min;
+    window.yaxis_max_saved = window.plot.axes.yaxis.max;
+    window.yaxis_tickinterval_saved = window.plot.axes.yaxis.tickInterval;
+    window.yaxis_numberticks_saved = window.plot.axes.yaxis.numberTicks;
+
+    if (window.y2_profile != '---') {
+        window.y2axis_min_saved = window.plot.axes.y2axis.min;
+        window.y2axis_max_saved = window.plot.axes.y2axis.max;
+        window.y2axis_tickinterval_saved = window.plot.axes.y2axis.tickInterval;
+        window.y2axis_numberticks_saved = window.plot.axes.y2axis.numberTicks;
+    }
+
+};
+
+
+function normal_scaleY(){
+    window.plot.axes.yaxis.min = window.yaxis_min_saved;
+    window.plot.axes.yaxis.max = window.yaxis_max_saved;
+    window.plot.axes.yaxis.tickInterval = window.yaxis_tickinterval_saved;
+    window.plot.axes.yaxis.numberTicks = window.yaxis_numberticks_saved;
+};
+
+
+function normal_scaleY2(){
+    window.plot.axes.y2axis.min = window.y2axis_min_saved;
+    window.plot.axes.y2axis.max = window.y2axis_max_saved;
+    window.plot.axes.y2axis.tickInterval = window.y2axis_tickinterval_saved;
+    window.plot.axes.y2axis.numberTicks = window.y2axis_numberticks_saved;
+};
+
+
+function normalizeY2(){
+
+    var plotData =  window.plot.series[1].data;
+    var y=[];
+    for (i=0;i<plotData.length;i++) {
+        if (plotData[i][0] >= window.plot.axes.xaxis.min && plotData[i][0] <= window.plot.axes.xaxis.max)
+            y.push(plotData[i][1]);
+    }
+    var maxtotal_y = Math.max.apply(null, y);
+    var mintotal_y = Math.min.apply(null, y);
+
+    if (maxtotal_y==mintotal_y){
+        var w=maxtotal_y;
+        mintotal_y=w*0.8;
+        maxtotal_y=w*1.2;
+    }
+
+    window.plot.axes.y2axis.max=maxtotal_y;
+    window.plot.axes.y2axis.min=mintotal_y;
+
+
+    var delta=(window.plot.axes.y2axis.max-window.plot.axes.y2axis.min)*0.1;
+    window.plot.axes.y2axis.min=Math.max(window.plot.axes.y2axis.min-delta,0);
+    window.plot.axes.y2axis.max=window.plot.axes.y2axis.max+delta;
+    window.plot.axes.y2axis.tickInterval=(window.plot.axes.y2axis.max-window.plot.axes.y2axis.min)/5;
+    window.plot.axes.y2axis.numberTicks=6;
+
+
+};
+
+
+function switchNorm(){
+
+    if (window.norm)
+        window.norm = false;
+    else
+        window.norm = true;
+
+     if (window.norm) {
+
+        normalizeY();
+        if (window.y2_profile != '---') {
+            normalizeY2();
+        }
+     }
+     else {
+         normal_scaleY();
+        if (window.y2_profile != '---') {
+            normal_scaleY2();
+        }
+     }
+
+    window.plot.replot();
+
+};
+
+
+function switchCutoff(){
+
+   alert('cutoff pressed');
+
+};
+
+
+function saveRegionName(region){
+    $.ajax({
+        url: '/regions',
+        data: {"region": region},
+        type: 'POST',
+        success: function(response) {
+        },
+        error: function(error) {
+        }
+    });
+};
+
+
+function goToRegionsView(){
+    saveRegionName(whichSelected());
+    window.location = '/regions';
+};
+
+function whichSelected(){
+    var sel = '';
+    $('.selected').each(function() {
+        sel = $(this).find('td:first').text();
+    });
+    return sel
+};
+
+function switchToForwardStrand(){
+    window.reads = 'forward';
+    makePlot();
+    makeReferenceBar(window.sequences[window.region]);
+    $("#zoombuttons").hide();
+};
+
+function switchToReverseStrand(){
+    window.reads = 'reverse';
+    makePlot();
+    makeReferenceBar(window.sequences[window.region]);
+    $("#zoombuttons").hide();
+};
+
+function switchToBothStrands(){
+    window.reads = 'all';
+    makePlot();
+    makeReferenceBar(window.sequences[window.region]);
+    $("#zoombuttons").hide();
+};
