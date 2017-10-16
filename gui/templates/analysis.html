@@ -24,6 +24,32 @@
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 
+    <style style="text/css">
+
+        td.column1 {
+            width: 50%;
+            border-collapse:collapse;
+            text-align:left;
+            table-layout: fixed;
+            background-color:  #0b5c8e;
+            color: white;
+            font-size: 19px;
+            border: black 1px solid;
+        }
+
+        td.column2 {
+            width: 50%;
+            border-collapse:collapse;
+            text-align:left;
+            table-layout: fixed;
+            background-color: #e6e8ed;
+            color: black;
+            font-size: 19px;
+            border: black 1px solid;
+        }
+
+    </style>
+
 </head>
 
 <body>
@@ -63,6 +89,51 @@
                     </div>
                 </div>
 
+
+                <div class="row" style="position: relative; top: 0px">
+                    <div class="col-lg-12">
+                            <table id="infotable" class="table" align="center" rows=11 style="position: relative; top: 80px; width: 50%; -webkit-touch-callout: none;
+                            -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
+                                <tr>
+                                    <td class="column1"> Date of analysis:</td>
+                                    <td class="column2"> 04/11/2017 </td>
+                                </tr>
+                                <tr>
+                                    <td class="column1"> Duplicatee reads:</td>
+                                    <td class="column2"> Included </td>
+                                </tr>
+                                <tr>
+                                    <td class="column1"> Definition of PASS:</td>
+                                    <td class="column2"> blablablablablablabla </td>
+                                </tr>
+                                <tr>
+                                    <td class="column1"> Hello:</td>
+                                    <td class="column2"> Bello </td>
+                                </tr>
+
+
+                            </table>
+                    </div>
+                </div>
+
+
+                <div class="row" style="position: relative; top: 120px">
+                    <div class="col-lg-12">
+                            <table id="resultstable" class="table" align="center" rows=11 style="width: 50%; -webkit-touch-callout: none;
+                            -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
+                                <tr>
+                                    <td class="column1"> Number of failed genes:</td>
+                                    <td class="column2"> xxx </td>
+                                </tr>
+                                <tr>
+                                    <td class="column1"> Number of failed regions:</td>
+                                    <td class="column2"> xxxx </td>
+                                </tr>
+
+
+                            </table>
+                    </div>
+                </div>
 
             </div>
 
