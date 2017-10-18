@@ -22,6 +22,24 @@
 
     <link href="static/css/buttons.css" rel="stylesheet">
 
+    <style style="text/css">
+
+        html, body { margin: 0; padding: 0}
+
+        div.scroll  {
+            width: 100%;
+            overflow-y: scroll;
+            max-height: 505px;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+
+    </style>
+
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 
 </head>
@@ -143,6 +161,15 @@
       });
 
 
+    function swapRowSelection(row) {
+        var selected = $(row).hasClass("selected");
+        $("#contentrows tr").removeClass("selected");
+        if(!selected) {
+            $(row).addClass("selected");
+        }
+    };
+
+
 
 </script>
 
@@ -203,83 +230,259 @@
                             <table id="contentrows" class="table hoverTable" rows=11 style="cursor: pointer; -webkit-touch-callout: none;
                             -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
 
-                                <tr>
+                                <tr onclick="swapRowSelection(this);">
                                     <td>BRCA2</td>
                                     <td>27</td>
                                     <td>4</td>
                                 </tr>
 
-                                <tr>
+                                <tr onclick="swapRowSelection(this);">
                                     <td>BRCA2</td>
                                     <td>27</td>
                                     <td>4</td>
                                 </tr>
 
-                                <tr>
+                                <tr onclick="swapRowSelection(this);">
                                     <td>BRCA2</td>
                                     <td>27</td>
                                     <td>4</td>
                                 </tr>
 
-                                <tr>
+                                <tr onclick="swapRowSelection(this);">
                                     <td>BRCA2</td>
                                     <td>27</td>
                                     <td>4</td>
                                 </tr>
 
-                                <tr>
+                                <tr onclick="swapRowSelection(this);">
                                     <td>BRCA2</td>
                                     <td>27</td>
                                     <td>4</td>
                                 </tr>
 
-                                <tr>
+                                <tr onclick="swapRowSelection(this);">
                                     <td>BRCA2</td>
                                     <td>27</td>
                                     <td>4</td>
                                 </tr>
 
-                                <tr>
+                                <tr onclick="swapRowSelection(this);">
                                     <td>BRCA2</td>
                                     <td>27</td>
                                     <td>4</td>
                                 </tr>
 
-                                <tr>
+                                <tr onclick="swapRowSelection(this);">
                                     <td>BRCA2</td>
                                     <td>27</td>
                                     <td>4</td>
                                 </tr>
 
-                                <tr>
+                                <tr onclick="swapRowSelection(this);">
                                     <td>BRCA2</td>
                                     <td>27</td>
                                     <td>4</td>
                                 </tr>
 
-                                <tr>
+                                <tr onclick="swapRowSelection(this);">
                                     <td>BRCA2</td>
                                     <td>27</td>
                                     <td>4</td>
                                 </tr>
 
-                                <tr>
+                                <tr onclick="swapRowSelection(this);">
                                     <td>BRCA2</td>
                                     <td>27</td>
                                     <td>4</td>
                                 </tr>
 
-                                <tr>
+                                <tr onclick="swapRowSelection(this);">
                                     <td>BRCA2</td>
                                     <td>27</td>
                                     <td>4</td>
                                 </tr>
 
-                                <tr>
+                                <tr onclick="swapRowSelection(this);">
                                     <td>BRCA2</td>
                                     <td>27</td>
                                     <td>4</td>
                                 </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr onclick="swapRowSelection(this);">
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+
 
 
                             </table>
