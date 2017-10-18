@@ -192,12 +192,6 @@
         window.location = '/genes';
     };
 
-    function goToChromosomesView(){
-        saveRegionName();
-        window.location = '/chromosomes';
-    };
-
-
     function switchToBothStrands() {
         var data =  {{ results|tojson }}
         window.strandShown = 'both';
@@ -337,7 +331,6 @@ function loadTable(tableId, strand, listed, data) {
             <ul class="sidebar-nav">
                 <li class="sidebar-brand"><a href="/">CoverView GUI</a></li>
                 <li><a href="/analysis">Analysis View</a></li>
-                <li><a href="/chromosomes">Chromosomes View</a></li>
                 <li><a href="/genes">Genes View</a></li>
                 <li id="thispage"><a href="/regions">Regions View</a></li>
                 <li><a href="/profiles">Profiles View</a></li>
@@ -450,7 +443,6 @@ function loadTable(tableId, strand, listed, data) {
 
                             <button name="goto" onclick="goToProfilesView();" class="btn"">&#8599; Show Profiles</button>
                             <button name="goto" onclick="goToGenesView();" class="btn">&#8599; Show Gene</button>
-                            <button name="goto" onclick="goToChromosomesView();" class="btn">&#8599; Show Chromosome</button>
 
                     </div>
                 </div>

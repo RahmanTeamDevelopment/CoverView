@@ -61,11 +61,6 @@ def genes():
     return render_template('genes.html', region=app.config['region'])
 
 
-@app.route('/chromosomes', methods=['GET', 'POST'])
-def chromosomes():
-    return render_template('chroms.html', region=app.config['region'])
-
-
 @app.route('/analysis', methods=['GET', 'POST'])
 def analysis():
     return render_template('analysis.html')
