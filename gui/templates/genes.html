@@ -79,30 +79,41 @@
 			        show: false
 			      },
 		    legend: {
-		      show: false,
-		      location: 'e',
-		      placement: 'insideGrid'
-		    },
+                renderer: $.jqplot.EnhancedLegendRenderer,
+		      show: true,
+		      location: 'nw',
+		      placement: 'insideGrid',
+                rendererOptions: {
+                    fontSize: "16px"
+                }
+            },
+            axesDefaults: {
 
+                tickOptions: {
+
+                    fontSize: '17px'
+                }
+            },
             axes: {
                 xaxis: {
 	  			  renderer: $.jqplot.CategoryAxisRenderer,
 	              rendererOptions: {  tickRenderer: $.jqplot.AxisTickRenderer,
 	                                  tickOptions: {  mark: null,
-	                                                  fontSize: 15
+	                                                  fontSize: 17
 	                                               }
 	              },
 	              ticks: chroms
 
                 },
                 yaxis: {
-		        padMin: 0
+		        padMin: 0,
+                    fontSize: 17
                 },
             },
 
 			series:[
-				{label: 'On target'},
-				{label: 'Off target'}
+				{label: 'On target RC'},
+				{label: 'Off target RC'}
 			],
 			highlighter: {
 				show: true,
@@ -137,7 +148,7 @@
 
                     window.selected = clicked;
 
-                    $("#title").html('chr'+window.selected+' selected; listing genes on this chromosome');
+                    $("#title").html('Chromosome '+window.selected+' selected; listing genes');
 
 
 
@@ -203,7 +214,7 @@
 
                     <div class="col-lg-8">
 
-                        <div style="text-align: center; position: relative;">
+                        <div style="text-align: right; position: relative;">
                             <h3 id="title">No chromosome selected; listing all genes</h3>
                         </div>
 
@@ -519,6 +530,8 @@
     <script type="text/javascript" src="static/jqplot/plugins/jqplot.canvasAxisLabelRenderer.js"></script>
     <script type="text/javascript" src="static/jqplot/plugins/jqplot.cursor.js"></script>
 	<script type="text/javascript" src="static/jqplot/plugins/jqplot.highlighter.js"></script>
+
+    <script type="text/javascript" src="static/jqplot/plugins/jqplot.enhancedLegendRenderer.js"></script>
 
     <link rel="stylesheet" type="text/css" href="static/jqplot/jquery.jqplot.css" />
 
