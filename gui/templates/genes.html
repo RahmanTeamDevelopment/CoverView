@@ -29,7 +29,119 @@
 <body>
 
 
+
 <script type="text/javascript">
+
+      $(document).ready(function(){
+
+
+          var chroms = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,'X','Y'];
+
+          window.selected = '';
+
+          window.ctx = $('#canvas')[0].getContext("2d");
+
+
+          $.jqplot.config.enablePlugins = true;
+
+        var chromPlot = $.jqplot('cplot',[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24],[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]], {
+            seriesColors: ['#00749F', 'darkred'],
+            stackSeries: true,
+		    captureRightClick: true,
+		    seriesDefaults:{
+		      renderer: $.jqplot.BarRenderer,
+		      rendererOptions: {
+		          barMargin: 8,
+		          highlightMouseDown: false,
+                  barPadding: 4,
+		      },
+		      pointLabels: {show: false}
+		    },
+			cursor: {
+			        show: false
+			      },
+		    legend: {
+		      show: false,
+		      location: 'e',
+		      placement: 'insideGrid'
+		    },
+
+            axes: {
+                xaxis: {
+	  			  renderer: $.jqplot.CategoryAxisRenderer,
+	              rendererOptions: {  tickRenderer: $.jqplot.AxisTickRenderer,
+	                                  tickOptions: {  mark: null,
+	                                                  fontSize: 15
+	                                               }
+	              },
+	              ticks: chroms
+
+                },
+                yaxis: {
+		        padMin: 0
+                },
+            },
+
+			series:[
+				{label: 'On target'},
+				{label: 'Off target'}
+			],
+			highlighter: {
+				show: true,
+				sizeAdjust: 0,
+				tooltipAxes: "y",
+				formatString: "%d",
+			}
+
+		  });
+
+
+          $('#cplot').bind('jqplotDataClick',
+            function (ev, seriesIndex, pointIndex, data) {
+
+                var clicked = chroms[pointIndex];
+
+                var canvas = document.getElementById("canvas");
+
+                window.ctx.clearRect(0, 0, canvas.width, canvas.height);
+                window.ctx.beginPath();
+
+                if (clicked != window.selected) {
+                    var pix = chromPlot.axes.xaxis.u2p(data[0]);
+                    window.ctx.strokeStyle = "black";
+                    window.ctx.moveTo(pix, 0);
+                    window.ctx.lineTo(pix + 10, 20);
+                    window.ctx.lineTo(pix - 10, 20);
+                    window.ctx.lineTo(pix, 0);
+                    window.ctx.stroke();
+                    window.ctx.fillStyle = "black";
+                    window.ctx.fill();
+
+                    window.selected = clicked;
+
+                    $("#title").html('chr'+window.selected+' selected; listing genes on this chromosome');
+
+
+
+                }
+                else {
+                    window.selected = '';
+                    $("#title").html('No chromosome selected; listing all genes');
+                }
+
+
+
+
+
+
+
+            }
+        );
+
+
+
+      });
+
 
 
 </script>
@@ -58,10 +170,127 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <h1>Genes</h1>
-                        <br/>
-
-                        {{ region }}
                     </div>
+                </div>
+
+                <div class="row" style="position: relative; top: 20px">
+
+                    <div class="col-lg-8">
+
+                        <div style="text-align: center; position: relative;">
+                            <h3 id="title">No chromosome selected; listing all genes</h3>
+                        </div>
+
+                        <div id="cplot" style="height: 530px; width: 100%; "></div>
+
+                        <div width=100% style="align: center;">
+                            <canvas id="canvas" height=20px width=900px style="align: center;"></canvas>
+                        </div>
+
+                    </div>
+
+                    <div class="col-lg-4" style="position: relative; top: 15px">
+
+                        <table class="table" rows=1 style="margin: 0px;">
+                            <tr style="border-collapse:collapse; text-align:center; table-layout: fixed; background-color: #0b5c8e; color: white; font-size: 17px; border: black 1px solid;">
+                                <td>Gene name</td>
+                                <td>Exons</td>
+                                <td>Failed exons</td>
+                            </tr>
+                        </table>
+
+
+                        <div class='scroll' id="scroller" style="margin-top: 0px; margin-bottom: 0px; text-align:right;">
+                            <table id="contentrows" class="table hoverTable" rows=11 style="cursor: pointer; -webkit-touch-callout: none;
+                            -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
+
+                                <tr>
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr>
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr>
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr>
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr>
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr>
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr>
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr>
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr>
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr>
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr>
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr>
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+                                <tr>
+                                    <td>BRCA2</td>
+                                    <td>27</td>
+                                    <td>4</td>
+                                </tr>
+
+
+                            </table>
+                        </div>
+
+
+
+                    </div>
+
+
                 </div>
 
 
@@ -77,6 +306,19 @@
 
     <!-- Bootstrap Core JavaScript -->
     <script src="static/js/bootstrap.min.js"></script>
+
+
+    <script type="text/javascript" src="static/jqplot/jquery.jqplot.js"></script>
+    <script type="text/javascript" src="static/jqplot/plugins/jqplot.barRenderer.js"></script>
+    <script type="text/javascript" src="static/jqplot/plugins/jqplot.pieRenderer.js"></script>
+    <script type="text/javascript" src="static/jqplot/plugins/jqplot.categoryAxisRenderer.js"></script>
+    <script type="text/javascript" src="static/jqplot/plugins/jqplot.pointLabels.js"></script>
+    <script type="text/javascript" src="static/jqplot/plugins/jqplot.canvasTextRenderer.js"></script>
+    <script type="text/javascript" src="static/jqplot/plugins/jqplot.canvasAxisLabelRenderer.js"></script>
+    <script type="text/javascript" src="static/jqplot/plugins/jqplot.cursor.js"></script>
+	<script type="text/javascript" src="static/jqplot/plugins/jqplot.highlighter.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="static/jqplot/jquery.jqplot.css" />
 
 </body>
 
