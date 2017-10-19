@@ -18,6 +18,9 @@ def read_metadata(prefix):
     with open(prefix + '_meta.json') as json_data:
         ret = json.load(json_data)
         json_data.close()
+
+    ret['config_opts']['count_duplicate_reads'] = 'Included' if ret['config_opts']['count_duplicate_reads'] else 'Excluded'
+
     return ret
 
 
