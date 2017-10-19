@@ -90,7 +90,7 @@
             width: 170px;
             font-size: 17px;
             padding: 12px 20px 12px 40px;
-            border: 1px solid #ddd;
+            border: 1px solid darkgray;
             margin-bottom: 12px;
         }
 
@@ -149,7 +149,7 @@
 
                 tickOptions: {
 
-                    fontSize: '17px'
+                    fontSize: '16px'
                 }
             },
             axes: {
@@ -165,7 +165,7 @@
                 },
                 yaxis: {
 		        padMin: 0,
-                    fontSize: 17
+                    fontSize: 15
                 },
             },
 
@@ -233,8 +233,10 @@
     function swapRowSelection(row) {
         var selected = $(row).hasClass("selected");
         $("#contentrows tr").removeClass("selected");
+        $("#linker").hide();
         if(!selected) {
             $(row).addClass("selected");
+            $("#linker").show();
         }
     };
 
@@ -570,7 +572,7 @@
 
                     <div class="col-lg-6">
 
-                        <div id="linker" align="left" class="row" style="position: relative; top: 10px;">
+                        <div hidden id="linker" align="left" class="row" style="position: relative; top: 10px;">
                     <div class="col-lg-12">
 
                             <button name="goto" onclick="goToProfilesView();" class="btn"">&#8599; Show Exons</button>
@@ -588,7 +590,7 @@
 
                             <input type="text" autocomplete="off" id="myInput" onkeyup="doSearch();" placeholder="Search..." title="Type in a name">
 
-                            <span style="position: relative; left: 25px;">
+                            <span style="position: relative; left: 15px;">
 
                             <label class="titlelabel">Regions:</label>
 

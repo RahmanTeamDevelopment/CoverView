@@ -278,6 +278,10 @@ function scaleXAxis(){
     var first = x_array[0];
     var last = x_array[x_array.length-1];
 
+    window.plot.axes.xaxis.min = first;
+    window.plot.axes.xaxis.max = last;
+
+
     var interval=Math.floor((last-first)/5);
     if ((last-first)>=10){
         window.plot.axes.xaxis.tickInterval=interval;
@@ -454,12 +458,14 @@ function readProfilesData(){
 function handleZoomOut(){
     window.plot.resetZoom();
 
-    var m = Math.max(window.plot.axes.yaxis.max, window.plot.axes.y2axis.max);
-    window.plot.axes.yaxis.max = m;
-    window.plot.axes.y2axis.max = m;
-    window.plot.axes.yaxis.tickInterval = (window.plot.axes.yaxis.max - window.plot.axes.yaxis.min) / 5;
-    window.plot.axes.y2axis.tickInterval = (window.plot.axes.y2axis.max - window.plot.axes.y2axis.min) / 5;
-    window.plot.replot();
+    if (((window.y_profile == 'COV') && (window.y2_profile == 'QCOV')) || ((window.y_profile == 'QCOV') && (window.y2_profile == 'COV'))) {
+        var m = Math.max(window.plot.axes.yaxis.max, window.plot.axes.y2axis.max);
+        window.plot.axes.yaxis.max = m;
+        window.plot.axes.y2axis.max = m;
+        window.plot.axes.yaxis.tickInterval = (window.plot.axes.yaxis.max - window.plot.axes.yaxis.min) / 5;
+        window.plot.axes.y2axis.tickInterval = (window.plot.axes.y2axis.max - window.plot.axes.y2axis.min) / 5;
+        window.plot.replot();
+    }
 
     makeReferenceBar(window.sequences[window.region]);
     $("#zoombuttons").hide();
