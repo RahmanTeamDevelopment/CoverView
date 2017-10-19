@@ -16,6 +16,7 @@ def run(prefix, reffn):
     app.config['regionlist'] = [x['region'] for x in app.config['data']['regions']]
     app.config['passedregions'] = [x['region'] for x in app.config['data']['regions'] if x['pass_or_fail'] == 'PASS']
     app.config['region'] = ''
+    app.config['metadata'] = parsers.read_metadata(prefix)
 
     sequences = {}
     ref = reference.Reference(reffn)
@@ -63,5 +64,5 @@ def genes():
 
 @app.route('/analysis', methods=['GET', 'POST'])
 def analysis():
-    return render_template('analysis.html')
+    return render_template('analysis.html', metadata=app.config['metadata'])
 

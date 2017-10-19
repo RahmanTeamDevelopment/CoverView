@@ -1,4 +1,4 @@
-
+import json
 
 def read_data(prefix):
     """Read all CoverView output data required by the GUI"""
@@ -11,6 +11,14 @@ def read_data(prefix):
         'region_coords': region_coords,
         'summary': read_summary_data(prefix)
     }
+
+
+def read_metadata(prefix):
+
+    with open(prefix + '_meta.json') as json_data:
+        ret = json.load(json_data)
+        json_data.close()
+    return ret
 
 
 def read_regions_data(prefix):
