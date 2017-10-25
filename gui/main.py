@@ -72,6 +72,17 @@ def analysis():
         'analysis.html',
         metadata=app.config['metadata'],
         regions_stat=app.config['failed_regions_stat'],
-        genes_stat=app.config['failed_genes_stat']
+        genes_stat=app.config['failed_genes_stat'],
+        pass_def=create_pass_critera_string()
     )
+
+def create_pass_critera_string():
+    criteria = app.config['metadata']['config_opts']['pass']
+    ret = []
+    for k,v in criteria.iteritems():
+        metrics = k[:-4]
+        relation = '>=' if k[-3:] == 'MIN' else '<='
+        ret.append('{} {} {}'.format(metrics, relation, v))
+    return '; '.join(ret)
+
 
