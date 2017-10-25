@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, session, redirect, url_for, jsonify, send_file
 import parsers
 from coverview import reference
+import helper
 
 app = Flask(__name__)
 
@@ -23,6 +24,9 @@ def run(prefix, reffn):
     for region, coords in app.config['data']['region_coords'].iteritems():
         sequences[region] = ref.getSequence(coords[0], int(coords[1]), int(coords[2]))
     app.config['sequences'] = sequences
+
+    app.config['genes_by_chrom'], app.config['failed_regions_stat'], app.config['failed_genes_stat'] \
+        = helper.create_fail_statistics(app.config.get('data')['regions'], app.config['data']['region_coords'])
 
     app.run()
 
@@ -64,5 +68,10 @@ def genes():
 
 @app.route('/analysis', methods=['GET', 'POST'])
 def analysis():
-    return render_template('analysis.html', metadata=app.config['metadata'])
+    return render_template(
+        'analysis.html',
+        metadata=app.config['metadata'],
+        regions_stat=app.config['failed_regions_stat'],
+        genes_stat=app.config['failed_genes_stat']
+    )
 
