@@ -21,20 +21,23 @@ def create_fail_statistics(regions_data, region_coords):
         if fail:
             by_gene[gene_name]['failedexons'] += 1
 
+    all_genes = []
     by_chrom = {}
     counter_failed_genes = 0
     for key, value in by_gene.iteritems():
         chrom = value['chrom']
         if chrom not in by_chrom:
             by_chrom[chrom] = []
-        by_chrom[chrom].append({
+        g = {
             'gene': key,
             'exons': value['exons'],
             'failedexons': value['failedexons']
-        })
+        }
+        all_genes.append(g)
+        by_chrom[chrom].append(g)
         if value['failedexons'] > 0:
             counter_failed_genes += 1
 
-    return by_chrom, '{} (of {} regions)'.format(counter_failed_regions, len(regions_data)), '{} (of {} genes)'.format(counter_failed_genes, len(by_gene))
+    return all_genes, by_chrom, '{} (of {} regions)'.format(counter_failed_regions, len(regions_data)), '{} (of {} genes)'.format(counter_failed_genes, len(by_gene))
 
 

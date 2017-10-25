@@ -25,7 +25,7 @@ def run(prefix, reffn):
         sequences[region] = ref.getSequence(coords[0], int(coords[1]), int(coords[2]))
     app.config['sequences'] = sequences
 
-    app.config['genes_by_chrom'], app.config['failed_regions_stat'], app.config['failed_genes_stat'] \
+    app.config['all_genes'], app.config['genes_by_chrom'], app.config['failed_regions_stat'], app.config['failed_genes_stat'] \
         = helper.create_fail_statistics(app.config.get('data')['regions'], app.config['data']['region_coords'])
 
     app.run()
@@ -63,7 +63,10 @@ def profiles():
 
 @app.route('/genes', methods=['GET', 'POST'])
 def genes():
-    return render_template('genes.html', region=app.config['region'])
+    return render_template(
+        'genes.html',
+        region=app.config['region']
+    )
 
 
 @app.route('/analysis', methods=['GET', 'POST'])
