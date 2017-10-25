@@ -207,13 +207,14 @@
                     window.selected = clicked;
 
                     $("#title").html('Chr'+window.selected+' selected; listing genes on chromosome');
-
+                    loadGenesOfChromosome(window.selected);
 
 
                 }
                 else {
                     window.selected = '';
                     $("#title").html('No chromosome selected; listing all genes');
+                    loadAllGenes();
                 }
 
 
@@ -224,6 +225,10 @@
 
             }
         );
+
+
+
+          loadAllGenes();
 
 
 
@@ -241,6 +246,56 @@
     };
 
 
+    function loadAllGenes(){
+
+        $('#contentrows tr').remove();
+
+        var rows = '';
+        $.each({{ all_genes|tojson }}, function(index, item) {
+            var row =  '<tr onclick="swapRowSelection(this);" >';
+
+            row += '<td>' + item['gene'] + '</td>';
+            row += '<td>' + item['exons'] + '</td>';
+
+            if (item['failedexons'] == 0)
+                row += '<td>' + item['failedexons']+ '</td>';
+            else
+                row += '<td style="color: #e22c11; font-weight: bold;">' + item['failedexons'] + '</td>';
+
+            rows += row + '</tr>';
+        });
+
+        $('#contentrows').html(rows);
+
+    };
+
+
+    function loadGenesOfChromosome(chrom){
+
+        $('#contentrows tr').remove();
+
+        data = {{ genes_by_chrom|tojson }}
+
+        var rows = '';
+        $.each(data[chrom], function(index, item) {
+            var row =  '<tr onclick="swapRowSelection(this);" >';
+
+            row += '<td>' + item['gene'] + '</td>';
+            row += '<td>' + item['exons'] + '</td>';
+
+            if (item['failedexons'] == 0)
+                row += '<td>' + item['failedexons']+ '</td>';
+            else
+                row += '<td style="color: #e22c11; font-weight: bold;">' + item['failedexons'] + '</td>';
+
+            rows += row + '</tr>';
+        });
+
+        $('#contentrows').html(rows);
+
+    };
+
+
 
 </script>
 
@@ -255,6 +310,7 @@
                 <li id="thispage"><a href="/genes">Genes View</a></li>
                 <li><a href="/regions">Regions View</a></li>
                 <li><a href="/profiles">Profiles View</a></li>
+                <li><a href="/usage">Usage Guide</a></li>
             </ul>
         </div>
         <!-- /#sidebar-wrapper -->
@@ -300,260 +356,6 @@
                         <div class='scroll' id="scroller" style="margin-top: 0px; margin-bottom: 0px; text-align:right;">
                             <table id="contentrows" class="table hoverTable" rows=11 style="cursor: pointer; -webkit-touch-callout: none;
                             -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-                                <tr onclick="swapRowSelection(this);">
-                                    <td>BRCA2</td>
-                                    <td>27</td>
-                                    <td>4</td>
-                                </tr>
-
-
 
 
                             </table>

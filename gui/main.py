@@ -65,7 +65,9 @@ def profiles():
 def genes():
     return render_template(
         'genes.html',
-        region=app.config['region']
+        region=app.config['region'],
+        all_genes=app.config['all_genes'],
+        genes_by_chrom=app.config['genes_by_chrom']
     )
 
 
@@ -79,6 +81,7 @@ def analysis():
         pass_def=create_pass_critera_string()
     )
 
+
 def create_pass_critera_string():
     criteria = app.config['metadata']['config_opts']['pass']
     ret = []
@@ -89,3 +92,6 @@ def create_pass_critera_string():
     return '; '.join(ret)
 
 
+@app.route('/usage', methods=['GET', 'POST'])
+def usage():
+    return render_template('usage.html')
