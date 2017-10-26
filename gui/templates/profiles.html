@@ -116,7 +116,7 @@
 
             var ctx = $('#canvas')[0].getContext("2d");
 
-            entry("{{region}}", {{regionlist|tojson}}, {{passedregions|tojson}}, {{regioncoords|tojson}}, {{sequences|tojson}}, ctx);
+            entry("{{region}}", {{regionlist|tojson}}, {{passedregions|tojson}}, {{regioncoords|tojson}}, {{sequences|tojson}}, ctx, {{passdef|tojson}});
         });
 
     </script>
@@ -326,6 +326,7 @@
     <script type="text/javascript" src="static/jqplot/plugins/jqplot.canvasAxisLabelRenderer.js"></script>
     <script type="text/javascript" src="static/jqplot/plugins/jqplot.cursor.js"></script>
 	<script type="text/javascript" src="static/jqplot/plugins/jqplot.highlighter.js"></script>
+    <script language="javascript" type="text/javascript" src="static/jqplot/plugins/jqplot.canvasOverlay.js"></script>
 
     <link rel="stylesheet" type="text/css" href="static/jqplot/jquery.jqplot.css" />
 

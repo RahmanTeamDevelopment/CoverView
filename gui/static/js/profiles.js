@@ -3,7 +3,7 @@ var regionlist = [];
 var data = {};
 
 
-function entry(region, regionlist, passedregions, regioncoords, sequences, ctx) {
+function entry(region, regionlist, passedregions, regioncoords, sequences, ctx, passdef) {
 
 
     window.plot = null;
@@ -18,6 +18,8 @@ function entry(region, regionlist, passedregions, regioncoords, sequences, ctx) 
     window.regioncoords = regioncoords;
     window.sequences = sequences;
     window.ctx = ctx;
+    window.passdef = passdef;
+    window.showoverlay = true;
 
     window.yaxis_min_saved = null;
     window.yaxis_max_saved = null;
@@ -58,7 +60,39 @@ function entry(region, regionlist, passedregions, regioncoords, sequences, ctx) 
 };
 
 
-function singleGraphPlot(data1){
+function singleGraphPlot(data1, cutoff_y){
+
+    var showcutoff = true;
+    var cutofftxt = '';
+    if (cutoff_y == '.')
+        showcutoff = false;
+    else
+        cutofftxt = window.y_profile+'='+cutoff_y.toString();
+
+
+    var overlay = {};
+    if (window.showoverlay) {
+        overlay = {
+            show: true,
+            objects: [
+                {
+                    dashedHorizontalLine: {
+                        show: showcutoff,
+                        name: 'cut1line',
+                        y: cutoff_y,
+                        lineWidth: 3,
+                        color: '#00749F',
+                        shadow: false,
+                        xOffset: 0,
+                        showTooltip: showcutoff,
+                        tooltipFormatString: cutofftxt
+                    }
+                }
+            ]
+        };
+    }
+
+
     return $.jqplot('myplot', [data1],
         {
                 cursor: {
@@ -86,6 +120,8 @@ function singleGraphPlot(data1){
 				},
 
                 seriesColors: ['#00749F'],
+
+                canvasOverlay: overlay,
 
                 seriesDefaults: {
                     showMarker: false,
@@ -115,7 +151,51 @@ function singleGraphPlot(data1){
 }
 
 
-function doubleGraphPlot(data1, data2){
+function doubleGraphPlot(data1, data2, cutoff_y, cutoff_y2){
+
+    var objs = [];
+    if (cutoff_y != '.'){
+        objs.push({
+                    dashedHorizontalLine: {
+                        show: true,
+                        name: 'cut1line',
+                        y: cutoff_y,
+                        lineWidth: 3,
+                        color: '#00749F',
+                        shadow: false,
+                        xOffset: 0,
+                        showTooltip: true,
+                        tooltipFormatString: window.y_profile+'='+cutoff_y.toString()
+                    }
+                });
+    }
+
+    if (cutoff_y2 != '.'){
+        objs.push({
+                    dashedHorizontalLine: {
+                        show: true,
+                        name: 'cut2line',
+                        y: cutoff_y2,
+                        yaxis: 'y2axis',
+                        lineWidth: 3,
+                        color: 'darkred',
+                        shadow: false,
+                        xOffset: 0,
+                        showTooltip: true,
+                        tooltipFormatString: window.y2_profile+'='+cutoff_y2.toString()
+                    }
+                });
+    }
+
+    var overlay = {};
+    if (window.showoverlay) {
+        overlay = {
+            show: true,
+            objects: objs
+        };
+    }
+
+
     return $.jqplot('myplot', [data1, data2],
         {
                 cursor: {
@@ -143,6 +223,8 @@ function doubleGraphPlot(data1, data2){
                     tooltipFadeSpeed: "fast",
                     formatString: "%d; %g",
 				},
+
+                canvasOverlay: overlay,
 
                 seriesDefaults: {
                     showMarker: false,
@@ -183,6 +265,58 @@ function doubleGraphPlot(data1, data2){
 function makePlot(){
 
 
+    var cutoff_y = '.';
+
+    if (window.y_profile=='COV'){
+        if ('MEDCOV_MIN' in window.passdef)
+            cutoff_y = Number(window.passdef['MEDCOV_MIN']);
+        if ('MINCOV_MIN' in window.passdef)
+            cutoff_y = Number(window.passdef['MINCOV_MIN']);
+    }
+
+    if (window.y_profile=='QCOV'){
+        if ('MEDQCOV_MIN' in window.passdef)
+            cutoff_y = Number(window.passdef['MEDQCOV_MIN']);
+        if ('MINQCOV_MIN' in window.passdef)
+            cutoff_y = Number(window.passdef['MINQCOV_MIN']);
+    }
+
+    if (window.y_profile=='FLBQ'){
+        if ('MAXFLBQ_MAX' in window.passdef)
+            cutoff_y = Number(window.passdef['MAXFLBQ_MAX']);
+    }
+
+    if (window.y_profile=='FLMQ'){
+        if ('MAXFLMQ_MAX' in window.passdef)
+            cutoff_y = Number(window.passdef['MAXFLMQ_MAX']);
+    }
+
+    var cutoff_y2 = '.';
+
+    if (window.y2_profile=='COV'){
+        if ('MEDCOV_MIN' in window.passdef)
+            cutoff_y2 = Number(window.passdef['MEDCOV_MIN']);
+        if ('MINCOV_MIN' in window.passdef)
+            cutoff_y2 = Number(window.passdef['MINCOV_MIN']);
+    }
+
+    if (window.y2_profile=='QCOV'){
+        if ('MEDQCOV_MIN' in window.passdef)
+            cutoff_y2 = Number(window.passdef['MEDQCOV_MIN']);
+        if ('MINQCOV_MIN' in window.passdef)
+            cutoff_y2 = Number(window.passdef['MINQCOV_MIN']);
+    }
+
+    if (window.y2_profile=='FLBQ'){
+        if ('MAXFLBQ_MAX' in window.passdef)
+            cutoff_y2 = Number(window.passdef['MAXFLBQ_MAX']);
+    }
+
+    if (window.y2_profile=='FLMQ'){
+        if ('MAXFLMQ_MAX' in window.passdef)
+            cutoff_y2 = Number(window.passdef['MAXFLMQ_MAX']);
+    }
+
     var prof = window.y_profile;
     if (window.reads == 'forward'){
         prof = prof + '+';
@@ -203,11 +337,11 @@ function makePlot(){
     data1 = prepareDataForPlotting(window.data[prof]);
 
     if (window.y2_profile == '---'){
-        window.plot = singleGraphPlot(data1);
+        window.plot = singleGraphPlot(data1, cutoff_y);
     }
     else {
         data2 = prepareDataForPlotting(window.data[prof2]);
-        window.plot = doubleGraphPlot(data1, data2);
+        window.plot = doubleGraphPlot(data1, data2, cutoff_y, cutoff_y2);
 
         if (((window.y_profile == 'COV') && (window.y2_profile == 'QCOV')) || ((window.y_profile == 'QCOV') && (window.y2_profile == 'COV'))) {
             var m = Math.max(window.plot.axes.yaxis.max, window.plot.axes.y2axis.max);
@@ -653,9 +787,11 @@ function switchNorm(){
 
 
 function switchCutoff(){
-
-   alert('cutoff pressed');
-
+    if (window.showoverlay)
+        window.showoverlay = false;
+    else
+        window.showoverlay = true;
+    makePlot();
 };
 
 

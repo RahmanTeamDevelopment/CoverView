@@ -62,7 +62,8 @@ def profiles():
             regionlist=app.config['regionlist'],
             passedregions=app.config['passedregions'],
             regioncoords=app.config['data']['region_coords'],
-            sequences=app.config['sequences']
+            sequences=app.config['sequences'],
+            passdef=app.config['metadata']['config_opts']['pass']
         )
 
 
