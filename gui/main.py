@@ -67,7 +67,8 @@ def genes():
         'genes.html',
         region=app.config['region'],
         all_genes=app.config['all_genes'],
-        genes_by_chrom=app.config['genes_by_chrom']
+        genes_by_chrom=app.config['genes_by_chrom'],
+        summary=app.config['data']['summary']
     )
 
 
