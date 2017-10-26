@@ -372,6 +372,25 @@
                             </table>
                         </div>
 
+                        <form id="settings2" class="option" style="position: relative; top: 20px; " >
+
+                            <label class="titlelabel">Genes:</label>
+
+		                    <input type="radio" name="option" id="all" value="all" onclick="switchToAllListed();" checked>
+		                    <label for="all">All</label>
+
+		                    <input type="radio" name="option" id="passed" value="passed" onclick="switchToPassedListed();">
+		                    <label for="passed">Passed</label>
+
+		                    <input type="radio" name="option" id="failed" value="failed" onclick="switchToFailedListed();">
+		                    <label for="failed">Failed</label>
+
+                            <input type="text" style="position: relative; top: 10px; left: 20px;" autocomplete="off" id="myInput" onkeyup="doSearch();" placeholder="Search..." title="Type in a name">
+
+
+
+                        </form>
+
 
 
                     </div>
@@ -398,26 +417,6 @@
 
                     <div class="col-lg-6">
 
-
-                    <form id="settings" class="option" style="position: relative; left: 60px;" >
-
-                            <input type="text" autocomplete="off" id="myInput" onkeyup="doSearch();" placeholder="Search..." title="Type in a name">
-
-                            <span style="position: relative; left: 15px;">
-
-                            <label class="titlelabel">Regions:</label>
-
-		                    <input type="radio" name="option" id="all" value="all" onclick="switchToAllListed();" checked>
-		                    <label for="all">All</label>
-
-		                    <input type="radio" name="option" id="passed" value="passed" onclick="switchToPassedListed();">
-		                    <label for="passed">Passed</label>
-
-		                    <input type="radio" name="option" id="failed" value="failed" onclick="switchToFailedListed();">
-		                    <label for="failed">Failed</label>
-
-
-                        </form>
 
 
                     </div>
