@@ -38,6 +38,6 @@ def create_fail_statistics(regions_data, region_coords):
         if value['failedexons'] > 0:
             counter_failed_genes += 1
 
-    return all_genes, by_chrom, '{} (of {} regions)'.format(counter_failed_regions, len(regions_data)), '{} (of {} genes)'.format(counter_failed_genes, len(by_gene))
+    return all_genes, by_chrom, '{}  [of {} regions]'.format(counter_failed_regions, len(regions_data)), '{}  [of {} genes]'.format(counter_failed_genes, len(by_gene))
 
 

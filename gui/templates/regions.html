@@ -280,6 +280,8 @@ function loadTable(tableId, strand, listed, data) {
         var fields = ['region','rc-','medcov-','mincov-','medqcov-','minqcov-','maxflbq-','maxflmq-','pass_or_fail']
     }
 
+    var criteria = {{ pass_def|tojson }};
+
     var rows = '';
     $.each(data, function(index, item) {
 
@@ -294,12 +296,51 @@ function loadTable(tableId, strand, listed, data) {
 
         row += '<td class="column1">' + item[fields[0]] + '</td>';
         row += '<td class="column2">' + item[fields[1]] + '</td>';
-        row += '<td class="column2">' + item[fields[2]] + '</td>';
-        row += '<td class="column2">' + item[fields[3]] + '</td>';
-        row += '<td class="column3">' + item[fields[4]] + '</td>';
-        row += '<td class="column3">' + item[fields[5]] + '</td>';
-        row += '<td class="column3">' + item[fields[6]] + '</td>';
-        row += '<td class="column3">' + item[fields[7]] + '</td>';
+
+
+        if (strand=='both' && 'MEDCOV_MIN' in criteria && Number(item[fields[2]]) < Number(criteria['MEDCOV_MIN'])){
+            row += '<td class="column3" style="color: #e22c11; font-weight: bold;">' + item[fields[2]] + '</td>';
+        }
+        else {
+            row += '<td class="column3">' + item[fields[2]] + '</td>';
+        }
+
+        if (strand=='both' && 'MINCOV_MIN' in criteria && Number(item[fields[3]]) < Number(criteria['MINCOV_MIN'])){
+            row += '<td class="column3" style="color: #e22c11; font-weight: bold;">' + item[fields[3]] + '</td>';
+        }
+        else {
+            row += '<td class="column3">' + item[fields[3]] + '</td>';
+        }
+
+        if (strand=='both' && 'MEDQCOV_MIN' in criteria && Number(item[fields[4]]) < Number(criteria['MEDQCOV_MIN'])){
+            row += '<td class="column3" style="color: #e22c11; font-weight: bold;">' + item[fields[4]] + '</td>';
+        }
+        else {
+            row += '<td class="column3">' + item[fields[4]] + '</td>';
+        }
+
+        if (strand=='both' && 'MINQCOV_MIN' in criteria && Number(item[fields[5]]) < Number(criteria['MINQCOV_MIN'])){
+            row += '<td class="column3" style="color: #e22c11; font-weight: bold;">' + item[fields[5]] + '</td>';
+        }
+        else {
+            row += '<td class="column3">' + item[fields[5]] + '</td>';
+        }
+
+        if (strand=='both' && 'MAXFLBQ_MAX' in criteria && (item[fields[6]]=='--' || Number(item[fields[6]]) > Number(criteria['MAXFLBQ_MAX']))  ){
+            row += '<td class="column3" style="color: #e22c11; font-weight: bold;">' + item[fields[6]] + '</td>';
+        }
+        else {
+            row += '<td class="column3">' + item[fields[6]] + '</td>';
+        }
+
+
+        if (strand=='both' && 'MAXFLMQ_MAX' in criteria && (item[fields[7]]=='--' || Number(item[fields[7]]) > Number(criteria['MAXFLMQ_MAX'])) ){
+            row += '<td class="column3" style="color: #e22c11; font-weight: bold;">' + item[fields[7]] + '</td>';
+        }
+        else {
+            row += '<td class="column3">' + item[fields[7]] + '</td>';
+        }
+
 
         if (item[fields[8]] == "PASS")
             row += '<td class="column4">' + item[fields[8]] + '</td>';

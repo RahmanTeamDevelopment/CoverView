@@ -42,7 +42,12 @@ def regions():
         app.config['region'] = request.form['region']
         return request.form['region']
     else:
-        return render_template('regions.html', region=app.config['region'], results=app.config.get('data')['regions'])
+        return render_template(
+            'regions.html',
+            region=app.config['region'],
+            results=app.config.get('data')['regions'],
+            pass_def=app.config['metadata']['config_opts']['pass']
+        )
 
 
 @app.route('/profiles', methods=['GET', 'POST'])
