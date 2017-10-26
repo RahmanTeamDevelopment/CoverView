@@ -71,7 +71,7 @@ function singleGraphPlot(data1, cutoff_y){
 
 
     var overlay = {};
-    if (window.showoverlay) {
+    if (window.showoverlay && window.reads=='all') {
         overlay = {
             show: true,
             objects: [
@@ -188,7 +188,7 @@ function doubleGraphPlot(data1, data2, cutoff_y, cutoff_y2){
     }
 
     var overlay = {};
-    if (window.showoverlay) {
+    if (window.showoverlay && window.reads=='all') {
         overlay = {
             show: true,
             objects: objs
