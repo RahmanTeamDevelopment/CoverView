@@ -129,9 +129,7 @@
                 RCINs.push(Number(RCs[item]['RCIN']));
                 RCOUTs.push(Number(RCs[item]['RCOUT']));
           });
-
-          alert(RCINs);
-
+          
 
         var chromPlot = $.jqplot('cplot',[RCINs,RCOUTs], {
             seriesColors: ['#00749F', 'darkred'],
