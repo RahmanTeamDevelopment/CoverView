@@ -115,6 +115,8 @@
 
           window.selected = '';
 
+          window.listed = 'all';
+
           window.ctx = $('#canvas')[0].getContext("2d");
 
 
@@ -218,32 +220,30 @@
                     window.selected = clicked;
 
                     $("#title").html('Chr'+window.selected+' selected; listing genes on chromosome');
-                    loadGenesOfChromosome(window.selected);
-
 
                 }
                 else {
                     window.selected = '';
                     $("#title").html('No chromosome selected; listing all genes');
-                    loadAllGenes();
                 }
 
-
-
-
-
+                loadTable();
 
 
             }
         );
 
-
-
           loadAllGenes();
 
-
-
       });
+
+
+      function loadTable(){
+          if (window.selected == '')
+              loadAllGenes();
+          else
+              loadGenesOfChromosome(window.selected);
+      }
 
 
     function swapRowSelection(row) {
@@ -262,7 +262,14 @@
         $('#contentrows tr').remove();
 
         var rows = '';
+        var counter = 0;
         $.each({{ all_genes|tojson }}, function(index, item) {
+
+            if (window.listed == 'passed' && item['failedexons'] > 0)
+                return true;
+             if (window.listed == 'failed' && item['failedexons'] == 0)
+                 return true;
+
             var row =  '<tr onclick="swapRowSelection(this);" >';
 
             row += '<td>' + item['gene'] + '</td>';
@@ -274,9 +281,16 @@
                 row += '<td style="color: #e22c11; font-weight: bold;">' + item['failedexons'] + '</td>';
 
             rows += row + '</tr>';
+
+            counter = counter+1;
         });
 
         $('#contentrows').html(rows);
+
+        if (counter==0)
+            $('#noregion').show();
+        else
+            $('#noregion').hide();
 
     };
 
@@ -288,7 +302,14 @@
         data = {{ genes_by_chrom|tojson }}
 
         var rows = '';
+        var counter = 0;
         $.each(data[chrom], function(index, item) {
+
+            if (window.listed == 'passed' && item['failedexons'] > 0)
+                return true;
+             if (window.listed == 'failed' && item['failedexons'] == 0)
+                 return true;
+
             var row =  '<tr onclick="swapRowSelection(this);" >';
 
             row += '<td>' + item['gene'] + '</td>';
@@ -300,10 +321,35 @@
                 row += '<td style="color: #e22c11; font-weight: bold;">' + item['failedexons'] + '</td>';
 
             rows += row + '</tr>';
+
+            counter = counter+1;
         });
 
         $('#contentrows').html(rows);
 
+        if (counter==0)
+            $('#noregion').show();
+        else
+            $('#noregion').hide();
+
+    };
+
+
+
+
+    function switchToAllListed() {
+        window.listed = 'all';
+        loadTable();
+    };
+
+    function switchToPassedListed() {
+        window.listed = 'passed';
+        loadTable();
+    };
+
+    function switchToFailedListed() {
+        window.listed = 'failed';
+        loadTable();
     };
 
 
@@ -370,6 +416,10 @@
 
 
                             </table>
+                        </div>
+
+                        <div hidden id="noregion" align="center" class="row" style="position: relative;">
+                            <h3>No regions to show</h3>
                         </div>
 
                         <form id="settings2" class="option" style="position: relative; top: 20px; " >
