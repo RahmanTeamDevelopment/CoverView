@@ -100,6 +100,38 @@
     background: none;
 }
 
+
+
+
+
+
+.sidebar-nav li {
+    display: block;
+    text-decoration: none;
+    color: #999999;
+    cursor: pointer;
+}
+
+.sidebar-nav li:hover {
+    text-decoration: none;
+    color: #fff;
+    background: rgba(255,255,255,0.2);
+    cursor: pointer;
+}
+
+.sidebar-nav li:active,
+.sidebar-nav li:focus {
+    text-decoration: none;
+}
+
+
+
+
+
+
+
+
+
 #thispage {
     text-decoration: none;
     color: #fff;

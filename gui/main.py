@@ -18,6 +18,9 @@ def run(prefix, reffn):
     app.config['passedregions'] = [x['region'] for x in app.config['data']['regions'] if x['pass_or_fail'] == 'PASS']
     app.config['region'] = ''
     app.config['metadata'] = parsers.read_metadata(prefix)
+    app.config['gene'] = ''
+    app.config['failed'] = False
+    app.config['togene'] = ''
 
     sequences = {}
     ref = reference.Reference(reffn)
@@ -39,22 +42,29 @@ def index():
 @app.route('/regions', methods=['GET', 'POST'])
 def regions():
     if request.method == 'POST':
-        app.config['region'] = request.form['region']
-        return request.form['region']
+        app.config['region'] = request.json['region']
+        app.config['gene'] = request.json['gene']
+        app.config['failed'] = request.json['failed']
+        return request.json['region']
     else:
         return render_template(
             'regions.html',
             region=app.config['region'],
             results=app.config.get('data')['regions'],
-            pass_def=app.config['metadata']['config_opts']['pass']
+            pass_def=app.config['metadata']['config_opts']['pass'],
+            gene=app.config['gene'],
+            failed=app.config['failed']
         )
 
 
 @app.route('/profiles', methods=['GET', 'POST'])
 def profiles():
     if request.method == 'POST':
-        region = request.json['region']
-        return jsonify(app.config.get('data')['profiles'][region])
+        app.config['region'] = request.json['region']
+        if request.json['region'] == '':
+            return ''
+        else:
+            return jsonify(app.config.get('data')['profiles'][app.config['region']])
     else:
         return render_template(
             'profiles.html',
@@ -69,13 +79,18 @@ def profiles():
 
 @app.route('/genes', methods=['GET', 'POST'])
 def genes():
-    return render_template(
-        'genes.html',
-        region=app.config['region'],
-        all_genes=app.config['all_genes'],
-        genes_by_chrom=app.config['genes_by_chrom'],
-        summary=app.config['data']['summary']
-    )
+    if request.method == 'POST':
+        app.config['togene'] = request.json['gene']
+        return request.json['gene']
+    else:
+        return render_template(
+            'genes.html',
+            region=app.config['region'],
+            all_genes=app.config['all_genes'],
+            genes_by_chrom=app.config['genes_by_chrom'],
+            summary=app.config['data']['summary'],
+            togene=app.config['togene']
+        )
 
 
 @app.route('/analysis', methods=['GET', 'POST'])

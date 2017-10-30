@@ -129,9 +129,9 @@
             <ul class="sidebar-nav">
                 <li class="sidebar-brand"><a href="/">CoverView GUI</a></li>
                 <li><a href="/analysis">Analysis View</a></li>
-                <li><a href="/genes">Genes View</a></li>
-                <li><a href="/regions">Regions View</a></li>
-                <li id="thispage" ><a href="/profiles">Profiles View</a></li>
+                <li onclick="goToDefaultGenesView();">Genes View</li>
+                <li onclick="goToDefaultRegionsView();">Regions View</li>
+                <li id="thispage" onclick="goToDefaultProfilesView();">Profiles View</li>
                 <li><a href="/usage">Usage Guide</a></li>
             </ul>
         </div>
@@ -315,6 +315,7 @@
     <script src="static/js/bootstrap.min.js"></script>
 
     <script type="text/javascript" src="static/js/profiles.js"></script>
+    <script type="text/javascript" src="static/js/utils.js"></script>
 
 
     <script type="text/javascript" src="static/jqplot/jquery.jqplot.js"></script>

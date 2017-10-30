@@ -12,8 +12,13 @@ function entry(region, regionlist, passedregions, regioncoords, sequences, ctx, 
 
     window.reads = 'all';
 
+    if (region=='')
+        region = regionlist[0];
+
     window.region = region;
     window.regionlist = regionlist;
+
+
     window.passedregions = passedregions;
     window.regioncoords = regioncoords;
     window.sequences = sequences;
@@ -795,23 +800,11 @@ function switchCutoff(){
 };
 
 
-function saveRegionName(region){
-    $.ajax({
-        url: '/regions',
-        data: {"region": region},
-        type: 'POST',
-        success: function(response) {
-        },
-        error: function(error) {
-        }
-    });
-};
-
-
 function goToRegionsView(){
-    saveRegionName(whichSelected());
+    setRegionsViewValues(whichSelected(), '', false)
     window.location = '/regions';
 };
+
 
 function whichSelected(){
     var sel = '';

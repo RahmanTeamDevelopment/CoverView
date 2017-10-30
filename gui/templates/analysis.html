@@ -27,7 +27,7 @@
     <style style="text/css">
 
         td.column1 {
-            width: 50%;
+            width: 35%;
             border-collapse:collapse;
             text-align:left;
             table-layout: fixed;
@@ -38,7 +38,7 @@
         }
 
         td.column2 {
-            width: 50%;
+            width: 65%;
             border-collapse:collapse;
             text-align:left;
             table-layout: fixed;
@@ -46,14 +46,18 @@
             color: black;
             font-size: 19px;
             border: black 1px solid;
+            max-width: 100px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
 
         td.column3 {
-            width: 50%;
+            width: 35%;
             border-collapse:collapse;
             text-align:left;
             table-layout: fixed;
-            background-color:  #f44242;
+            background-color:  darkred;
             color: white;
             font-size: 19px;
             border: black 1px solid;
@@ -79,9 +83,9 @@
             <ul class="sidebar-nav">
                 <li class="sidebar-brand"><a href="/">CoverView GUI</a></li>
                 <li id="thispage"><a href="/analysis">Analysis View</a></li>
-                <li><a href="/genes">Genes View</a></li>
-                <li><a href="/regions">Regions View</a></li>
-                <li><a href="/profiles">Profiles View</a></li>
+                <li onclick="goToDefaultGenesView();">Genes View</li>
+                <li onclick="goToDefaultRegionsView();">Regions View</li>
+                <li onclick="goToDefaultProfilesView();">Profiles View</li>
                 <li><a href="/usage">Usage Guide</a></li>
             </ul>
         </div>
@@ -103,19 +107,19 @@
 
                 <div class="row" style="position: relative; top: 0px">
                     <div class="col-lg-12">
-                            <table class="table" align="center" rows=11 style="position: relative; top: 80px; width: 50%; -webkit-touch-callout: none;
-                            -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
+                            <table class="table" align="center" rows=11 style="position: relative; top: 80px; width: 65%; -webkit-touch-callout: none;
+                            -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; ">
                                 <tr>
                                     <td class="column1"> Date of analysis:</td>
                                     <td class="column2"> {{metadata.date}} </td>
                                 </tr>
                                 <tr>
                                     <td class="column1"> Input BAM file:</td>
-                                    <td class="column2"> {{metadata.command_line_opts.input}} </td>
+                                    <td title="{{metadata.command_line_opts.input}}" class="column2"> {{metadata.command_line_opts.input}} </td>
                                 </tr>
                                 <tr>
                                     <td class="column1"> Input BED file:</td>
-                                    <td class="column2"> {{metadata.command_line_opts.bedfile}} </td>
+                                    <td title="{{metadata.command_line_opts.bedfile}}" class="column2"> {{metadata.command_line_opts.bedfile}} </td>
                                 </tr>
 
                             </table>
@@ -123,10 +127,10 @@
                 </div>
 
 
-                <div class="row" style="position: relative; top: 90px">
+                <div class="row" style="position: relative; top: 70px">
                     <div class="col-lg-12">
-                            <table class="table" align="center" rows=11 style="width: 50%; -webkit-touch-callout: none;
-                            -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
+                            <table class="table" align="center" rows=11 style="width: 65%; -webkit-touch-callout: none;
+                            -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; ">
 
                                 <tr>
                                     <td class="column1"> Duplicate reads:</td>
@@ -144,7 +148,7 @@
 
                                 <tr>
                                     <td class="column1"> Definition of "PASS":</td>
-                                    <td class="column2"> {{pass_def}} </td>
+                                    <td title="{{pass_def}}" class="column2"> {{pass_def}} </td>
                                 </tr>
 
 
@@ -154,10 +158,10 @@
 
 
 
-                <div class="row" style="position: relative; top: 100px">
+                <div class="row" style="position: relative; top: 60px">
                     <div class="col-lg-12">
-                            <table  class="table" align="center" rows=11 style="width: 50%; -webkit-touch-callout: none;
-                            -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
+                            <table  class="table" align="center" rows=11 style="width: 65%; -webkit-touch-callout: none;
+                            -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; ">
 
                                 <tr>
                                     <td class="column3"> Number of failed genes:</td>
@@ -180,6 +184,8 @@
 
     </div>
     <!-- /#wrapper -->
+
+    <script type="text/javascript" src="static/js/utils.js"></script>
 
     <!-- jQuery -->
     <script src="static/js/jquery.js"></script>

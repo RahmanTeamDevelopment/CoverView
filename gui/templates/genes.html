@@ -110,7 +110,6 @@
 
       $(document).ready(function(){
 
-
           var chroms = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,'X','Y'];
 
           window.selected = '';
@@ -292,6 +291,18 @@
         else
             $('#noregion').hide();
 
+        if ("{{togene}}" != ''){
+            var rowToSelect = $("tr").filter(function() {
+        	return $(this).find('td:first').text() == "{{togene}}" ;
+            }).closest("tr");
+
+            swapRowSelection(rowToSelect);
+
+            var container = $('#scroller');
+            container.scrollTop(0);
+            container.scrollTop(rowToSelect.offset().top - container.offset().top - 200);
+        }
+
     };
 
 
@@ -353,6 +364,46 @@
     };
 
 
+    function whichSelected(){
+        var sel = '';
+        $('.selected').each(function() {
+            sel = $(this).find('td:first').text();
+        });
+        return sel
+    };
+
+    function goToRegionsView(failed){
+        setRegionsViewValues('', whichSelected(), failed)
+        window.location = '/regions';
+    }
+
+    function doSearch(){
+        $('#noregion').hide()
+          var input, filter, table, tr, td, i;
+          input = document.getElementById("myInput");
+          window.searched = input.value.toUpperCase();
+          filter = window.searched;
+          table = document.getElementById("contentrows");
+          var counter = 0;
+          tr = table.getElementsByTagName("tr");
+          for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[0];
+            if (td) {
+              if (td.innerHTML.toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+                  counter = counter + 1;
+              } else {
+                tr[i].style.display = "none";
+              }
+            }
+          }
+          if (counter==0){
+              $('#noregion').show();
+              $('#contentrows tr').removeClass("selected");
+              $('#linker').hide();
+          }
+    }
+
 
 </script>
 
@@ -364,9 +415,9 @@
             <ul class="sidebar-nav">
                 <li class="sidebar-brand"><a href="/">CoverView GUI</a></li>
                 <li><a href="/analysis">Analysis View</a></li>
-                <li id="thispage"><a href="/genes">Genes View</a></li>
-                <li><a href="/regions">Regions View</a></li>
-                <li><a href="/profiles">Profiles View</a></li>
+                <li id="thispage" onclick="goToDefaultGenesView();">Genes View</li>
+                <li onclick="goToDefaultRegionsView();">Regions View</li>
+                <li onclick="goToDefaultProfilesView();">Profiles View</li>
                 <li><a href="/usage">Usage Guide</a></li>
             </ul>
         </div>
@@ -457,8 +508,8 @@
                         <div hidden id="linker" align="left" class="row" style="position: relative; top: 10px;">
                     <div class="col-lg-12">
 
-                            <button name="goto" onclick="goToProfilesView();" class="btn"">&#8599; Show Exons</button>
-                            <button name="goto" onclick="goToGenesView();" class="btn">&#8599; Show Failed Exons</button>
+                            <button name="goto" onclick="goToRegionsView(false);" class="btn"">&#8599; Show Exons</button>
+                            <button name="goto" onclick="goToRegionsView(true);" class="btn">&#8599; Show Failed Exons</button>
 
                     </div>
                 </div>
@@ -482,6 +533,8 @@
 
     </div>
     <!-- /#wrapper -->
+
+    <script type="text/javascript" src="static/js/utils.js"></script>
 
     <!-- jQuery -->
     <script src="static/js/jquery.js"></script>
