@@ -49,7 +49,7 @@ def read_regions_data(prefix):
                 ]
             continue
 
-        cols = line.split()
+        cols = line.split('\t')
         record = {'region': cols[0]}
         for c in columns:
             value = cols[idx[c]]
