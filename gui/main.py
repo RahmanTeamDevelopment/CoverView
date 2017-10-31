@@ -14,7 +14,7 @@ log.setLevel(logging.ERROR)
 def run(prefix, reffn):
     app.config['prefix'] = prefix
     app.config['data'] = parsers.read_data(prefix)
-    app.config['regionlist'] = [x['region'] for x in app.config['data']['regions']]
+    app.config['regionlist'] = [x['region'] for x in app.config['data']['regions'] if region_size(x['region']) > 1]
     app.config['passedregions'] = [x['region'] for x in app.config['data']['regions'] if x['pass_or_fail'] == 'PASS']
     app.config['region'] = ''
     app.config['metadata'] = parsers.read_metadata(prefix)
@@ -32,6 +32,11 @@ def run(prefix, reffn):
         = helper.create_fail_statistics(app.config.get('data')['regions'], app.config['data']['region_coords'])
 
     app.run()
+
+
+def region_size(region):
+    x = app.config['data']['region_coords'][region]
+    return int(x[2])-int(x[1])
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -53,7 +58,8 @@ def regions():
             results=app.config.get('data')['regions'],
             pass_def=app.config['metadata']['config_opts']['pass'],
             gene=app.config['gene'],
-            failed=app.config['failed']
+            failed=app.config['failed'],
+            regionlist=app.config['regionlist']
         )
 
 

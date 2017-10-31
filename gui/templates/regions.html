@@ -166,7 +166,8 @@
         $("#linker").hide();
         if(!selected) {
             $(row).addClass("selected");
-            $("#linker").show();
+            if ("{{regionlist}}".includes(whichSelected()))
+                $("#linker").show();
         }
     };
 
@@ -179,18 +180,6 @@
         return sel
     };
 
-
-    function saveRegionName(){
-        $.ajax({
-            url: '/regions',
-            data: {"region": whichSelected()},
-            type: 'POST',
-            success: function(response) {
-            },
-            error: function(error) {
-            }
-        });
-    };
 
     function goToProfilesView(){
         setProfilesViewValues(whichSelected());

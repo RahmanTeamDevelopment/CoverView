@@ -137,7 +137,7 @@ function singleGraphPlot(data1, cutoff_y){
                 axes: {
 					xaxis: {
 						min: window.regioncoords[window.region][1],
-				 		max: window.regioncoords[window.region][2],
+				 		max: window.regioncoords[window.region][2]-1,
                         numberTicks: 6,
                         tickOptions: { showLabel:true, formatString: '%d', fontSize: 14 }
 					},
@@ -240,7 +240,7 @@ function doubleGraphPlot(data1, data2, cutoff_y, cutoff_y2){
                 axes: {
 					xaxis: {
 						min: window.regioncoords[window.region][1],
-				 		max: window.regioncoords[window.region][2],
+				 		max: window.regioncoords[window.region][2]-1,
                         numberTicks: 6,
                         tickOptions: { showLabel:true, formatString: '%d', fontSize: 14 }
 					},
@@ -343,11 +343,14 @@ function makePlot(){
 
     if (window.y2_profile == '---'){
         window.plot = singleGraphPlot(data1, cutoff_y);
+        if (window.plot.axes.yaxis.max ==0 && window.plot.axes.yaxis.min ==0){
+            window.plot.axes.yaxis.min=0;
+            window.plot.axes.yaxis.max=1;
+        }
     }
     else {
         data2 = prepareDataForPlotting(window.data[prof2]);
         window.plot = doubleGraphPlot(data1, data2, cutoff_y, cutoff_y2);
-
         if (((window.y_profile == 'COV') && (window.y2_profile == 'QCOV')) || ((window.y_profile == 'QCOV') && (window.y2_profile == 'COV'))) {
             var m = Math.max(window.plot.axes.yaxis.max, window.plot.axes.y2axis.max);
             window.plot.axes.yaxis.max = m;
@@ -355,7 +358,19 @@ function makePlot(){
             window.plot.axes.yaxis.tickInterval = (window.plot.axes.yaxis.max - window.plot.axes.yaxis.min) / 5;
             window.plot.axes.y2axis.tickInterval = (window.plot.axes.y2axis.max - window.plot.axes.y2axis.min) / 5;
         }
+
+        if (window.plot.axes.yaxis.max ==0 && window.plot.axes.yaxis.min ==0){
+            window.plot.axes.yaxis.min=0;
+            window.plot.axes.yaxis.max=1;
+        }
+        if (window.plot.axes.y2axis.max ==0 && window.plot.axes.y2axis.min ==0){
+            window.plot.axes.y2axis.min=0;
+            window.plot.axes.y2axis.max=1;
+        }
+
     }
+
+
 
     $("#title").html(window.region+' ('+regionAsString(window.regioncoords[window.region])+')');
 
@@ -366,6 +381,7 @@ function makePlot(){
     $('#canvas').offset({top:y+500,left:x});
 
     save_normal_scale_values();
+
 
 };
 
@@ -420,7 +436,6 @@ function scaleXAxis(){
     window.plot.axes.xaxis.min = first;
     window.plot.axes.xaxis.max = last;
 
-
     var interval=Math.floor((last-first)/5);
     if ((last-first)>=10){
         window.plot.axes.xaxis.tickInterval=interval;
@@ -433,6 +448,18 @@ function scaleXAxis(){
         window.plot.axes.xaxis.tickInterval=1;
         window.plot.axes.xaxis.numberTicks=last-first+1;
     }
+
+    if (window.plot.axes.yaxis.max ==0 && window.plot.axes.yaxis.min ==0){
+            window.plot.axes.yaxis.min=0;
+            window.plot.axes.yaxis.max=1;
+    }
+    if (window.y2_profile != '---'){
+        if (window.plot.axes.y2axis.max ==0 && window.plot.axes.y2axis.min ==0){
+            window.plot.axes.y2axis.min=0;
+            window.plot.axes.y2axis.max=1;
+        }
+    }
+
 };
 
 
@@ -553,7 +580,13 @@ function prepareDataForPlotting(profile){
 
     var ret = [];
     for (var i = start; i < end; i++) {
-        ret.push([i,profile[i-start]]);
+
+        var v = profile[i-start];
+
+        if (v==null)
+            v = 0;
+
+        ret.push([i,v]);
     };
 
     return ret;
@@ -597,6 +630,18 @@ function readProfilesData(){
 function handleZoomOut(){
     window.plot.resetZoom();
 
+     if (window.plot.axes.yaxis.max ==0 && window.plot.axes.yaxis.min ==0){
+            window.plot.axes.yaxis.min=0;
+            window.plot.axes.yaxis.max=1;
+    }
+    if (window.y2_profile != '---'){
+        if (window.plot.axes.y2axis.max ==0 && window.plot.axes.y2axis.min ==0){
+            window.plot.axes.y2axis.min=0;
+            window.plot.axes.y2axis.max=1;
+        }
+    }
+    window.plot.replot();
+
     if (((window.y_profile == 'COV') && (window.y2_profile == 'QCOV')) || ((window.y_profile == 'QCOV') && (window.y2_profile == 'COV'))) {
         var m = Math.max(window.plot.axes.yaxis.max, window.plot.axes.y2axis.max);
         window.plot.axes.yaxis.max = m;
@@ -629,6 +674,17 @@ function goLeft(){
 
     }
 
+    if (window.plot.axes.yaxis.max ==0 && window.plot.axes.yaxis.min ==0){
+            window.plot.axes.yaxis.min=0;
+            window.plot.axes.yaxis.max=1;
+    }
+    if (window.y2_profile != '---'){
+        if (window.plot.axes.y2axis.max ==0 && window.plot.axes.y2axis.min ==0){
+            window.plot.axes.y2axis.min=0;
+            window.plot.axes.y2axis.max=1;
+        }
+    }
+
     window.plot.replot();
     makeReferenceBar(window.sequences[window.region]);
 
@@ -651,6 +707,18 @@ function goRight(){
             normalizeY2();
         }
     }
+
+    if (window.plot.axes.yaxis.max ==0 && window.plot.axes.yaxis.min ==0){
+            window.plot.axes.yaxis.min=0;
+            window.plot.axes.yaxis.max=1;
+    }
+    if (window.y2_profile != '---'){
+        if (window.plot.axes.y2axis.max ==0 && window.plot.axes.y2axis.min ==0){
+            window.plot.axes.y2axis.min=0;
+            window.plot.axes.y2axis.max=1;
+        }
+    }
+
 
     window.plot.replot();
     makeReferenceBar(window.sequences[window.region]);
@@ -697,6 +765,12 @@ function normalizeY(){
     window.plot.axes.yaxis.max=window.plot.axes.yaxis.max+delta;
     window.plot.axes.yaxis.tickInterval=(window.plot.axes.yaxis.max-window.plot.axes.yaxis.min)/5;
     window.plot.axes.yaxis.numberTicks=6;
+
+     if (window.plot.axes.yaxis.max ==0 && window.plot.axes.yaxis.min ==0){
+            window.plot.axes.yaxis.min=0;
+            window.plot.axes.yaxis.max=1;
+    }
+
 
 };
 
@@ -760,6 +834,11 @@ function normalizeY2(){
     window.plot.axes.y2axis.max=window.plot.axes.y2axis.max+delta;
     window.plot.axes.y2axis.tickInterval=(window.plot.axes.y2axis.max-window.plot.axes.y2axis.min)/5;
     window.plot.axes.y2axis.numberTicks=6;
+
+    if (window.plot.axes.y2axis.max ==0 && window.plot.axes.y2axis.min ==0){
+            window.plot.axes.y2axis.min=0;
+            window.plot.axes.y2axis.max=1;
+    }
 
 
 };
