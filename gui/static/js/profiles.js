@@ -39,6 +39,8 @@ function entry(region, regionlist, passedregions, regioncoords, sequences, ctx, 
     window.y_profile = 'COV';
     window.y2_profile = '---';
 
+    window.zoomedin = false;
+
     $.jqplot.config.enablePlugins = true;
 
     readProfilesData();
@@ -392,6 +394,8 @@ function regionAsString(coords){
 
 function handleZooming(){
 
+    window.zoomedin = true;
+
     if (window.norm) {
 
         normalizeY();
@@ -412,6 +416,7 @@ function handleZooming(){
     $("#zoomedcoords").text(x_array[0]+"-"+x_array[x_array.length-1]);
 
     $("#zoombuttons").show();
+
 };
 
 
@@ -570,6 +575,7 @@ function swapRowSelection(row) {
     makePlot();
     makeReferenceBar(window.sequences[window.region]);
     $("#zoombuttons").hide();
+    window.zoomedin = false;
 };
 
 
@@ -653,6 +659,8 @@ function handleZoomOut(){
 
     makeReferenceBar(window.sequences[window.region]);
     $("#zoombuttons").hide();
+
+    window.zoomedin = false;
 };
 
 
@@ -732,6 +740,7 @@ function changeMetrics(){
     makePlot();
     makeReferenceBar(window.sequences[window.region]);
     $("#zoombuttons").hide();
+    window.zoomedin = false;
 };
 
 function changeMetrics2(){
@@ -739,9 +748,14 @@ function changeMetrics2(){
     makePlot();
     makeReferenceBar(window.sequences[window.region]);
     $("#zoombuttons").hide();
+    window.zoomedin = false;
 };
 
 function normalizeY(){
+
+    if (!window.zoomedin)
+        return '';
+
     var plotData =  window.plot.series[0].data;
     var y=[];
     for (i=0;i<plotData.length;i++) {
@@ -809,6 +823,9 @@ function normal_scaleY2(){
 
 
 function normalizeY2(){
+
+    if (!window.zoomedin)
+        return '';
 
     var plotData =  window.plot.series[1].data;
     var y=[];
@@ -898,6 +915,7 @@ function switchToForwardStrand(){
     makePlot();
     makeReferenceBar(window.sequences[window.region]);
     $("#zoombuttons").hide();
+    window.zoomedin = false;
 };
 
 function switchToReverseStrand(){
@@ -905,6 +923,7 @@ function switchToReverseStrand(){
     makePlot();
     makeReferenceBar(window.sequences[window.region]);
     $("#zoombuttons").hide();
+    window.zoomedin = false;
 };
 
 function switchToBothStrands(){
@@ -912,4 +931,5 @@ function switchToBothStrands(){
     makePlot();
     makeReferenceBar(window.sequences[window.region]);
     $("#zoombuttons").hide();
+    window.zoomedin = false;
 };

@@ -284,6 +284,7 @@ function loadTable(tableId, strand, listed, data) {
     var criteria = {{ pass_def|tojson }};
 
     var rows = '';
+    var counter = 0;
     $.each(data, function(index, item) {
 
         var g = item['region'].substring(0,item['region'].indexOf("_"));
@@ -352,8 +353,16 @@ function loadTable(tableId, strand, listed, data) {
             row += '<td class="column4" style="color: #e22c11; font-weight: bold;">' + item[fields[8]] + '</td>';
 
         rows += row + '</tr>';
+        counter = counter+1;
     });
     $('#' + tableId).html(rows);
+
+    if (counter==0){
+        $('#noregion').show();
+        $('#contentrows tr').removeClass("selected");
+        $('#linker').hide();
+    }
+
 
     $('#settings').show()
 
