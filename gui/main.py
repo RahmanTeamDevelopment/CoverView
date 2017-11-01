@@ -1,15 +1,15 @@
-from flask import Flask, render_template, request, session, redirect, url_for, jsonify, send_file
+from flask import Flask, render_template, request, redirect, jsonify
 import parsers
 from coverview import reference
 import helper
+from gevent.wsgi import WSGIServer
+import signal
+import sys
 
 app = Flask(__name__)
 
 app.secret_key = "something-from-os.urandom(24)"
 
-import logging
-log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
 
 def run(prefix, reffn):
     app.config['prefix'] = prefix
@@ -31,7 +31,15 @@ def run(prefix, reffn):
     app.config['all_genes'], app.config['genes_by_chrom'], app.config['failed_regions_stat'], app.config['failed_genes_stat'] \
         = helper.create_fail_statistics(app.config.get('data')['regions'], app.config['data']['region_coords'])
 
-    app.run()
+    signal.signal(signal.SIGINT, signal_handler)
+
+    http_server = WSGIServer(('', 5000), app, log=None)
+    http_server.serve_forever()
+
+
+def signal_handler(signal, frame):
+    print('\n\nCoverView GUI is closed. Bye!\n')
+    sys.exit(0)
 
 
 def region_size(region):

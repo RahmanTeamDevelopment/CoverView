@@ -14,3 +14,4 @@ six==1.10.0
 sphinx==1.6.3
 git+https://github.com/RahmanTeamDevelopment/TGMI@v0.1.0#egg=TGMI
 flask==0.12.1
+gevent==1.2.2
