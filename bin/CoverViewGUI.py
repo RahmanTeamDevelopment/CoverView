@@ -4,7 +4,7 @@ from optparse import OptionParser
 from gui import main
 
 # Version
-_version = '1.3.0'
+_version = '1.4.1'
 
 # Command line argument parsing
 descr = 'CoverView GUI v'+_version

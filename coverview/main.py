@@ -16,7 +16,7 @@ from .calculators import calculate_minimal_chromosome_coverage_metrics
 from .statistics import median
 
 
-_version = 'v1.3.0'
+_version = 'v1.4.1'
 _logger = logging.getLogger("coverview")
 
 
