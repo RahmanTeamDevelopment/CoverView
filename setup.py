@@ -70,8 +70,8 @@ modules = [
 setup(
     name="CoverView",
     version='1.4.1',
-    description="Calculation of coverage metrics",
-    url='https://github.com/RahmanTeamDevelopment/CoverView',
+    description="A coverage and quality evaluation tool for targeted and whole exome next-generation sequencing",
+    url='https://github.com/RahmanTeam/CoverView',
     author='RahmanTeam',
     author_email='rahmanlab@icr.ac.uk',
     license='MIT',
