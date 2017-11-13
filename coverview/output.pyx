@@ -184,8 +184,6 @@ class RegionsOutput(object):
 
         header.extend([
             'RC',
-            'RC+',
-            'RC-',
             'MEDCOV',
             'MINCOV',
             'MEDQCOV',
@@ -196,12 +194,14 @@ class RegionsOutput(object):
 
         if self.output_directional_coverage_information:
             header.extend([
+                'RC+',
                 'MEDCOV+',
                 'MINCOV+',
                 'MEDQCOV+',
                 'MINQCOV+',
                 'MAXFLMQ+',
                 'MAXFLBQ+',
+                'RC-',
                 'MEDCOV-',
                 'MINCOV-',
                 'MEDQCOV-',
@@ -255,8 +255,6 @@ class RegionsOutput(object):
 
         output_record.extend([
             coverage_data.per_base_coverage_profile.num_reads_in_region,
-            coverage_data.per_base_coverage_profile.num_forward_reads_in_region,
-            coverage_data.per_base_coverage_profile.num_reverse_reads_in_region,
             coverage_summary['MEDCOV'],
             coverage_summary['MINCOV'],
             coverage_summary['MEDQCOV'],
@@ -267,12 +265,14 @@ class RegionsOutput(object):
 
         if self.output_directional_coverage_information:
             output_record.extend([
+                coverage_data.per_base_coverage_profile.num_forward_reads_in_region,
                 coverage_summary['MEDCOV_f'],
                 coverage_summary['MINCOV_f'],
                 coverage_summary['MEDQCOV_f'],
                 coverage_summary['MINQCOV_f'],
                 coverage_summary['MAXFLMQ_f'],
                 coverage_summary['MAXFLBQ_f'],
+                coverage_data.per_base_coverage_profile.num_reverse_reads_in_region,
                 coverage_summary['MEDCOV_r'],
                 coverage_summary['MINCOV_r'],
                 coverage_summary['MEDQCOV_r'],
