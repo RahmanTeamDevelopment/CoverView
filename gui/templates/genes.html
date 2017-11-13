@@ -197,6 +197,8 @@
 
           $('#cplot').bind('jqplotDataClick',
             function (ev, seriesIndex, pointIndex, data) {
+                
+                $("#linker").hide();
 
                 var clicked = chroms[pointIndex];
 

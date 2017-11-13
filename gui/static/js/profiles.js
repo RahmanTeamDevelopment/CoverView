@@ -861,37 +861,42 @@ function normalizeY2(){
 };
 
 
-function switchNorm(){
+function switchAxesToNormal(){
 
-    if (window.norm)
-        window.norm = false;
-    else
-        window.norm = true;
+    window.norm = false;
 
-     if (window.norm) {
-
-        normalizeY();
-        if (window.y2_profile != '---') {
-            normalizeY2();
-        }
-     }
-     else {
-         normal_scaleY();
-        if (window.y2_profile != '---') {
-            normal_scaleY2();
-        }
-     }
+    normal_scaleY();
+    if (window.y2_profile != '---') {
+        normal_scaleY2();
+    }
 
     window.plot.replot();
 
 };
 
 
-function switchCutoff(){
-    if (window.showoverlay)
-        window.showoverlay = false;
-    else
-        window.showoverlay = true;
+function switchAxesToRescale(){
+
+    window.norm = true;
+
+    normalizeY();
+    if (window.y2_profile != '---'){
+        normalizeY2();
+    }
+
+    window.plot.replot();
+
+};
+
+
+function switchOnCutoff(){
+    window.showoverlay = true;
+    makePlot();
+};
+
+
+function switchOffCutoff(){
+    window.showoverlay = false
     makePlot();
 };
 
