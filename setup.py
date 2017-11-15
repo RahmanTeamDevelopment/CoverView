@@ -81,7 +81,8 @@ setup(
         'coverview',
         'bamgen',
         'testutils',
-        'gui'
+        'gui',
+        'tgmi'
     ],
     scripts=[
         "bin/CoverView.py",

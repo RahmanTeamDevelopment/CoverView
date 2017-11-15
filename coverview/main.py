@@ -9,6 +9,7 @@ import tgmi.bed
 import tgmi.interval
 import tgmi.math
 import datetime
+import helper
 
 from . import output
 from .calculators import calculate_chromosome_coverage_metrics, get_region_coverage_summary
@@ -319,7 +320,8 @@ def get_input_options(command_line_args):
     )
 
     options = parser.parse_args(command_line_args)
-    config = load_and_validate_config(options.config)
+    #config = load_and_validate_config(options.config)
+    config = helper.read_config_file(options.config, _logger)
 
     return options, config
 
