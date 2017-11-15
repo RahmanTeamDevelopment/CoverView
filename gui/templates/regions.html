@@ -443,37 +443,35 @@ function loadTable(tableId, strand, listed, data) {
                 <div class="row" style="position: relative; top: 5px">
                     <div class="col-lg-12">
 
+                        <form hidden id="settings" class="option" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;"  >
+
+                            <input type="text" autocomplete="off" id="myInput" onkeyup="doSearch();" placeholder="Search..." style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;" title="Type in a name">
+
+                            <span style="position: relative; left: 20px; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">
+
+                            <label class="titlelabel" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">Regions:</label>
+
+		                    <input type="radio" name="option" id="all" value="all" onclick="switchToAllListed();" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;" checked>
+		                    <label for="all" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">All</label>
+
+		                    <input type="radio" name="option" id="passed" value="passed" onclick="switchToPassedListed();" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">
+		                    <label for="passed" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">Passed</label>
+
+		                    <input type="radio" name="option" id="failed" value="failed" onclick="switchToFailedListed();" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">
+		                    <label for="failed" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">Failed</label>
 
 
-                        <form hidden id="settings" class="option">
+                            <span style="position: relative; left: 5px; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">
+                            <label class="titlelabel" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">Reads:</label>
 
-                            <input type="text" autocomplete="off" id="myInput" onkeyup="doSearch();" placeholder="Search..." title="Type in a name">
+		                    <input type="radio" name="option2" id="allreads" value="all" onclick="switchToBothStrands();" checked style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">
+		                    <label for="allreads" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">All</label>
 
-                            <span style="position: relative; left: 20px;">
+		                    <input type="radio" name="option2" id="forward" value="forward" onclick="switchToForwardStrand();" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">
+		                    <label for="forward" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">Forward</label>
 
-                            <label class="titlelabel">Regions:</label>
-
-		                    <input type="radio" name="option" id="all" value="all" onclick="switchToAllListed();" checked>
-		                    <label for="all">All</label>
-
-		                    <input type="radio" name="option" id="passed" value="passed" onclick="switchToPassedListed();">
-		                    <label for="passed">Passed</label>
-
-		                    <input type="radio" name="option" id="failed" value="failed" onclick="switchToFailedListed();">
-		                    <label for="failed">Failed</label>
-
-
-                            <span style="position: relative; left: 5px;">
-                            <label class="titlelabel">Reads:</label>
-
-		                    <input type="radio" name="option2" id="allreads" value="all" onclick="switchToBothStrands();" checked>
-		                    <label for="allreads">All</label>
-
-		                    <input type="radio" name="option2" id="forward" value="forward" onclick="switchToForwardStrand();">
-		                    <label for="forward">Forward</label>
-
-		                    <input type="radio" name="option2" id="reverse" value="reverse" onclick="switchToReverseStrand();">
-		                    <label for="reverse">Reverse</label>
+		                    <input type="radio" name="option2" id="reverse" value="reverse" onclick="switchToReverseStrand();" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">
+		                    <label for="reverse" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">Reverse</label>
 
                             </span>
 
@@ -493,7 +491,7 @@ function loadTable(tableId, strand, listed, data) {
                     </div>
                 </div>
 
-                <div hidden id="linker" align="left" class="row" style="position: relative; top: 10px;">
+                <div hidden id="linker" align="left" class="row" style="position: relative; top: 10px; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">
                     <div class="col-lg-12">
 
                             <button name="goto" onclick="goToProfilesView();" class="btn"">&#8599; Show Profiles</button>
