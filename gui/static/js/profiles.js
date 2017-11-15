@@ -45,6 +45,17 @@ function entry(region, regionlist, passedregions, regioncoords, sequences, ctx, 
 
     readProfilesData();
 
+
+    if (!('COV+' in window.data)){
+        document.getElementById("allreads").disabled=true;
+        $("#forwardlabel").css("color", "#a4abb5");
+        document.getElementById("forward").disabled=true;
+        $("#reverselabel").css("color", "#a4abb5");
+        document.getElementById("reverse").disabled=true;
+    }
+
+
+
     makePlot();
 
     window.plot.target.bind('jqplotZoom', function(ev, gridpos, datapos, plot, cursor){

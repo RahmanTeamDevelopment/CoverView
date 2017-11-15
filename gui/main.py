@@ -5,6 +5,7 @@ import helper
 from gevent.wsgi import WSGIServer
 import signal
 import sys
+import webbrowser
 
 app = Flask(__name__)
 
@@ -33,8 +34,12 @@ def run(prefix, reffn):
 
     signal.signal(signal.SIGINT, signal_handler)
 
+    webbrowser.open('http://127.0.0.1:5000/', new=2)
+
     http_server = WSGIServer(('', 5000), app, log=None)
     http_server.serve_forever()
+
+
 
 
 def signal_handler(signal, frame):

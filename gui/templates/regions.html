@@ -143,6 +143,16 @@
         $('#noregion').hide()
         $("#linker").hide();
         var data =  {{ results|tojson }}
+
+        if (!('rc+' in data[0])){
+            document.getElementById("allreads").disabled=true;
+            $("#forwardlabel").css("color", "#a4abb5");
+            document.getElementById("forward").disabled=true;
+            $("#reverselabel").css("color", "#a4abb5");
+            document.getElementById("reverse").disabled=true;
+        }
+
+
         loadTable('contentrows', window.strandShown,  window.listed, data);
 
         if ("{{region}}" != ''){
@@ -468,10 +478,10 @@ function loadTable(tableId, strand, listed, data) {
 		                    <label for="allreads" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">All</label>
 
 		                    <input type="radio" name="option2" id="forward" value="forward" onclick="switchToForwardStrand();" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">
-		                    <label for="forward" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">Forward</label>
+		                    <label for="forward" id="forwardlabel" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">Forward</label>
 
 		                    <input type="radio" name="option2" id="reverse" value="reverse" onclick="switchToReverseStrand();" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">
-		                    <label for="reverse" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">Reverse</label>
+		                    <label for="reverse" id="reverselabel" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">Reverse</label>
 
                             </span>
 
