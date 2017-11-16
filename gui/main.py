@@ -15,12 +15,12 @@ app.secret_key = "something-from-os.urandom(24)"
 def run(prefix, reffn):
     app.config['prefix'] = prefix
     app.config['data'] = parsers.read_data(prefix)
-    app.config['regionlist'] = [x['region'] for x in app.config['data']['regions'] if region_size(x['region']) > 1]
-    app.config['passedregions'] = [x['region'] for x in app.config['data']['regions'] if x['pass_or_fail'] == 'PASS']
+    app.config['regionlist'] = [x['region'] for x in app.config['data']['regions'] if x['region'] in app.config['data']['region_coords'] and region_size(x['region']) > 1]
+    app.config['passedregions'] = [x['region'] for x in app.config['data']['regions'] if x['pass_or_flag'] == 'PASS']
     app.config['region'] = ''
     app.config['metadata'] = parsers.read_metadata(prefix)
     app.config['gene'] = ''
-    app.config['failed'] = False
+    app.config['flagged'] = False
     app.config['togene'] = ''
 
     sequences = {}
@@ -29,8 +29,8 @@ def run(prefix, reffn):
         sequences[region] = ref.getSequence(coords[0], int(coords[1]), int(coords[2]))
     app.config['sequences'] = sequences
 
-    app.config['all_genes'], app.config['genes_by_chrom'], app.config['failed_regions_stat'], app.config['failed_genes_stat'] \
-        = helper.create_fail_statistics(app.config.get('data')['regions'], app.config['data']['region_coords'])
+    app.config['all_genes'], app.config['genes_by_chrom'], app.config['flagged_regions_stat'], app.config['flagged_genes_stat'] \
+        = helper.create_flag_statistics(app.config.get('data')['regions'], app.config['data']['region_coords'])
 
     signal.signal(signal.SIGINT, signal_handler)
 
@@ -62,7 +62,7 @@ def regions():
     if request.method == 'POST':
         app.config['region'] = request.json['region']
         app.config['gene'] = request.json['gene']
-        app.config['failed'] = request.json['failed']
+        app.config['flagged'] = request.json['flagged']
         return request.json['region']
     else:
         return render_template(
@@ -71,7 +71,7 @@ def regions():
             results=app.config.get('data')['regions'],
             pass_def=app.config['metadata']['config_opts']['pass'],
             gene=app.config['gene'],
-            failed=app.config['failed'],
+            flagged=app.config['flagged'],
             regionlist=app.config['regionlist']
         )
 
@@ -117,8 +117,8 @@ def analysis():
     return render_template(
         'analysis.html',
         metadata=app.config['metadata'],
-        regions_stat=app.config['failed_regions_stat'],
-        genes_stat=app.config['failed_genes_stat'],
+        regions_stat=app.config['flagged_regions_stat'],
+        genes_stat=app.config['flagged_genes_stat'],
         pass_def=create_pass_critera_string()
     )
 

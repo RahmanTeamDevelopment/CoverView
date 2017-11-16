@@ -29,7 +29,7 @@ class CoverageCalculator(object):
         self.transcript_database = None
         self.out_poor = None
         self.num_reads_on_target = collections.defaultdict(int)
-        self.ids_of_failed_targets = set()
+        self.ids_of_flagged_targets = set()
         self.regions_output = None
         self.per_base_output = None
 
@@ -184,7 +184,7 @@ class CoverageCalculator(object):
                     else:
                         ids = target.region_name
 
-                    self.ids_of_failed_targets.add(ids)
+                    self.ids_of_flagged_targets.add(ids)
                 self.write_outputs_for_region(target)
 
         _logger.info("Finished computing coverage metrics in all regions")
@@ -204,7 +204,7 @@ def get_default_config():
         },
         "low_bq": 10,
         "low_mq": 20,
-        "only_fail_profiles": False,
+        "only_flagged_profiles": False,
         "pass": None,
         "direction": False,
     }
@@ -223,7 +223,7 @@ def load_and_validate_config(config_file_name):
         "direction",
         "low_bq",
         "low_mq",
-        "only_fail_profiles",
+        "only_flagged_profiles",
         "outputs",
         "pass",
         "transcript",
@@ -419,10 +419,6 @@ def main(command_line_args):
         coverage_calculator.calculate_coverage_summaries(
             regions_with_unique_names
         )
-
-        # ids_of_failed_targets = coverage_calculator.ids_of_failed_targets
-        # num_failed_targets = len(ids_of_failed_targets)
-        # _logger.info("{} regions failed the coverage thresholds".format(num_failed_targets))
 
         chromosome_coverage_metrics = calculate_chromosome_coverage_metrics(
             bam_file,

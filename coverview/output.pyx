@@ -36,12 +36,12 @@ class PerBaseCoverageOutput(object):
         self.config = config
         self.out_profiles = open(options.output + '_profiles.txt', 'w')
         self.out_poor = None
-        self.only_output_profiles_for_failed_regions = False
+        self.only_output_profiles_for_flagged_regions = False
         self.output_directional_coverage_summaries = config['direction']
         self.output_directional_coverage_information = False
 
-        if config['only_fail_profiles']:
-            self.only_output_profiles_for_failed_regions = True
+        if config['only_flagged_profiles']:
+            self.only_output_profiles_for_flagged_regions = True
 
         if options.transcript_db is not None and config['transcript'].get('poor') is True:
             self.out_poor = open(options.output + '_poor.txt', 'w')
@@ -106,7 +106,7 @@ class PerBaseCoverageOutput(object):
             self.out_poor.write('#' + '\t'.join(poorheader) + '\n')
 
     def write_output(self, coverage_data, transcript_database):
-        if self.only_output_profiles_for_failed_regions and coverage_data.passes_thresholds:
+        if self.only_output_profiles_for_flagged_regions and coverage_data.passes_thresholds:
             pass
         else:
             per_base_summary = coverage_data.per_base_coverage_profile
@@ -146,9 +146,9 @@ class RegionsOutput(object):
             self.output_transcript_data = False
 
         if not self.config['pass'] is None:
-            self.output_region_pass_fail = True
+            self.output_region_pass_flag = True
         else:
-            self.output_region_pass_fail = False
+            self.output_region_pass_flag = False
 
         if self.config['direction']:
             self.output_directional_coverage_information = True
@@ -177,9 +177,9 @@ class RegionsOutput(object):
                 'End_transcript'
             ])
 
-        if self.output_region_pass_fail:
+        if self.output_region_pass_flag:
             header.append(
-                'Pass_or_fail'
+                'Pass_or_flag'
             )
 
         header.extend([
@@ -247,11 +247,11 @@ class RegionsOutput(object):
                 transcripts_overlapping_end
             ])
 
-        if self.output_region_pass_fail:
+        if self.output_region_pass_flag:
             if coverage_data.passes_thresholds:
                 output_record.append('PASS')
             else:
-                output_record.append('FAIL')
+                output_record.append('FLAG')
 
         output_record.extend([
             coverage_data.per_base_coverage_profile.num_reads_in_region,

@@ -94,6 +94,14 @@
             margin-bottom: 12px;
         }
 
+        td.column1 {
+            width: 38%;
+        }
+
+        td.column2 {
+            width: 24%;
+        }
+
 
     </style>
 
@@ -266,20 +274,20 @@
         var counter = 0;
         $.each({{ all_genes|tojson }}, function(index, item) {
 
-            if (window.listed == 'passed' && item['failedexons'] > 0)
+            if (window.listed == 'passed' && item['flaggedexons'] > 0)
                 return true;
-             if (window.listed == 'failed' && item['failedexons'] == 0)
+             if (window.listed == 'flagged' && item['flaggedexons'] == 0)
                  return true;
 
             var row =  '<tr onclick="swapRowSelection(this);" >';
 
-            row += '<td>' + item['gene'] + '</td>';
-            row += '<td>' + item['exons'] + '</td>';
+            row += '<td class="column1">' + item['gene'] + '</td>';
+            row += '<td class="column2">' + item['exons'] + '</td>';
 
-            if (item['failedexons'] == 0)
-                row += '<td>' + item['failedexons']+ '</td>';
+            if (item['flaggedexons'] == 0)
+                row += '<td class="column1">' + item['flaggedexons']+ '</td>';
             else
-                row += '<td style="color: #e22c11; font-weight: bold;">' + item['failedexons'] + '</td>';
+                row += '<td class="column1" style="color: #e22c11; font-weight: bold;">' + item['flaggedexons'] + '</td>';
 
             rows += row + '</tr>';
 
@@ -318,20 +326,20 @@
         var counter = 0;
         $.each(data[chrom], function(index, item) {
 
-            if (window.listed == 'passed' && item['failedexons'] > 0)
+            if (window.listed == 'passed' && item['flaggedexons'] > 0)
                 return true;
-             if (window.listed == 'failed' && item['failedexons'] == 0)
+             if (window.listed == 'flagged' && item['flaggedexons'] == 0)
                  return true;
 
             var row =  '<tr onclick="swapRowSelection(this);" >';
 
-            row += '<td>' + item['gene'] + '</td>';
-            row += '<td>' + item['exons'] + '</td>';
+            row += '<td class="column1">' + item['gene'] + '</td>';
+            row += '<td class="column2">' + item['exons'] + '</td>';
 
-            if (item['failedexons'] == 0)
-                row += '<td>' + item['failedexons']+ '</td>';
+            if (item['flaggedexons'] == 0)
+                row += '<td class="column1">' + item['flaggedexons']+ '</td>';
             else
-                row += '<td style="color: #e22c11; font-weight: bold;">' + item['failedexons'] + '</td>';
+                row += '<td class="column1" style="color: #e22c11; font-weight: bold;">' + item['flaggedexons'] + '</td>';
 
             rows += row + '</tr>';
 
@@ -360,8 +368,8 @@
         loadTable();
     };
 
-    function switchToFailedListed() {
-        window.listed = 'failed';
+    function switchToFlaggedListed() {
+        window.listed = 'flagged';
         loadTable();
     };
 
@@ -374,8 +382,8 @@
         return sel
     };
 
-    function goToRegionsView(failed){
-        setRegionsViewValues('', whichSelected(), failed)
+    function goToRegionsView(flagged){
+        setRegionsViewValues('', whichSelected(), flagged)
         window.location = '/regions';
     }
 
@@ -456,9 +464,9 @@
 
                         <table class="table" rows=1 style="margin: 0px;">
                             <tr style="border-collapse:collapse; text-align:center; table-layout: fixed; background-color: #0b5c8e; color: white; font-size: 17px; border: black 1px solid;">
-                                <td>Gene name</td>
-                                <td>Regions</td>
-                                <td>Failed regions</td>
+                                <td class="column1">Gene name</td>
+                                <td class="column2">Regions</td>
+                                <td class="column1">Flagged regions</td>
                             </tr>
                         </table>
 
@@ -485,8 +493,8 @@
 		                    <input type="radio" name="option" id="passed" value="passed" onclick="switchToPassedListed();">
 		                    <label for="passed">Passed</label>
 
-		                    <input type="radio" name="option" id="failed" value="failed" onclick="switchToFailedListed();">
-		                    <label for="failed">Failed</label>
+		                    <input type="radio" name="option" id="flagged" value="flagged" onclick="switchToFlaggedListed();">
+		                    <label for="flagged">Flagged</label>
 
                             <input type="text" style="position: relative; top: 10px; left: 20px;" autocomplete="off" id="myInput" onkeyup="doSearch();" placeholder="Search..." title="Type in a name">
 
@@ -511,7 +519,7 @@
                     <div class="col-lg-12">
 
                             <button name="goto" onclick="goToRegionsView(false);" class="btn"">&#8599; Show Regions</button>
-                            <button name="goto" onclick="goToRegionsView(true);" class="btn">&#8599; Show Failed Regions</button>
+                            <button name="goto" onclick="goToRegionsView(true);" class="btn">&#8599; Show Flagged Regions</button>
 
                     </div>
                 </div>

@@ -1,8 +1,8 @@
-function setRegionsViewValues(region, gene, failed){
+function setRegionsViewValues(region, gene, flagged){
     $.ajax({
         url: '/regions',
         contentType: 'application/json;charset=UTF-8',
-        data : JSON.stringify({ region: region, gene: gene, failed: failed }),
+        data : JSON.stringify({ region: region, gene: gene, flagged: flagged }),
         type: 'POST',
         success: function(response) {
         },

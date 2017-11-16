@@ -134,10 +134,10 @@
         if ( window.genename != '')
             $('#pagetitle').html('Regions of '+genename);
 
-        var showfailed = {{failed|tojson}};
-        if (showfailed) {
-            window.listed = 'failed';
-            $("#failed").prop("checked", true)
+        var showflagged = {{flagged|tojson}};
+        if (showflagged) {
+            window.listed = 'flagged';
+            $("#flagged").prop("checked", true)
         }
 
         $('#noregion').hide()
@@ -234,9 +234,9 @@
         loadTable('contentrows', window.strandShown, window.listed, data);
     };
 
-    function switchToFailedListed() {
+    function switchToFlaggedListed() {
         var data =  {{ results|tojson }}
-        window.listed = 'failed';
+        window.listed = 'flagged';
         loadTable('contentrows', window.strandShown, window.listed, data);
     };
 
@@ -282,13 +282,13 @@ function loadTable(tableId, strand, listed, data) {
     $('#' + tableId + ' tr').remove();
 
     if (strand=='both') {
-        var fields = ['region','rc','medcov','mincov','medqcov','minqcov','maxflbq','maxflmq','pass_or_fail']
+        var fields = ['region','rc','medcov','mincov','medqcov','minqcov','maxflbq','maxflmq','pass_or_flag']
     }
     else if (strand=='forward') {
-        var fields = ['region','rc+','medcov+','mincov+','medqcov+','minqcov+','maxflbq+','maxflmq+','pass_or_fail']
+        var fields = ['region','rc+','medcov+','mincov+','medqcov+','minqcov+','maxflbq+','maxflmq+','pass_or_flag']
     }
     else {
-        var fields = ['region','rc-','medcov-','mincov-','medqcov-','minqcov-','maxflbq-','maxflmq-','pass_or_fail']
+        var fields = ['region','rc-','medcov-','mincov-','medqcov-','minqcov-','maxflbq-','maxflmq-','pass_or_flag']
     }
 
     var criteria = {{ pass_def|tojson }};
@@ -301,10 +301,10 @@ function loadTable(tableId, strand, listed, data) {
         if (window.genename!='' && g!=window.genename)
             return true;
 
-        if (item[fields[8]] == "PASS" && listed == 'failed')
+        if (item[fields[8]] == "PASS" && listed == 'flagged')
             return true;
 
-        if (item[fields[8]] == "FAIL" && listed == 'passed')
+        if (item[fields[8]] == "FLAG" && listed == 'passed')
             return true;
 
         var row =  '<tr onclick="swapRowSelection(this);" >';
@@ -467,8 +467,8 @@ function loadTable(tableId, strand, listed, data) {
 		                    <input type="radio" name="option" id="passed" value="passed" onclick="switchToPassedListed();" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">
 		                    <label for="passed" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">Passed</label>
 
-		                    <input type="radio" name="option" id="failed" value="failed" onclick="switchToFailedListed();" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">
-		                    <label for="failed" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">Failed</label>
+		                    <input type="radio" name="option" id="flagged" value="flagged" onclick="switchToFlaggedListed();" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">
+		                    <label for="flagged" style="-webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">Flagged</label>
 
 
                             <span style="position: relative; left: 5px; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">

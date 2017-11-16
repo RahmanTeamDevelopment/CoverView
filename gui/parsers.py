@@ -41,7 +41,7 @@ def read_regions_data(prefix):
             for i in range(len(header)):
                 idx[header[i]] = i
 
-            columns = ['RC', 'MEDCOV', 'MINCOV', 'MEDQCOV', 'MINQCOV', 'MAXFLMQ', 'MAXFLBQ', 'Pass_or_fail']
+            columns = ['RC', 'MEDCOV', 'MINCOV', 'MEDQCOV', 'MINQCOV', 'MAXFLMQ', 'MAXFLBQ', 'Pass_or_flag']
             if 'MEDCOV+' in header:
                 columns += [
                     'RC+', 'MEDCOV+', 'MINCOV+', 'MEDQCOV+', 'MINQCOV+', 'MAXFLMQ+', 'MAXFLBQ+',
@@ -57,7 +57,7 @@ def read_regions_data(prefix):
                 value = '--'
             elif c.startswith('RC') or c.startswith('MIN'):
                 value = int(value)
-            elif c != 'Pass_or_fail':
+            elif c != 'Pass_or_flag':
                 value = float(value)
             if c.startswith('MED') and value == int(value):
                 value = int(value)

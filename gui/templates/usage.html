@@ -67,7 +67,7 @@
                 <div class="row" style="position: relative; top: 20px;">
                     <div class="col-lg-12">
                         <h3>Analysis View</h3>
-                        <p style="font-size: 18px;">A summary table of input files, key configuration options and the date of running the CoverView analysis. In addition, the number of <i>failed</i> regions and genes are also provided. (A gene is defined to be <i>failed</i> if it includes at least one <i>failed</i> region.)
+                        <p style="font-size: 18px;">A summary table of sample name, input files, key configuration options and the date of running the CoverView analysis. In addition, the number of flagged regions and genes are also provided. (A gene is defined to be flagged if it includes at least one flagged region.)
                         If a text is too long to be displayed in the table, hover the mouse cursor over it to see the full text in the tooltip. </p>
 
 
@@ -79,22 +79,22 @@
                 <div class="row" style="position: relative; top: 20px;">
                     <div class="col-lg-12">
                         <h3>Genes View</h3>
-                        <p style="font-size: 18px;">A bar plot displaying per-chromosome read counts and a table at the right side showing the total number of regions and the number of <i>failed</i> regions for each gene. The bar plot presents both on-target and off-target read counts for each chromosome. Clicking on a particular bar in the plot selects/unselects the chromosome.
+                        <p style="font-size: 18px;">A bar plot displaying per-chromosome read counts and a table at the right side showing the total number of regions and the number of flagged regions for each gene. The bar plot presents both on-target and off-target read counts for each chromosome. Clicking on a particular bar in the plot selects/unselects the chromosome.
                         If a chromosome is selected, only the genes located on that chromosome are listed in the table, otherwise all genes are shown.</p>
 
-                            <p style="font-size: 18px;"> <i>Failed</i> genes (i.e. those with at least one <i>failed</i> region) are highlighted in red. The table can be filtered to show either <i>passed</i>, <i>failed</i> or all genes by the "Genes" option. The search box helps to find particular genes of interest.
+                            <p style="font-size: 18px;"> Flagged genes (i.e. those with at least one flagged region) are highlighted in red. The table can be filtered to show either passed, flagged or all genes by the "Genes" option. The search box helps to find particular genes of interest.
                          </p>
-                        <p style="font-size: 18px;">A gene can be selected/unselected by clicking on the row of the table. If a gene is selected, the "Show Regions" and "Show Failed Regions" buttons are visible. With "Show Regions" you can open the selected gene in Regions View where only the regions of the gene will be displayed. Clicking on the "Show Failed Regions" button also redirects to
-                        Regions View, but only <i>failed</i> regions of the gene will be listed.</p>
+                        <p style="font-size: 18px;">A gene can be selected/unselected by clicking on the row of the table. If a gene is selected, the "Show Regions" and "Show Flagged Regions" buttons are visible. With "Show Regions" you can open the selected gene in Regions View where only the regions of the gene will be displayed. Clicking on the "Show Flagged Regions" button also redirects to
+                        Regions View, but only flagged regions of the gene will be listed.</p>
                     </div>
                 </div>
 
                 <div class="row" style="position: relative; top: 20px;">
                     <div class="col-lg-12">
                         <h3>Regions View</h3>
-                        <p style="font-size: 18px;">A scrollable table of the genomic regions that have been analysed by CoverView. Columns of the table provide the following region-specific metrics: RC, MEDCOV, MINCOV, MEDQCOV, MINQCOV, MAXFLBQ, MAXFLMQ and PASS. For <i>failed</i> regions, metrics values not satisfying quality requirements are highlighted in red.</p>
+                        <p style="font-size: 18px;">A scrollable table of the genomic regions that have been analysed by CoverView. Columns of the table provide the following region-specific metrics: RC, MEDCOV, MINCOV, MEDQCOV, MINQCOV, MAXFLBQ, MAXFLMQ and PASS. For flagged regions, metrics values not satisfying quality requirements are highlighted in red.</p>
 
-                        <p style="font-size: 18px;">The table can be filtered to show either <i>passed</i>, <i>failed</i> or all regions by using the "Regions" option. With the "Reads" option, you can switch between displaying the above metrics for forward reads only, reverse reads only or all reads included. The search box helps to find particular regions of interest.</p>
+                        <p style="font-size: 18px;">The table can be filtered to show either passed, flagged or all regions by using the "Regions" option. With the "Reads" option, you can switch between displaying the above metrics for forward reads only, reverse reads only or all reads included. The search box helps to find particular regions of interest.</p>
                         <p style="font-size: 18px;">A region can be selected/unselected by clicking on the row of the table. If a region is selected, the "Show Profiles" and "Show Gene" buttons are visible. With "Show Profiles" you can open the selected region in Profiles View. Clicking on the "Show Gene" button redirects to Gene View showing the gene to which
                         the selected region belongs.</p>
 
@@ -116,7 +116,7 @@
                         "PASS" requirements can be displayed as dashed horizontal lines by switching on the "Cut-off" option. A horizontal line representing the cut-off value is visible only if the relevant metric is displayed and have the same
                         color.</p>
 
-                        <p style="font-size: 18px;"> <i>Failed</i> regions are highlighted in red in the left-side panel. Clicking on the "Show Region" button will open the selected region in the Region View. </p>
+                        <p style="font-size: 18px;"> Flagged regions are highlighted in red in the left-side panel. Clicking on the "Show Region" button will open the selected region in the Region View. </p>
                         <br/>
                         <br/>
                         <br/>

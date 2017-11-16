@@ -81,7 +81,7 @@ def read_config_file(fn, _logger):
 
     ret['count_duplicate_reads'] = process_option(_logger, ini_data, 'READS.DUPLICATES', 'boolean', True)
     ret['direction'] = process_option(_logger, ini_data, 'READS.DIRECTION', 'boolean', False)
-    ret['only_fail_profiles'] = process_option(_logger, ini_data, 'OUTPUTS.ONLY_FAIL_PROFILES', 'boolean', False)
+    ret['only_flagged_profiles'] = process_option(_logger, ini_data, 'OUTPUTS.ONLY_FLAGGED_PROFILES', 'boolean', False)
     ret['low_bq'] = process_option(_logger, ini_data, 'QUALITY.LOW_BQ', 'int', 10)
     ret['low_mq'] = process_option(_logger, ini_data, 'QUALITY.LOW_MQ', 'int', 20)
 
