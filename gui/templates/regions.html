@@ -174,10 +174,12 @@
         var selected = $(row).hasClass("selected");
         $("#contentrows tr").removeClass("selected");
         $("#linker").hide();
+        $("#profileslinker").hide();
         if(!selected) {
             $(row).addClass("selected");
+            $("#linker").show();
             if ("{{regionlist}}".includes(whichSelected()))
-                $("#linker").show();
+                $("#profileslinker").show();
         }
     };
 
@@ -504,7 +506,7 @@ function loadTable(tableId, strand, listed, data) {
                 <div hidden id="linker" align="left" class="row" style="position: relative; top: 10px; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">
                     <div class="col-lg-12">
 
-                            <button name="goto" onclick="goToProfilesView();" class="btn"">&#8599; Show Profiles</button>
+                            <button id="profileslinker" name="goto" onclick="goToProfilesView();" class="btn"">&#8599; Show Profiles</button>
                             <button name="goto" onclick="goToGenesView();" class="btn">&#8599; Show Gene</button>
 
                     </div>
