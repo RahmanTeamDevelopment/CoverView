@@ -353,6 +353,18 @@ def main(command_line_args):
     _logger.debug(options)
     _logger.debug(config)
 
+    bam_file = pysam.Samfile(options.input, "rb")
+
+    sample_name = ''
+    if 'RG' in bam_file.header:
+        sample_names = set([x['SM'] for x in bam_file.header['RG']])
+        if len(sample_names) > 1:
+            _logger.info("Input BAM file contains reads from multiple samples.")
+            print '\nInput BAM file should contain reads from only a single sample.\n'
+            quit()
+        else:
+            sample_name = list(sample_names)[0]
+
 
     with open(options.output + '_meta.json', 'w') as json_file:
 
@@ -361,6 +373,7 @@ def main(command_line_args):
 
         json_output_dict = {
             "date": date,
+            "sample_name": sample_name,
             "command_line_opts": vars(options),
             "config_opts": config
         }
@@ -374,7 +387,6 @@ def main(command_line_args):
 
         )
 
-    bam_file = pysam.Samfile(options.input, "rb")
 
     if options.bedfile is None:
         _logger.info("No input BED file specified. Computing minimal coverage information")

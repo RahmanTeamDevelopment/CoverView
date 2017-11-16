@@ -71,8 +71,7 @@
 
 
 <script type="text/javascript">
-
-
+    
 </script>
 
 
@@ -109,6 +108,16 @@
                     <div class="col-lg-12">
                             <table class="table" align="center" rows=11 style="position: relative; top: 80px; width: 65%; -webkit-touch-callout: none;
                             -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; ">
+
+                                {% if metadata.sample_name != "" %}
+
+                                 <tr id="samplenameraw">
+                                    <td class="column1"> Sample name:</td>
+                                    <td class="column2"> {{metadata.sample_name}} </td>
+                                </tr>
+
+                                {% endif %}
+
                                 <tr>
                                     <td class="column1"> Date of analysis:</td>
                                     <td class="column2"> {{metadata.date}} </td>
