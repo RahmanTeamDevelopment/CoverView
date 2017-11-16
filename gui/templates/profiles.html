@@ -59,6 +59,12 @@
 
 
         .option input[type='radio'] {
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            -o-user-select: none;
+            user-select: none;
             border: 0;
             clip: rect(0 0 0 0);
             height: 1px;
@@ -69,6 +75,12 @@
             width: 1px;
         }
         .option label:not(.titlelabel){
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            -o-user-select: none;
+            user-select: none;
             font-size: 16px;
             font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
             display:inline-block;
@@ -83,6 +95,12 @@
             cursor:pointer;
         }
         .option input[type='radio']:checked + label{
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            -o-user-select: none;
+            user-select: none;
             font-size: 17px;
             font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
             background:#0b5c8e;
@@ -91,6 +109,12 @@
         }
 
         .titlelabel {
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            -o-user-select: none;
+            user-select: none;
             color: black;
             font-size: 19px;
             font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
@@ -180,7 +204,7 @@
 
                          <div>
 
-                             <select id="metrics" onchange="changeMetrics();" style="background-color: #00749F; color: white">
+                             <select id="metrics" onchange="changeMetrics();" style="background-color: #00749F; color: white; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">
                                 <option value="1" selected="selected">COV</option>
                                 <option value="2">QCOV</option>
                                  <option value="3">FLMQ</option>
@@ -189,7 +213,7 @@
                                  <option value="6">MEDBQ</option>
                             </select>
 
-                             <select id="metrics2" onchange="changeMetrics2();" class="pull-right" style="background-color: darkred; color: white">
+                             <select id="metrics2" onchange="changeMetrics2();" class="pull-right" style="background-color: darkred; color: white; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">
                                  <option value="0" selected="selected">---</option>
                                 <option value="1">COV</option>
                                 <option value="2">QCOV</option>
@@ -206,7 +230,7 @@
                             -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;"></div>
 
                         <div width=100% style="align: center;">
-                            <canvas id="canvas" height=20px width=900px style="align: center;"></canvas>
+                            <canvas id="canvas" height=20px width=900px style="align: center; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;"></canvas>
                         </div>
 
                          <div hidden id="zoombuttons"; style="text-align: center; position: relative; top: 5px;">
@@ -224,7 +248,7 @@
                          <form class="option">
 
 
-                            <span style="position: relative; left: 25px;">
+                            <span style="position: relative; left: 25px; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">
                             <label class="titlelabel" >Reads:</label>
 
 		                    <input type="radio" name="option2" id="allreads" value="all" onclick="switchToBothStrands();" checked>
@@ -237,7 +261,7 @@
 		                    <label for="reverse" id="reverselabel">Reverse</label>
                                 </span>
 
-                             <span style="position: relative; left: 35px;">
+                             <span style="position: relative; left: 35px; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">
                                <label class="titlelabel">Cut-off:</label>
 
 		                    <input type="radio" name="option3" id="cutoffshow" value="all" onclick="switchOnCutoff();" checked>
@@ -249,7 +273,7 @@
                              </span>
 
 
-                             <span style="position: relative; left: 45px;">
+                             <span style="position: relative; left: 45px; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none;">
 
                                  <label class="titlelabel">Axes:</label>
 
