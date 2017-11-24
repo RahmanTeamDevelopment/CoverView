@@ -3,279 +3,366 @@
 Introduction
 ************
 
-CoverView is a simple quality control tool for assessing the coverage and quality of mapped reads (.bam file)
-in a user-specified targeted panel or whole exome (.bed file). CoverView reports QC metrics in multiple output
-files with increasing levels of detail from a chromosome level summary to per base profiles. It also flags regions
-that do not pass pre-defined quality requirements.
+CoverView is a fast, flexible and user-friendly coverage and base/mapping quality evaluation tool for panel and whole exome next-generation sequencing. It requires a BAM file containing the mapped reads and a BED file specifying the genomic regions for which coverage and the QC metrics will be reported. CoverView outputs QC metrics in multiple output files with increasing levels of detail from a chromosome level summary to per-base profiles. It also flags regions that do not pass pre-defined quality requirements. An interactive Graphical User Interface (GUI) running in the web browser is included for easier exploration of the QC results. For more details, read the :ref:`paper_section`.
 
 
 ************
 Installation
 ************
 
-Stable releases of CoverView can be downloaded from Github `here <https://github.com/RahmanTeamDevelopment/CoverView/releases>`_
-in either ``.zip`` or ``.tar.gz`` format. To unpack these run one of the following commands::
-
-	unzip CoverView_X.X.X.zip
-
-or::
-
-	tar -xvzf CoverView_X.X.X.tar.gz
-
-and then you can install CoverView with the following commands::
-
-    cd CoverView
-    ./install.sh
-
-CoverView uses ``virtualenv`` and ``pip`` to manage all its extra dependencies, which means that it will not clutter up your system by installing
-things globally. Everthing it installs will go into a sub-directory in the ``CoverView`` directory (specifically, ``CoverView_X.X.X/env``). If
-you delete CoverView then everything it has installed will also be deleted. Once the installation script has finished successfully,
-CoverView is ready for use. 
-
-
 Dependencies
 ============
 
-To install and run CoverView v1.3.0 you will need `Git <https://git-scm.com>`_, `Python <https://www.python.org>`_ (only
-version 2.7.X is currently supported), and `Virtualenv <https://virtualenv.pypa.io/en/stable/>`_. 
+To install and run CoverView v1.4.1 you will need the following dependencies installed:
 
+* Python 2.7.9 or later (Python2 series) 
+* GCC and GNU make
+* virtualenv
+
+If your system is missing *GCC* and *GNU make*, these can be installed as follows: On a Mac, the easiest way to set them up is to install `Xcode Command Line Tools <https://developer.apple.com/downloads>`_. On a Debian or Ubuntu Linux, they can be set up by installing the *build-essential* package::
+
+	sudo apt-get install build-essential
+
+
+If not already installed on your system, *virtualenv* can be set up by::
+
+	pip install virtualenv
+
+
+Installation on Linux or Mac
+=============================
+
+CoverView v1.4.1 can be downloaded from GitHub `here <https://github.com/RahmanTeam/CoverView/releases>`_ in either ``.zip`` or ``.tar.gz`` format. To unpack these run one of the following commands::
+
+	unzip CoverView-1.4.1.zip
+
+or::
+
+	tar -xvzf CoverView-1.4.1.tar.gz
+
+and then you can install CoverView with the following commands::
+
+    cd CoverView-1.4.1
+    ./install.sh
+
+CoverView uses *virtualenv* and *pip* to manage all its extra dependencies, which means that it will not clutter up your system by installing things globally. Everthing it installs will go into a sub-directory in the ``CoverView-1.4.1`` directory. If
+you delete CoverView then everything it has installed will also be deleted. Once the installation script has finished successfully, CoverView is ready for use. 
+
+
+Installation on Windows
+========================
+
+Installation on Windows is currently not supported.
+
+
+.. _run_section:
 
 *****************
 Running CoverView
 *****************
 
-Once downloaded and correctly installed, CoverView can be run with the following simple command::
+With BED file
+=============
 
-    env/bin/coverview -c config.json -i input.bam –b panel.bed -o output
+Once correctly installed, CoverView can be run with the following simple command::
+
+    CoverView-1.4.1/coverview -c config.txt -i input.bam –b panel.bed -o example
 
 or you can optionally supply a transcript database::
 
-    env/bin/coverview -c config.json -i input.bam –b panel.bed -o output -t transcript_database.gz
+    CoverView-1.4.1/coverview -c config.txt -i input.bam –b panel.bed -o example -t transcript_database.gz
 
 By default, CoverView takes four command line arguments: the name of the configuration file (-c), the
-name of the input bam file (-i), the name of a bed file (-b) and the output file name prefix (-o). 
+name of the input BAM file (-i), the name of a BED file (-b) and the output file name prefix (-o). 
 
-* The input bam file (-i) should follow the `BAM format <http://samtools.github.io/hts-specs/SAMv1.pdf>`_ and should contain the mapped reads. The .bai index file should also be present in the same directory.
-* The bed file (-b) should follow the `BED format <http://genome.ucsc.edu/FAQ/FAQformat>`_ with each record corresponding to a region of interest (e.g. exon).
-* The configuration file (-c) should follow the `JSON <http://www.json.org>`_ format  and should contain the user-specified settings (see possible configuration options in :ref:`config_section`).
-* The transcript database (-t) is optional, but if supplied must be compressed with `bgzip <http://www.htslib.org/doc/tabix.html>`_ and indexed with `tabix <http://www.htslib.org/doc/tabix.html>`_
+* The configuration file (-c) contains the user-specified settings (see the :ref:`config_section` section) and must follow the `INI format <https://en.m.wikipedia.org/wiki/INI_file>`_  
+* The input BAM file (-i) must follow the `BAM format <http://samtools.github.io/hts-specs/SAMv1.pdf>`_ containing the mapped reads with its .bai index file also present in the same directory. The BAM file may optionally contain reads marked as duplicates as CoverView can generate metrics with duplicate reads either included or excluded. The BAM file must contain reads/read groups from only a single sample.
+* The BED file (-b) must follow the `BED format <http://genome.ucsc.edu/FAQ/FAQformat>`_ with each record corresponding to a region of interest (e.g. exon)
+* The transcript database (-t) is optional; it must be generated by the ``ensembl_db`` tool (see :ref:`ensembldb_section` section)
 
-
-Running without bed file
-========================
+Without BED file
+================
 
 The -b command line flag is optional. If a bed file is not specified, only a simplified chromosome level read count summary will be outputted::
 
-    env/bin/coverview -c config.json -i input.bam -o output
+    CoverView-1.4.1/coverview -c config.txt -i input.bam -o example
 
+
+.. _ensembldb_section:
+
+The ensembl_db tool
+===================
+
+If transcript coordinates are to be outputted, CoverView requires a transcript database file. The ``ensembl_db`` tool can be used to generate the transcript database file for an arbitrary Ensembl release. 
+
+For example, you can generate a transcript database file based on Ensembl release 75 by running
+
+::
+
+    CoverView-1.4.1/ensembl_db -e 75 -o output
+
+where -e specifies the Ensembl release version and -o sets the output file name prefix. The resulting *output.gz* file can be supplied to CoverView by its -t command line option (see :ref:`run_section`). 
+
+Alternatively, an input text file containing a list of Ensembl ENST identifiers (a single ID per each line) can be specified in order to include only the listed transcripts in the database:
+
+::
+
+    CoverView-1.4.1/ensembl_db -i input.txt -e 75 -o output
 
 .. _config_section:
 
 ******************
-Configuration File
+Configuration file
 ******************
 
-.. sidebar:: Future Changes to CoverView Configuration
-    
-    CoverView uses JSON (Javascript Object Notation) for configuration of complex input options. Whilst this is a
-    flexible format, it is not the easiest for users to write, and we will be switching to a new configuration style
-    based on the `.ini file <https://en.wikipedia.org/wiki/INI_file>`_ format in a future release.
 
-The configuration file uses the `JSON <http://www.json.org>`_ format, which allows nested configuration options to be input. ``JSON``
-looks a lot like a set of nested ``Python`` dictionaries, but is actually a part of the ``Javascipt`` language (one obvious difference is
-that boolean values must be *true* or *false* as in ``Javascript`` and not *True* or *False* as in ``Python``). The config file must 
-contain at least one pair of curly braces, and all option names must be surrounded by double quotes and separated by commas. Option names and
-values are written as `` "option_name": option_value``. If the config file is not correctly formatted, or contains incorrect option names then
-this will result in a run-time error. An example configuration is shown below, with a table of valid option names.
-
-.. highlight:: json
+The CoverView configuration file uses the `INI format <https://en.m.wikipedia.org/wiki/INI_file>`_. As illustrated by the example below, the configuration file may contain five sections: [reads], [outputs], [transcript], [quality] and [pass].
 
 ::
 
-	{
-	    "count_duplicate_reads": true,
-	    "outputs": 
-		{ 
-			"regions": true, 
-			"profiles": true 
-		},
-	    "low_bq": 10,
-	    "low_mq": 20,
-	    "pass": 
-		{ 
-			"MINQCOV_MIN": 50, 
-			"MAXFLMQ_MAX": 0.05, 
-			"MAXFLBQ_MAX": 0.15 
-		},
-	    "transcript":  
-		{
-			"regions": false, 
-			"profiles": false, 
-			"poor": true 
-		}
-	}
+	[reads]
+	duplicates = true
+	direction = false
+
+	[outputs]
+	regions_file = true
+	profiles_file = true
+	only_flagged_profiles = false
+
+	[transcript]
+	regions_file = true
+	profiles_file = true
+
+	[quality]
+	low_bq = 10
+	low_mq = 20
+
+	[pass]
+	MINQCOV_MIN = 15
 
 The following options may be specified in the configuration file
 
 .. csv-table::
-    :header: "Option", "Type", "Default Value", "Effect"
+    :header: "Section", "Key", "Type", "Default", "Effect"
+    :widths: 10, 15, 10, 10, 55
 
-    count_duplicate_reads,  Boolean, true, if true then duplicate reads are included in the analysis. CoverView counts reads as duplicates if they have the duplicate bit set in the BAM record. 
-    low_bq, Integer, 10, The base quality cut-off used in the FLBQ metrics. Only bases with this value or higher will be counted as high-quality.
-    low_mq”,Integer, 20, The mapping quality cut-off used in the FLMQ metrics. Only reads with this mapping quality or higher will be counted as high-quality.
-	outputs {"regions"}, Boolean, true,  If this is true then the _regions.txt output file will be written.
-	outputs {"profiles"}, Boolean, true,  If this is true then the _profiles.txt and _poor.txt output files will be written.
-	direction, Boolean, false, If this is true then summary metrics and profiles are output for forward and reverse-stranded reads separately.
-	transcript {"regions"}, Boolean, true, If this is true then transcript coordinates are reported in the _regions.txt file (N.B. this options requires that a transcript database be provided).
-	transcript {"profiles"}, Boolean, true, If this is true then transcript coordinates are reported in the _profiles.txt file (N.B. this options requires that a transcript database be provided).
-	only_fail_profiles, Boolean, false, If this is true then the _profiles.txt output file will only contain regions that failed the PASS criteria.
-	pass, JSON Object, None, See below for explanation.
+    reads, duplicates, Boolean, true, if true then duplicate reads are included in the analysis
+    reads, direction, Boolean, false, if true then per-region metrics and per-base profiles are also output for forward and reverse-stranded reads separately
+    outputs, regions_file, Boolean, true, if true then the _regions.txt output file will be written
+    outputs, profiles_file, Boolean, true, if true then the _profiles.txt output file will be written
+    outputs, only_flagged_profiles, Boolean, false, if true then the _profiles.txt output file will  contain flagged regions only
+    transcript, regions_file, Boolean, true, if true then transcript coordinates are reported in the _regions.txt file
+    transcript, profiles_file, Boolean, true, if true then transcript coordinates are reported in the _profiles.txt file
+    quality, low_bq, Integer, 10, base quality cut-off used in the FLBQ metrics 
+	quality, low_mq, Integer, 20, mapping quality cut-off used in the FLMQ metrics
+	pass, ?_MIN / ?_MAX, Integer, none, requirements a region must satisfy to be labelled as *PASS*  
 
-
-The *pass* argument specifies a set of one or more requirements that a region must satisfy in order to be labelled as *PASS* in the output. Each requirement is given as
-as key-value pair, with commas between each requirement. The values are string with a specific format which is *METRIC_MIN* (to set a minimum requirement)
-or *METRIC_MAX* (to set a maximum requirement). An example config file that just contains the *pass* config is shown below.
- 
-.. highlight:: json
+The [pass] section specifies a set of one or more requirements a region must satisfy in order to be labelled as *PASS* in the output, otherwise the region will be *flagged*. Each requirement is given as a key-value pair where the key should follow the format of METRIC_MIN (to set a minimum requirement) or METRIC_MAX (to set a maximum requirement). METRIC can be any of the per-region metrics defined in 5.3 (:ref:`regionmetrics_subsection`). For example, the following specifies that regions with MINQCOV<15 are to be flagged:
 
 ::
 
-    {
-        "pass": 
-        { 
-            "MINQCOV_MIN": 50, 
-            "MAXFLMQ_MAX": 0.05, 
-            "MAXFLBQ_MAX": 0.15 
-        }
-    }
-
-this specifies that, for a region to *PASS* it must have minimum MINQCOV of 50, maximum MAXFLMQ of 0.05 and maximum MAXFLBQ of 0.15. The set of metrics that it is possible to
-filter on are listed in the table below.
-
-.. csv-table::
-    :header: "Metric", "Meaning"
-
-	MINCOV, Minumum coverage in a region
-	MEDCOV, Median coverage in a region
-	MINQCOV, Minumum high-quality coverage in a region
-	MEDQCOV, Median high-quality coverage in a region
-	MINQCOV, Minumum high-quality coverage in a region
-	MAXFLMQ, Maximum fraction of low mapping quality reads in a region
-	MAXFLBQ, Maximum fraction of low base qualities in a region
+	[pass]
+	MINQCOV_MIN = 15
 
 
-So, as a final example, if you want to fail all regions that have a minimum coverage of <= 30 or that have a maximum fraction of low base qualities >= 20% then you could use
-the following config file.
-
-.. highlight:: json
+This second example specifies that regions with MINCOV<30 or MAXFLBQ>0.2 are to be flagged:
 
 ::
 
-    {
-        "pass": 
-        { 
-            "MINCOV_MIN": 30,
-            "MAXFLBQ_MAX": 0.20
-        }
-    }
-
-Finally, note that a template configuration file (``config/example_config.json``) is provided in the CoverView package.
+	[pass]
+	MINCOV_MIN = 30
+	MAXFLBQ_MAX = 0.2
 
 
-******
-Output
-******
 
+*************
+Output files
+*************
+
+CoverView generates 4 easily parsable (column-based) output files:
+
+* <prefix>_summary.txt (chromosome level summary)
+* <prefix>_profiles.txt (per-base profiles)
+* <prefix>_regions.txt (summary metrics of regions)
+* <prefix>_poor.txt (poor quality ranges)
+
+where <prefix> denotes the output file name prefix specified by the -o command line option. (Note that an additional file, <prefix>_meta.txt, is also created that is required by the GUI.)
 
 Chromosome level summary
 ========================
 
-The <outputprefix>_summary.txt output file provides chromosome level summary (read counts) and contains the following 4 columns:
+The *_summary.txt* output file provides chromosome level summary (read counts) and contains the following 4 columns:
 
-* Chromosome name
-* Total read count (RC): total number of reads mapped to the chromosome
-* Read count in targeted regions (RCIN): total number of reads mapping to the chromosome that overlap targeted regions from the bed file 
-* Read count outside of targeted regions (RCOUT): total number of reads mapping to the chromosome that do not overlap targeted regions from the bed file 
+.. csv-table::
+    :header: "Column name", "Description"
+    :widths: 13, 87
+
+    CHROM, chromosome name
+    RC, total read count; total number of reads mapped to the chromosome
+    RCIN, read count in targeted regions; number of reads mapping to the chromosome that overlap targeted regions from the BED file
+    RCOUT, read count outside of targeted regions; number of reads mapping to the chromosome that do not overlap targeted regions from the BED file
+
+
 
 In addition to the list of chromosomes, the outputted table also reports the mapped, unmapped and total read counts for the whole dataset.
 
 .. _profiles_subsection:
 
-Per base profiles
+Per-base profiles
 =================
 
-The <outputprefix>_profiles.txt output file provides per base profiles for the targeted regions of interest. Each position is described in a 
-separate line with the following 8 compulsory columns:
-
-* Chromosome 
-* Position
-* Coverage (COV): number of reads covering the position 
-* Quality coverage (QCOV): number of reads covering the position with a read mapping quality larger than the threshold set by the “low_mq” configuration flag and a base quality larger than the threshold set by the “low_bq” configuration flag
-* Median base quality (MEDBQ): median base quality of all read bases mapping to the position 
-* Fraction of low base quality (FLBQ): fraction of read bases mapping to the position with a base quality smaller or equal than the cutoff set by the “low_bq” configuration flag
-* Median mapping quality (MEDMQ): median mapping quality of all reads covering the position 
-* Fraction of low mapping quality (FLMQ): fraction of reads covering the position with a mapping quality smaller or equal than the cutoff set by the “low_mq” configuration flag
-
-If set in the configuration file (see “transcript” key in :ref:`config_section`), an additional column named “Transcript_coordinate” is included providing
-the transcript coordinate of the position with regards to the overlapping transcript. In case the position overlaps with multiple transcripts,
-the coordinates in all transcripts are reported separated by commas. Transcripts data are read from the user-specified transcript database (see “transcript_db” key in :ref:`config_section`).
-
-Finally, if directionality information is requested in the configuration file (see “direction” key in :ref:`config_section`), 12 additional columns are added to the _profiles.txt file: 
-
-* Columns COV+, QCOV+, MEDBQ+, FLBQ+, MEDMQ+ and FLMQ+ provide the same metrics as COV, QCOV, MEDBQ, FLBQ, MEDMQ and FLMQ defined above, however, considering only forward-stranded reads. 
-* Columns COV-, QCOV-, MEDBQ-, FLBQ-, MEDMQ- and FLMQ- provide the same information, considering only reverse-stranded reads.
+The *_profiles.txt* output file provides per-base profiles for the targeted regions. Each position is described in a separate line with the following 8 columns:
 
 
-Summary metrics for targeted regions
-====================================
+.. csv-table::
+    :header: "Column name", "Description"
+    :widths: 13, 87
 
-The <outputprefix>_regions.txt output file provides a number of different metrics summarizing the per base profiles of each region.
-These summary metrics give information on the overall quality of each region. In addition, regions are marked as ‘PASS’ or ‘FAIL’ based
-on the requirements set in the configuration file (see “pass” key in :ref:`config_section`). Each line in the file corresponds to a region described
-by the following 12 columns:
+    Chromosome, chromosome name
+    Position, position on chromosome
+    COV, coverage; number of reads covering the position 
+    QCOV, quality coverage; number of reads covering the position with a MQ larger than the threshold set by the ``low_mq`` configuration flag and a BQ larger than the cut-off set by the ``low_bq``  flag
+    MEDBQ, median base quality; median base quality of all read bases mapping to the position 
+    FLBQ, fraction of low base quality; fraction of read bases mapping to the position with a BQ smaller or equal than the cut-off set by the ``low_bq`` configuration flag
+    MEDMQ, median mapping quality; median mapping quality of all reads covering the position
+    FLMQ, fraction of low mapping quality; fraction of reads covering the position with a MQ smaller or equal than the cut-off set by the ``low_mq`` configuration flag 
 
-* Region name 
-* Chromosome 
-* Start position of region 
-* End position of region 
-* ‘PASS’ or ‘FAIL’: Does the region pass the user-specified requirements?
-* Read count (RC): Total number of reads overlapping with the region 
-* Median coverage (MEDCOV): Median of coverage (COV) values across all positions in the region 
-* Minimum coverage (MINCOV): Minimum of coverage (COV) values across all positions in the region 
-* Median quality coverage (MEDQCOV): Median of quality coverage (QCOV) values across all positions in the region 
-* Minimum quality coverage (MINQCOV): Minimum of quality coverage (QCOV) values across all positions in the region
-* Maximum fraction of low mapping quality (MAXFLMQ): Maximum of FLMQ values across all positions in the region
-* Maximum fraction of low base quality (MAXFLBQ): Maximum of FLBQ values across all positions in the region
+An additional column named “Transcript_coordinate” is included in the output if the ``profiles_file`` flag is set to *true* in the [transcript] section of the configuration file. This column provides the transcript coordinate of the position with regards to the overlapping transcript. In case the position overlaps with multiple transcripts, the coordinates in all transcripts are reported separated by commas. Transcripts data are read from the user-specified transcript database (see :ref:`run_section`).
 
-Note that the MEDCOV, MINCOV, MEDQCOV, MINQCOV, MAXFLMQ and MAXFLBQ values are derived from the per-base COV, QCOV, FLMQ and FLBQ 
-profiles defined in :ref:`profiles_subsection`. The region name in the first column is taken from the 4th column of the BED file. If there are
-multiple regions in the BED file with the same name in their 4th column (e.g. the regions correspond to different exons of the 
-same gene), CoverView adds an index to the region names joined by an underscore. For example, multiple regions of the BRCA2 gene
-would be referred to as BRCA2_1, BRCA2_2, BRCA2_3, etc.
+Finally, if the ``direction`` flag is set to *true* in the [reads] section of the configuration file, 12 additional columns are added to the *_profiles.txt* file: 
 
-If set in the configuration file (see “transcript” key in :ref:`config_section`), two additional columns named “Start_transcript” and
-“End_transcript” are included providing the transcript coordinates of the start and end positions of the region with regards to
-overlapping transcripts.
+* ``COV+``, ``QCOV+``, ``MEDBQ+``, ``FLBQ+``, ``MEDMQ+`` and ``FLMQ+``: the same metrics as ``COV``, ``QCOV``, ``MEDBQ``, ``FLBQ``, ``MEDMQ`` and ``FLMQ`` defined above, however, considering only forward-stranded reads
+* ``COV-``, ``QCOV-``, ``MEDBQ-``, ``FLBQ-``, ``MEDMQ-`` and ``FLMQ-``: the same information, considering only reverse-stranded reads
 
-Finally, if directionality information is requested in the configuration file (see “direction” key in :ref:`config_section`), 12 additional columns are added to the _region.txt file: 
+.. _regionmetrics_subsection:
 
-* Columns MEDCOV+, MINCOV+, MEDQCOV+, MINQCOV+, MAXFLMQ+ and MAXFLBQ+ provide the same metrics as MEDCOV, MINCOV, MEDQCOV, MINQCOV, MAXFLMQ and MAXFLBQ defined above, however, considering only forward-stranded reads. 
-* Columns MEDCOV-, MINCOV-, MEDQCOV-, MINQCOV-, MAXFLMQ- and MAXFLBQ- provide the same information, considering only reverse-stranded reads.
+Summary metrics of regions
+==========================
+
+The *_regions.txt* output file provides a number of metrics summarizing the per-base profiles of each region. These summary metrics give information on the overall quality of each region. In addition, regions are marked as *"PASS"* or *"FLAG"* based on the requirements set in the configuration file. Each line in the file corresponds to a region described by the following 12 columns:
+
+.. csv-table::
+    :header: "Column name", "Description"
+    :widths: 13, 87
+
+    Region, region name taken from the 4th column of the BED file
+    Chromosome, chromosome name
+    Start_position, start position of region on chromosome
+    End_position, end position of region on chromosome
+    Pass_or_flag, ‘PASS’ if region satisfies the requirements set in the [pass] section of configuration file or 'FLAG' otherwise
+    RC,  read count; total number of reads overlapping with the region 
+    MEDCOV, median coverage; median COV values across all positions in the region
+    MINCOV, minimum coverage; minimum of COV values across all positions in the region
+    MEDQCOV, median quality coverage; median of QCOV values across all positions in the region
+    MINQCOV, minimum quality coverage; minimum of QCOV values across all positions in the region
+    MAXFLMQ, maximum fraction of low mapping quality; maximum of FLMQ values across all positions in the region
+    MAXFLBQ, maximum fraction of low base quality; maximum of FLMB values across all positions in the region
+
+.. note::  If there are multiple regions in the BED file with the same name in their 4th column (e.g. the regions correspond to different exons of the same gene), CoverView adds an index to the region names joined by an underscore. For example, multiple regions of the BRCA2 gene would be referred to as BRCA2_1, BRCA2_2, BRCA2_3 etc.
+
+Two additional columns named “Start_transcript” and “End_transcript” are included in the output if the ``regions_file`` flag is set to *true* in the [transcript] section of the configuration file. These columns provide the transcript coordinates of the start and end positions of the region with regards to overlapping transcripts.
+
+Finally, if the ``direction`` flag is set to *true* in the [reads] section of the configuration file, 12 additional columns are added to the *_regions.txt* file: 
+
+* ``MEDCOV+``, ``MINCOV+``, ``MEDQCOV+``, ``MINQCOV+``, ``MAXFLMQ+`` and ``MAXFLBQ+``: the same metrics as ``MEDCOV``, ``MINCOV``, ``MEDQCOV``, ``MINQCOV``, ``MAXFLMQ`` and ``MAXFLBQ`` defined above, however, considering only forward-stranded reads
+* ``MEDCOV-``, ``MINCOV-``, ``MEDQCOV-``, ``MINQCOV-``, ``MAXFLMQ-`` and ``MAXFLBQ-``: the same information, considering only reverse reads
 
 
 Poor quality ranges
 ===================
 
-..If the _profiles.txt file is outputted (see “output” key in :ref:`config_section`), an additional file named <outputprefix>_poor.txt is also created.
-The _poor.txt file provides a comprehensive list of all continuous ranges within the regions of interest with QCOV<15 for all bases (referred
-to as 'poor quality' ranges). Note that multiple such ranges may exist in a single region. Each line in the file corresponds to a 'poor quality'
-range with the following 6 columns:
+If the ``profiles_file`` option is set to *true* in both the [outputs] section and [transcript] section of the configuration file, CoverView will create a fourth output file; *<prefix>_poor.txt*. This file provides a comprehensive list of all continuous ranges within the studied regions with QCOV<15 for all bases (referred to as *"poor quality ranges"*). Note that multiple such ranges may exist in a single region. Each line in the file corresponds to a *poor quality range* with the following 6 columns:
 
-* Region name 
-* Chromosome 
-* Start position of region 
-* End position of region 
-* Start coordinate of region in transcript
-* End coordinate of region in transcript
+
+.. csv-table::
+    :header: "Column name", "Description"
+    :widths: 13, 87
+
+    Region, name of region which contains the range
+    Chromosome, chromosome name
+    Start_position, start position of range on chromosome
+    End_position, end position of range on chromosome
+    Start_transcript, start coordinate of range in the overlapping transcript
+    End_transcript, end coordinate of range in the overlapping transcript
+
 
 In case the start or end position overlaps with multiple transcripts, the coordinates in all transcripts are reported separated by commas.
+
+
+******************************
+Graphical User Interface (GUI)
+******************************
+
+CoverView provides an interactive GUI that allows visual exploration of the QC results. The GUI can be run from the terminal importing a CoverView output prevously generated for a sample::
+
+    CoverView-1.4.1/gui -i /path/to/data/example -r /path/to/reference/reference.fasta
+
+The GUI opens in the web browser (*Chrome*, *Safari* and *Firefox* are supported). 
+
+Mandatory command line options are:
+
+* -i specifies the input file name prefix (i.e. *example_regions.txt*, *example_profiles.txt*, *example_summary.txt* etc. files should be in the directory /path/to/data/) 
+* -r specifies the reference genome FASTA file. Note that the reference genome file must be indexed by `samtools faidx <http://www.htslib.org/doc/samtools.html>`_ and the .fai index file has to be in the same directory as the FASTA file. The genome build must be the same as used for creating the BED file
+
+The CoverView GUI consists of the following four views discussed in the next subsections:
+
+* Analysis View
+* Genes View
+* Regions View
+* Profiles View
+
+Analysis View
+==============
+
+The *Analysis View* provides a summary table of sample name, input files, key configuration options and the date of running the CoverView analysis. The displayed sample name is extracted from the read group (@RG) lines of the header of the BAM file, if the information is present. In addition, the total number of *flagged* regions and genes are also presented. (A gene is *flagged* if it includes at least one *flagged* region.) If a text is too long to be displayed in the table, hover the mouse cursor over it to see the full text in the tooltip.
+
+
+Genes View
+===========
+
+The *Genes View* provides a bar plot displaying per-chromosome read counts and a table at the right side showing the total number of regions and the number of *flagged* regions for each gene. The bar plot presents both on-target and off-target read counts for each chromosome. Clicking on a particular bar in the plot selects/unselects the chromosome. If a chromosome is selected, only the genes located on that chromosome are listed in the table, otherwise all genes are shown.
+
+.. image:: genesview.png
+	:width: 85 %
+	:align: center
+
+*Flagged* genes (i.e. those with at least one *flagged* region) are highlighted in red. The table can be filtered to show either passed, flagged or all genes by the "Genes" option. The search box helps to find particular genes of interest.
+
+A gene can be selected/unselected by clicking on the row of the table. If a gene is selected, the "Show Regions" and "Show Flagged Regions" buttons are visible. With "Show Regions" you can open the selected gene in *Regions View* where only the regions of the gene will be displayed. Clicking on the "Show Flagged Regions" button also redirects to *Regions View*, but only *flagged* regions of the gene will be listed.
+
+Regions View
+==============
+
+The *Regions View* provides a scrollable table of the genomic regions that have been analysed by CoverView. Columns of the table provide the following per-region metrics: ``RC``, ``MEDCOV``, ``MINCOV``, ``MEDQCOV``, ``MINQCOV``, ``MAXFLBQ``, ``MAXFLMQ`` and ``PASS?``. For *flagged* regions, metrics values not satisfying quality requirements are highlighted in red.
+
+.. image:: regionsview.png
+	:width: 85 %
+	:align: center
+
+The table can be filtered to show either passed, flagged or all regions by using the "Regions" option. With the "Reads" option, you can switch between displaying the above metrics for forward reads only, reverse reads only or all reads included. The search box helps to find particular regions of interest.
+
+A region can be selected/unselected by clicking on the row of the table. If a region is selected, the "Show Profiles" and "Show Gene" buttons are visible. With "Show Profiles" you can open the selected region in *Profiles View*. Clicking on the "Show Gene" button redirects to *Gene View* showing the gene to which the selected region belongs.
+
+Profiles View
+==============
+
+The *Profiles View* provides an interactive graph of per-base quality profiles aligned with the reference sequence. The visible profiles correspond to the region selected in the left-side panel  listing all regions with *flagged* regions highlighted in red. The diplayed metrics can be changed with the selector at the top of both y-axes. The following per-base metrics can be selected: ``COV``, ``QCOV``, ``FLBQ``, ``MEDBQ``, ``FLMQ`` and ``MEDMQ``. If two metrics are plotted together, the color of each line is the same as of the corresponding metrics selector (blue for the y-axis and red for the y2-axis). Hover the mouse cursor over a point of the plot to see the exact genomic position and metric value.
+
+.. image:: profilesview.png
+	:width: 85 %
+	:align: center
+
+Click and drag on the plot to zoom in any section of the profiles. The genomic coordinates of the zoomed region are provided under the graph. You can move upstream and downstream or zoom out with the navigation buttons. It is possible to repeatedly zoom in up to DNA base-level. If the "Axes" option is set to "Normal", the y-axes will have the same scale when you zoom in, otherwise they will be re-scaled to be optimised for the visible section of the profiles.
+
+With the "Reads" option, you can switch between showing the per-based profiles for forward reads only, reverse reads only or all reads included. Quality cut-off values specified by the [pass] section of the CoverView configuration file can be displayed as dashed horizontal lines by switching on the "Cut-off" option. A horizontal line representing the cut-off value is visible only if the relevant metric is displayed and have the same color. 
+
+Clicking on the "Show Region" button opens the selected region in the *Region View*.
+
+
+.. _paper_section:
+
+****************
+CoverView paper
+****************
+
+You can access the CoverView paper here: <link to publication>

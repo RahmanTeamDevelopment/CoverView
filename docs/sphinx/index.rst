@@ -1,6 +1,6 @@
 
-Welcome to CoverView 1.3.0 documentation!
-=========================================
+CoverView v1.4.1 documentation
+===============================
 
 .. toctree::
    :numbered:
@@ -9,9 +9,3 @@ Welcome to CoverView 1.3.0 documentation!
 
    documentation
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
