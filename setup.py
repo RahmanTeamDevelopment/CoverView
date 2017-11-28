@@ -80,7 +80,6 @@ setup(
     packages=[
         'coverview_',
         'bamgen',
-        'testutils',
         'gui_',
         'tgmi',
         'ensembldb'
