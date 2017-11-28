@@ -32,7 +32,7 @@ If not already installed on your system, *virtualenv* can be set up by::
 Installation on Linux or Mac
 =============================
 
-CoverView v1.4.1 can be downloaded from GitHub `here <https://github.com/RahmanTeam/CoverView/releases/tag/v1.4.1>`_ in either ``.zip`` or ``.tar.gz`` format. To unpack these run one of the following commands::
+CoverView v1.4.1 can be downloaded from GitHub `here <https://github.com/RahmanTeamDevelopment/CoverView/releases/tag/v1.4.1>`_ in either ``.zip`` or ``.tar.gz`` format. To unpack these run one of the following commands::
 
 	unzip CoverView-1.4.1.zip
 
