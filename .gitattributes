@@ -2,7 +2,7 @@
 /testutils export-ignore
 /.gitattributes export-ignore
 /.gitignore export-ignore
-/.Makefile export-ignore
-/.run_unit_tests.bash export-ignore
+/Makefile export-ignore
+/run_unit_tests.bash export-ignore
 /docs/sphinx export-ignore
 
