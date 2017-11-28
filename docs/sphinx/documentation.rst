@@ -32,7 +32,7 @@ If not already installed on your system, *virtualenv* can be set up by::
 Installation on Linux or Mac
 =============================
 
-CoverView v1.4.1 can be downloaded from GitHub `here <https://github.com/RahmanTeam/CoverView/releases>`_ in either ``.zip`` or ``.tar.gz`` format. To unpack these run one of the following commands::
+CoverView v1.4.1 can be downloaded from GitHub `here <https://github.com/RahmanTeam/CoverView/releases/tag/v1.4.1>`_ in either ``.zip`` or ``.tar.gz`` format. To unpack these run one of the following commands::
 
 	unzip CoverView-1.4.1.zip
 
@@ -365,4 +365,4 @@ Clicking on the "Show Region" button opens the selected region in the *Region Vi
 CoverView paper
 ****************
 
-You can access the CoverView paper here: <link to publication>
+Link to CoverView paper coming soon.
