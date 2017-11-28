@@ -5,4 +5,4 @@
 /Makefile export-ignore
 /run_unit_tests.bash export-ignore
 /docs/sphinx export-ignore
-
+/scripts export-ignore

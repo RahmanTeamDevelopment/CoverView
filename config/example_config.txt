@@ -1,0 +1,19 @@
+[reads]
+duplicates = true
+direction = false
+
+[outputs]
+regions_file = true
+profiles_file = true
+only_flagged_profiles = false
+
+[transcript]
+regions_file = true
+profiles_file = true
+
+[quality]
+low_bq = 10
+low_mq = 20
+
+[pass]
+MINQCOV_MIN = 15
