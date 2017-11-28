@@ -8,7 +8,7 @@ import logging
 from . import transcript
 
 
-_logger = logging.getLogger("coverview")
+_logger = logging.getLogger("coverview_")
 _canonical_chromosomes = set( range(1, 23) + ["X", "Y", "MT"] )
 
 

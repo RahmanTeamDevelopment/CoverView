@@ -1,6 +1,6 @@
 import testutils.runners
 import testutils.output_checkers
-import coverview.transcript
+import coverview_.transcript
 import unittest
 
 
@@ -11,7 +11,7 @@ class TestCoverViewWithTranscriptDatabase(unittest.TestCase):
             runner.add_reads(("1", 32, 100, 0))
             runner.add_region(("1", 35, 40, "Region_1"))
             runner.add_transcript(
-                coverview.transcript.Transcript(
+                coverview_.transcript.Transcript(
                     ensembl_id="TEST_TRANSCRIPT_1",
                     gene_symbol="TEST_GENE_1",
                     gene_id="TEST_GENE_1",
@@ -23,8 +23,8 @@ class TestCoverViewWithTranscriptDatabase(unittest.TestCase):
                     coding_start_genomic=50,
                     coding_end_genomic=65,
                     exons=[
-                        coverview.transcript.Exon(0, 50, 60),
-                        coverview.transcript.Exon(1, 62, 70)
+                        coverview_.transcript.Exon(0, 50, 60),
+                        coverview_.transcript.Exon(1, 62, 70)
                     ]
                 )
             )
@@ -44,7 +44,7 @@ class TestCoverViewWithTranscriptDatabase(unittest.TestCase):
             })
 
             runner.add_transcript(
-                coverview.transcript.Transcript(
+                coverview_.transcript.Transcript(
                     ensembl_id="TEST_TRANSCRIPT_1",
                     gene_symbol="TEST_GENE_1",
                     gene_id="TEST_GENE_1",
@@ -56,8 +56,8 @@ class TestCoverViewWithTranscriptDatabase(unittest.TestCase):
                     coding_start_genomic=50,
                     coding_end_genomic=65,
                     exons=[
-                        coverview.transcript.Exon(0, 50, 60),
-                        coverview.transcript.Exon(1, 62, 70)
+                        coverview_.transcript.Exon(0, 50, 60),
+                        coverview_.transcript.Exon(1, 62, 70)
                     ]
                 )
             )
@@ -89,7 +89,7 @@ class TestCoverViewWithTranscriptDatabase(unittest.TestCase):
             })
 
             runner.add_transcript(
-                coverview.transcript.Transcript(
+                coverview_.transcript.Transcript(
                     ensembl_id="TEST_TRANSCRIPT_1",
                     gene_symbol="TEST_GENE_1",
                     gene_id="TEST_GENE_1",
@@ -101,8 +101,8 @@ class TestCoverViewWithTranscriptDatabase(unittest.TestCase):
                     coding_start_genomic=50,
                     coding_end_genomic=65,
                     exons=[
-                        coverview.transcript.Exon(0, 50, 60),
-                        coverview.transcript.Exon(1, 62, 70)
+                        coverview_.transcript.Exon(0, 50, 60),
+                        coverview_.transcript.Exon(1, 62, 70)
                     ]
                 )
             )

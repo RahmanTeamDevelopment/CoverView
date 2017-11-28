@@ -1,6 +1,6 @@
-HEADERS=coverview/*.pxd
-PYX=coverview/*.pyx
-PY=coverview/*.py bamgen/*.py bin/CoverView.py testutils/*.py setup.py
+HEADERS=coverview_/*.pxd
+PYX=coverview_/*.pyx
+PY=coverview_/*.py bamgen/*.py bin/*.py testutils/*.py setup.py
 FLAKE8=flake8 --max-line-length=120
 SCRIPTS=bin/coverview
 

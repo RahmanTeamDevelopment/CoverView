@@ -1,4 +1,4 @@
-import coverview.transcript
+import coverview_.transcript
 import unittest
 
 
@@ -7,7 +7,7 @@ class TestExon(unittest.TestCase):
     def test_exon_contains(self):
         start = 0
         end = 10
-        exon = coverview.transcript.Exon(0, start, end)
+        exon = coverview_.transcript.Exon(0, start, end)
 
         assert start - 1 not in exon
         assert start in exon
@@ -18,7 +18,7 @@ class TestExon(unittest.TestCase):
     def test_exon_distance_from(self):
         start = 0
         end = 10
-        exon = coverview.transcript.Exon(0, start, end)
+        exon = coverview_.transcript.Exon(0, start, end)
 
         assert exon.distance_from(start - 1) == -1
         assert exon.distance_from(start) == 0
@@ -29,7 +29,7 @@ class TestExon(unittest.TestCase):
     def test_get_coordinate_of_position_forward(self):
         start = 0
         end = 10
-        exon = coverview.transcript.Exon(0, start, end)
+        exon = coverview_.transcript.Exon(0, start, end)
 
         assert exon.get_coordinate_of_position_forward(start - 1) is None
         assert exon.get_coordinate_of_position_forward(start) == 0
@@ -41,7 +41,7 @@ class TestExon(unittest.TestCase):
     def test_get_coordinate_of_position_reverse(self):
         start = 0
         end = 10
-        exon = coverview.transcript.Exon(0, start, end)
+        exon = coverview_.transcript.Exon(0, start, end)
 
         assert exon.get_coordinate_of_position_reverse(start - 1) is None
         assert exon.get_coordinate_of_position_reverse(start) == 9
@@ -53,7 +53,7 @@ class TestExon(unittest.TestCase):
 
 class TestTranscript(unittest.TestCase):
     def setUp(self):
-        self.forward_transcript = coverview.transcript.Transcript(
+        self.forward_transcript = coverview_.transcript.Transcript(
             ensembl_id="TEST_TRANSCRIPT_1",
             gene_symbol="TEST_GENE_1",
             gene_id="TEST_GENE_1",
@@ -65,12 +65,12 @@ class TestTranscript(unittest.TestCase):
             coding_start_genomic=10,
             coding_end_genomic=90,
             exons=[
-                coverview.transcript.Exon(0, 0, 40),
-                coverview.transcript.Exon(1, 50, 100)
+                coverview_.transcript.Exon(0, 0, 40),
+                coverview_.transcript.Exon(1, 50, 100)
             ]
         )
 
-        self.reverse_transcript = coverview.transcript.Transcript(
+        self.reverse_transcript = coverview_.transcript.Transcript(
             ensembl_id="TEST_TRANSCRIPT_1",
             gene_symbol="TEST_GENE_1",
             gene_id="TEST_GENE_1",
@@ -82,8 +82,8 @@ class TestTranscript(unittest.TestCase):
             coding_start_genomic=89,
             coding_end_genomic=5,
             exons=[
-                coverview.transcript.Exon(1, 50, 100),
-                coverview.transcript.Exon(0, 0, 40)
+                coverview_.transcript.Exon(1, 50, 100),
+                coverview_.transcript.Exon(0, 0, 40)
             ]
         )
 
@@ -98,7 +98,7 @@ class TestCreateTranscriptFromDataBaseTextLine(unittest.TestCase):
         line = "ENST00000379389\tISG15\tENSG00000187608\t+/1.1kb/2/0.7kb/165" \
                "\t1\t1\t948802\t949920\t152\t948954\t949858\t948802\t948956\t949363\t949920"
 
-        transcript = coverview.transcript.create_transcript_from_line_of_old_database(
+        transcript = coverview_.transcript.create_transcript_from_line_of_old_database(
             line
         )
 
@@ -123,7 +123,7 @@ class TestCreateTranscriptFromDataBaseTextLine(unittest.TestCase):
         line = "ENST00000422725\tC1orf233\tENSG00000228594\t-/2.1kb/1/2.1kb/226" \
                "\t1\t-1\t1533391\t1535476\t82\t1535395\t1534715\t1533391\t1535476"
 
-        transcript = coverview.transcript.create_transcript_from_line_of_old_database(
+        transcript = coverview_.transcript.create_transcript_from_line_of_old_database(
             line
         )
 
@@ -146,7 +146,7 @@ class TestCreateTranscriptFromDataBaseTextLine(unittest.TestCase):
 class TestCSNCalculationOnForwardTranscript(unittest.TestCase):
 
     def setUp(self):
-        self.test_transcript = coverview.transcript.Transcript(
+        self.test_transcript = coverview_.transcript.Transcript(
             ensembl_id="TEST_TRANSCRIPT_1",
             gene_symbol="TEST_GENE_1",
             gene_id="TEST_GENE_1",
@@ -158,13 +158,13 @@ class TestCSNCalculationOnForwardTranscript(unittest.TestCase):
             coding_start_genomic=10,
             coding_end_genomic=90,
             exons=[
-                coverview.transcript.Exon(0, 0, 40),
-                coverview.transcript.Exon(1, 50, 100)
+                coverview_.transcript.Exon(0, 0, 40),
+                coverview_.transcript.Exon(1, 50, 100)
                 ]
         )
 
     def _get_csn(self, position):
-        return coverview.transcript.get_csn_coordinates(
+        return coverview_.transcript.get_csn_coordinates(
             position,
             self.test_transcript
         )
@@ -200,7 +200,7 @@ class TestCSNCalculationOnForwardTranscript(unittest.TestCase):
 class TestCSNCalculationOnReverseTranscript(unittest.TestCase):
 
     def setUp(self):
-        self.test_transcript = coverview.transcript.Transcript(
+        self.test_transcript = coverview_.transcript.Transcript(
             ensembl_id="TEST_TRANSCRIPT_1",
             gene_symbol="TEST_GENE_1",
             gene_id="TEST_GENE_1",
@@ -212,13 +212,13 @@ class TestCSNCalculationOnReverseTranscript(unittest.TestCase):
             coding_start_genomic=89,
             coding_end_genomic=5,
             exons=[
-                coverview.transcript.Exon(1, 50, 100),
-                coverview.transcript.Exon(0, 0, 40)
+                coverview_.transcript.Exon(1, 50, 100),
+                coverview_.transcript.Exon(0, 0, 40)
                 ]
         )
 
     def _get_csn(self, position):
-        return coverview.transcript.get_csn_coordinates(
+        return coverview_.transcript.get_csn_coordinates(
             position,
             self.test_transcript
         )
@@ -254,7 +254,7 @@ class TestCSNCalculationOnReverseTranscript(unittest.TestCase):
 class TestCSNCalculationOnForwardTranscriptWhenCodingStartIsInSecondExon(unittest.TestCase):
 
     def setUp(self):
-        self.test_transcript = coverview.transcript.Transcript(
+        self.test_transcript = coverview_.transcript.Transcript(
             ensembl_id="TEST_TRANSCRIPT_1",
             gene_symbol="TEST_GENE_1",
             gene_id="TEST_GENE_1",
@@ -266,13 +266,13 @@ class TestCSNCalculationOnForwardTranscriptWhenCodingStartIsInSecondExon(unittes
             coding_start_genomic=70,
             coding_end_genomic=90,
             exons=[
-                coverview.transcript.Exon(0, 0, 40),
-                coverview.transcript.Exon(1, 50, 100)
+                coverview_.transcript.Exon(0, 0, 40),
+                coverview_.transcript.Exon(1, 50, 100)
                 ]
         )
 
     def _get_csn(self, position):
-        return coverview.transcript.get_csn_coordinates(
+        return coverview_.transcript.get_csn_coordinates(
             position,
             self.test_transcript
         )
@@ -304,12 +304,12 @@ class TestCSNForBRCA2(unittest.TestCase):
                "\t32950806\t32950928\t32953453\t32953652\t32953886\t32954050\t32954143\t32954282\t32968825" \
                "\t32969070\t32971034\t32971181\t32972298\t32973347"
 
-        self.brca2 = coverview.transcript.create_transcript_from_line_of_old_database(
+        self.brca2 = coverview_.transcript.create_transcript_from_line_of_old_database(
             line
         )
 
     def _get_csn(self, position):
-        return coverview.transcript.get_csn_coordinates(
+        return coverview_.transcript.get_csn_coordinates(
             position,
             self.brca2
         )

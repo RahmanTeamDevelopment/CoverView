@@ -10,7 +10,7 @@ compile_flags = [
 ]
 
 include_dirs = [
-    "coverview"
+    "coverview_"
 ]
 
 include_dirs.extend(
@@ -30,8 +30,8 @@ pysam_library_dirs = list(set(os.path.dirname(x) for x in pysam.get_libraries())
 
 modules = [
     Extension(
-        name="coverview.statistics",
-        sources=["coverview/statistics.pyx"],
+        name="coverview_.statistics",
+        sources=["coverview_/statistics.pyx"],
         include_dirs=include_dirs,
         extra_compile_args=compile_flags,
         libraries=['chtslib'],
@@ -39,8 +39,8 @@ modules = [
         runtime_library_dirs=pysam_library_dirs
     ),
     Extension(
-        name="coverview.calculators",
-        sources=["coverview/calculators.pyx"],
+        name="coverview_.calculators",
+        sources=["coverview_/calculators.pyx"],
         include_dirs=include_dirs,
         extra_compile_args=compile_flags,
         libraries=['chtslib'],
@@ -48,8 +48,8 @@ modules = [
         runtime_library_dirs=pysam_library_dirs
     ),
     Extension(
-        name="coverview.output",
-        sources=["coverview/output.pyx"],
+        name="coverview_.output",
+        sources=["coverview_/output.pyx"],
         include_dirs=include_dirs,
         extra_compile_args=compile_flags,
         libraries=['chtslib'],
@@ -57,8 +57,8 @@ modules = [
         runtime_library_dirs=pysam_library_dirs
     ),
     Extension(
-        "coverview.reads",
-        ["coverview/reads.pyx"],
+        "coverview_.reads",
+        ["coverview_/reads.pyx"],
         include_dirs=include_dirs,
         extra_compile_args=compile_flags,
         libraries=['chtslib'],
@@ -78,18 +78,20 @@ setup(
     cmdclass={'build_ext': build_ext},
     ext_modules=cythonize(modules, compiler_directives=cython_directives),
     packages=[
-        'coverview',
+        'coverview_',
         'bamgen',
         'testutils',
-        'gui',
-        'tgmi'
+        'gui_',
+        'tgmi',
+        'ensembldb'
     ],
     scripts=[
         "bin/CoverView.py",
         "bin/coverview",
-        "test/smoke/check_installation_succeeded.bash",
         "bin/CoverViewGUI.py",
-        "bin/gui"
+        "bin/gui",
+        "bin/EnsemblDB.py",
+        "bin/ensembl_db"
     ],
     zip_safe=False,
     install_requires=[

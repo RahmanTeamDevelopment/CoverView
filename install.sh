@@ -13,4 +13,5 @@ fi
 
 source ${ABSOLUTE_PATH}/env/bin/activate
 pip install -U .
-check_installation_succeeded.bash
+
+./check_installation.sh

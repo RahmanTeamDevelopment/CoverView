@@ -18,7 +18,7 @@ from .statistics import median
 
 
 _version = 'v1.4.1'
-_logger = logging.getLogger("coverview")
+_logger = logging.getLogger("coverview_")
 
 
 class CoverageCalculator(object):
@@ -331,7 +331,7 @@ def configure_logging():
     Currently just logging to the terminal stderr stream, but this could easily be extended
     to produce a log file or e.g. email alerts.
     """
-    logger = logging.getLogger("coverview")
+    logger = logging.getLogger("coverview_")
 
     formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(filename)s - Line %(lineno)s - %(message)s")
 

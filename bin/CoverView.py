@@ -1,8 +1,8 @@
 #!env/bin/python
 
 import sys
-import coverview.main
+import coverview_.main
 
 
 if __name__ == "__main__":
-    coverview.main.main(sys.argv[1:])
+    coverview_.main.main(sys.argv[1:])

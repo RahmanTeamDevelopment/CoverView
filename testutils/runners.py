@@ -1,7 +1,7 @@
 import bamgen.bamgen
-import coverview.main
-import coverview.reads
-import coverview.transcript
+import coverview_.main
+import coverview_.reads
+import coverview_.transcript
 import json
 import os
 import pysam
@@ -88,7 +88,7 @@ def make_transcripts_file(
         transcripts,
         transcript_file_name,
 ):
-    coverview.transcript.write_transcripts_to_indexed_tabix_file(
+    coverview_.transcript.write_transcripts_to_indexed_tabix_file(
         transcripts,
         transcript_file_name
     )
@@ -103,7 +103,7 @@ def load_bam_into_read_array(file_name):
     """
     Utility function for creating a read array from the contents of a sorted BAM file
     """
-    read_array = coverview.reads.pyReadArray()
+    read_array = coverview_.reads.pyReadArray()
 
     with pysam.AlignmentFile(file_name, 'rb') as bam_file:
         for read in bam_file:
@@ -211,4 +211,4 @@ class CoverViewTestRunner(object):
             gui_output_file_name=self.gui_output_file_name
         )
 
-        return coverview.main.main(command_line_args)
+        return coverview_.main.main(command_line_args)

@@ -1,6 +1,6 @@
 import bamgen.bamgen
-import coverview.statistics
-import coverview.reads
+import coverview_.statistics
+import coverview_.reads
 import os
 import pysam
 import unittest
@@ -8,7 +8,7 @@ import uuid
 
 
 def load_bam_into_read_array(file_name):
-    read_array = coverview.reads.pyReadArray()
+    read_array = coverview_.reads.pyReadArray()
 
     with pysam.AlignmentFile(file_name, 'rb') as bam_file:
         for read in bam_file:

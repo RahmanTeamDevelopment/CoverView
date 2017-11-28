@@ -1,14 +1,14 @@
 #!env/bin/python
 
 from optparse import OptionParser
-from gui import main
+from gui_ import main
 
 # Version
 _version = '1.4.1'
 
 # Command line argument parsing
 descr = 'CoverView GUI v'+_version
-parser = OptionParser(usage='CoverView/env/bin/gui <options>', version=_version, description=descr)
+parser = OptionParser(usage='CoverView-{}/gui <options>'.format(_version), version=_version, description=descr)
 parser.add_option('-i', default=None, dest='input', action='store', help="Input data file names prefix")
 parser.add_option('-r', default=None, dest='ref', action='store', help="Reference genome file")
 (options, args) = parser.parse_args()

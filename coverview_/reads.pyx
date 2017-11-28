@@ -31,7 +31,7 @@ cdef extern from "string.h":
 import logging
 
 
-_logger = logging.getLogger("coverview")
+_logger = logging.getLogger("coverview_")
 
 
 cdef int bisectReadsLeft(bam1_t** reads, int testPos, int nReads):

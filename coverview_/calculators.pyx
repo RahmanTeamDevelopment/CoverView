@@ -23,7 +23,7 @@ from pysam.libchtslib cimport BGZF, hts_get_bgzfp, hts_itr_t, hts_idx_t, htsFile
 from .reads cimport ReadArray
 from .statistics cimport QualityHistogramArray
 
-_logger = logging.getLogger("coverview")
+_logger = logging.getLogger("coverview_")
 
 
 cdef class RegionCoverageCalculator(object):

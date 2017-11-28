@@ -1,2 +1,3 @@
-recursive-include gui/templates *
-recursive-include gui/static *
+recursive-include gui_/templates *
+recursive-include gui_/static *
+recursive-include ensembldb/data *

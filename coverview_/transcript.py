@@ -4,7 +4,7 @@ import pysam
 from collections import OrderedDict
 
 
-_logger = logging.getLogger("coverview")
+_logger = logging.getLogger("coverview_")
 
 
 CHROM_IDX = 4
