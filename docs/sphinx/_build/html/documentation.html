@@ -255,7 +255,7 @@ name of the input BAM file (-i), the name of a BED file (-b) and the output file
 <li>&lt;prefix&gt;_summary.txt (chromosome level summary)</li>
 <li>&lt;prefix&gt;_profiles.txt (per-base profiles)</li>
 <li>&lt;prefix&gt;_regions.txt (summary metrics of regions)</li>
-<li>&lt;prefix&gt;_poor.txt (poor quality ranges)</li>
+<li>&lt;prefix&gt;_poor.txt (poor quality intervals)</li>
 </ul>
 <p>where &lt;prefix&gt; denotes the output file name prefix specified by the -o command line option. (Note that an additional file, &lt;prefix&gt;_meta.txt, is also created that is required by the GUI.)</p>
 <div class="section" id="chromosome-level-summary">
@@ -398,9 +398,9 @@ name of the input BAM file (-i), the name of a BED file (-b) and the output file
 <li><code class="docutils literal"><span class="pre">MEDCOV-</span></code>, <code class="docutils literal"><span class="pre">MINCOV-</span></code>, <code class="docutils literal"><span class="pre">MEDQCOV-</span></code>, <code class="docutils literal"><span class="pre">MINQCOV-</span></code>, <code class="docutils literal"><span class="pre">MAXFLMQ-</span></code> and <code class="docutils literal"><span class="pre">MAXFLBQ-</span></code>: the same information, considering only reverse reads</li>
 </ul>
 </div>
-<div class="section" id="poor-quality-ranges">
-<h2>5.4. Poor quality ranges<a class="headerlink" href="#poor-quality-ranges" title="Permalink to this headline">¶</a></h2>
-<p>If the <code class="docutils literal"><span class="pre">profiles_file</span></code> option is set to <em>true</em> in both the [outputs] section and [transcript] section of the configuration file, CoverView will create a fourth output file; <em>&lt;prefix&gt;_poor.txt</em>. This file provides a comprehensive list of all continuous ranges within the studied regions with QCOV&lt;15 for all bases (referred to as <em>“poor quality ranges”</em>). Note that multiple such ranges may exist in a single region. Each line in the file corresponds to a <em>poor quality range</em> with the following 6 columns:</p>
+<div class="section" id="poor-quality-intervals">
+<h2>5.4. Poor quality intervals<a class="headerlink" href="#poor-quality-intervals" title="Permalink to this headline">¶</a></h2>
+<p>If the <code class="docutils literal"><span class="pre">profiles_file</span></code> option is set to <em>true</em> in both the [outputs] section and [transcript] section of the configuration file, CoverView will create a fourth output file; <em>&lt;prefix&gt;_poor.txt</em>. This file provides a comprehensive list of all continuous intervals within the studied regions with QCOV&lt;15 for all bases (referred to as <em>“poor quality intervals”</em>). Note that multiple such intervals may exist in a single region. Each line in the file corresponds to a <em>poor quality interval</em> with the following 6 columns:</p>
 <table border="1" class="colwidths-given docutils">
 <colgroup>
 <col width="13%" />
@@ -413,22 +413,22 @@ name of the input BAM file (-i), the name of a BED file (-b) and the output file
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>Region</td>
-<td>name of region which contains the range</td>
+<td>name of region which contains the interval</td>
 </tr>
 <tr class="row-odd"><td>Chromosome</td>
 <td>chromosome name</td>
 </tr>
 <tr class="row-even"><td>Start_position</td>
-<td>start position of range on chromosome</td>
+<td>start position of interval on chromosome</td>
 </tr>
 <tr class="row-odd"><td>End_position</td>
-<td>end position of range on chromosome</td>
+<td>end position of interval on chromosome</td>
 </tr>
 <tr class="row-even"><td>Start_transcript</td>
-<td>start coordinate of range in the overlapping transcript</td>
+<td>start coordinate of interval in the overlapping transcript</td>
 </tr>
 <tr class="row-odd"><td>End_transcript</td>
-<td>end coordinate of range in the overlapping transcript</td>
+<td>end coordinate of interval in the overlapping transcript</td>
 </tr>
 </tbody>
 </table>
@@ -519,7 +519,7 @@ name of the input BAM file (-i), the name of a BED file (-b) and the output file
 <li><a class="reference internal" href="#chromosome-level-summary">5.1. Chromosome level summary</a></li>
 <li><a class="reference internal" href="#per-base-profiles">5.2. Per-base profiles</a></li>
 <li><a class="reference internal" href="#summary-metrics-of-regions">5.3. Summary metrics of regions</a></li>
-<li><a class="reference internal" href="#poor-quality-ranges">5.4. Poor quality ranges</a></li>
+<li><a class="reference internal" href="#poor-quality-intervals">5.4. Poor quality intervals</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#graphical-user-interface-gui">6. Graphical User Interface (GUI)</a><ul>

@@ -184,7 +184,7 @@ CoverView generates 4 easily parsable (column-based) output files:
 * <prefix>_summary.txt (chromosome level summary)
 * <prefix>_profiles.txt (per-base profiles)
 * <prefix>_regions.txt (summary metrics of regions)
-* <prefix>_poor.txt (poor quality ranges)
+* <prefix>_poor.txt (poor quality intervals)
 
 where <prefix> denotes the output file name prefix specified by the -o command line option. (Note that an additional file, <prefix>_meta.txt, is also created that is required by the GUI.)
 
@@ -268,22 +268,22 @@ Finally, if the ``direction`` flag is set to *true* in the [reads] section of th
 * ``MEDCOV-``, ``MINCOV-``, ``MEDQCOV-``, ``MINQCOV-``, ``MAXFLMQ-`` and ``MAXFLBQ-``: the same information, considering only reverse reads
 
 
-Poor quality ranges
-===================
+Poor quality intervals
+======================
 
-If the ``profiles_file`` option is set to *true* in both the [outputs] section and [transcript] section of the configuration file, CoverView will create a fourth output file; *<prefix>_poor.txt*. This file provides a comprehensive list of all continuous ranges within the studied regions with QCOV<15 for all bases (referred to as *"poor quality ranges"*). Note that multiple such ranges may exist in a single region. Each line in the file corresponds to a *poor quality range* with the following 6 columns:
+If the ``profiles_file`` option is set to *true* in both the [outputs] section and [transcript] section of the configuration file, CoverView will create a fourth output file; *<prefix>_poor.txt*. This file provides a comprehensive list of all continuous intervals within the studied regions with QCOV<15 for all bases (referred to as *"poor quality intervals"*). Note that multiple such intervals may exist in a single region. Each line in the file corresponds to a *poor quality interval* with the following 6 columns:
 
 
 .. csv-table::
     :header: "Column name", "Description"
     :widths: 13, 87
 
-    Region, name of region which contains the range
+    Region, name of region which contains the interval
     Chromosome, chromosome name
-    Start_position, start position of range on chromosome
-    End_position, end position of range on chromosome
-    Start_transcript, start coordinate of range in the overlapping transcript
-    End_transcript, end coordinate of range in the overlapping transcript
+    Start_position, start position of interval on chromosome
+    End_position, end position of interval on chromosome
+    Start_transcript, start coordinate of interval in the overlapping transcript
+    End_transcript, end coordinate of interval in the overlapping transcript
 
 
 In case the start or end position overlaps with multiple transcripts, the coordinates in all transcripts are reported separated by commas.
