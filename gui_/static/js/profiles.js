@@ -903,12 +903,18 @@ function switchAxesToRescale(){
 function switchOnCutoff(){
     window.showoverlay = true;
     makePlot();
+    makeReferenceBar(window.sequences[window.region]);
+    $("#zoombuttons").hide();
+    window.zoomedin = false;
 };
 
 
 function switchOffCutoff(){
     window.showoverlay = false
     makePlot();
+    makeReferenceBar(window.sequences[window.region]);
+    $("#zoombuttons").hide();
+    window.zoomedin = false;
 };
 
 
