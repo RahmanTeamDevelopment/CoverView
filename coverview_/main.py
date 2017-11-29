@@ -271,7 +271,7 @@ def load_and_validate_config(config_file_name):
 
 
 def get_input_options(command_line_args):
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(usage="CoverView-1.4.1/coverview <options>", description='CoverView v1.4.1')
 
     parser.add_argument(
         "-i",
@@ -279,7 +279,7 @@ def get_input_options(command_line_args):
         default=None,
         dest='input',
         action='store',
-        help="Input (BAM) filename",
+        help="Input BAM file",
         required=True
     )
 
@@ -289,7 +289,7 @@ def get_input_options(command_line_args):
         default='output',
         dest='output',
         action='store',
-        help="Output filename"
+        help="Output filename prefix"
     )
 
     parser.add_argument(
@@ -298,7 +298,7 @@ def get_input_options(command_line_args):
         default=None,
         dest='bedfile',
         action='store',
-        help="Input BED filename"
+        help="BED file"
     )
 
     parser.add_argument(
@@ -316,7 +316,7 @@ def get_input_options(command_line_args):
         default=None,
         dest='transcript_db',
         action='store',
-        help="Tabix-indexed database of transcripts"
+        help="Transcript database file"
     )
 
     options = parser.parse_args(command_line_args)
@@ -342,12 +342,12 @@ def configure_logging():
     logger.addHandler(stream_handler)
     logger.setLevel(logging.INFO)
 
-    logger.info('CoverView {} started running'.format(_version))
-
 
 def main(command_line_args):
     configure_logging()
     options, config = get_input_options(command_line_args)
+
+    _logger.info('CoverView {} started running'.format(_version))
 
     _logger.debug("Running CoverView {} with options".format(_version))
     _logger.debug(options)
