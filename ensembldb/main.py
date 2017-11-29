@@ -287,7 +287,7 @@ def process_data(options, genome_build):
 
     # Initialize output list file if needed
     outfile_list = open(options.output+'.txt','w')
-    outfile_list.write('ENSG\tGENE\tENST\n')
+    outfile_list.write('#ENSG\tGENE\tENST\n')
 
     # Output transcripts of each gene
     for ensg, gene in genesdata.iteritems(): gene.output(outfile,outfile_list)

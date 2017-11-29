@@ -682,7 +682,7 @@ class PerBaseCoverageSummary(object):
                 output_line = output_line.replace("nan", ".")
                 output_file.write(output_line)
 
-            if transcript_database is not None:
+            if transcript_database is not None and write_transcripts_in_profiles == 1:
                 if qcov < 15:
                     if low_qual_window_start == -1:
                         low_qual_window_start = start_position + i
@@ -698,7 +698,7 @@ class PerBaseCoverageSummary(object):
                         transcripts_overlapping_end_of_low_qual_window = output.get_transcripts_overlapping_position(
                             transcript_database,
                             chromosome,
-                            start_position + i - 1
+                            start_position + i
                         )
 
                         low_quality_runs_output_file.write(
@@ -714,6 +714,29 @@ class PerBaseCoverageSummary(object):
 
                         low_qual_window_start = -1
                         low_qual_window_end = -1
+
+
+        if low_qual_window_start != -1:
+            low_qual_window_end = start_position + num_bases
+
+            transcripts_overlapping_end_of_low_qual_window = output.get_transcripts_overlapping_position(
+                transcript_database,
+                chromosome,
+                start_position + num_bases
+            )
+
+            low_quality_runs_output_file.write(
+                "{}\t{}\t{}\t{}\t{}\t{}\n".format(
+                    region_name,
+                    chromosome,
+                    low_qual_window_start,
+                    low_qual_window_end,
+                    transcripts_overlapping_start_of_low_qual_window,
+                    transcripts_overlapping_end_of_low_qual_window
+                )
+            )
+
+
 
 
 class RegionCoverageSummary(object):

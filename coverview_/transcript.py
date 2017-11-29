@@ -61,23 +61,7 @@ def create_transcript_from_line_of_old_database(line):
             Exon(int((i + 1) / 2), int(cols[10 + i]), int(cols[11 + i]))
         )
 
-    if strand == 1:
-        # The value for 1-based inclusive is the same as for 0-based half-open
-        coding_end_genomic = int(cols[10])
-    else:
-        # To convert to 0-based, half-open in reverse direction
-        coding_end_genomic = int(cols[10]) - 2
-
-    # If the first exon is short then these assertion will not hold as the coding_start may be in the next
-    # exon with an intron between
-    if strand == 1:
-        if exons[0].length >= coding_start and not transcript_start + coding_start == coding_start_genomic:
-            _logger.error("Invalid forward transcript data in input database")
-            _logger.error(line)
-    else:
-        if exons[0].length >= coding_start and not transcript_end - 1 - coding_start == coding_start_genomic:
-            _logger.error("Invalid reverse transcript data in input database")
-            _logger.error(line)
+    coding_end_genomic = int(cols[10]) - 1
 
     return Transcript(
         ensembl_id=ensembl_id,
@@ -175,7 +159,7 @@ class Transcript(object):
             self
         )
 
-        self.total_length_of_coding_sequence = one_based_position - 1
+        self.total_length_of_coding_sequence = one_based_position
 
 
 class Exon(object):
@@ -312,3 +296,4 @@ def get_position_in_coding_sequence(position, transcript):
         # to the previous exon for intronic coordinates.
         position_in_coding_sequence += exon.length
         previous_exon = exon
+

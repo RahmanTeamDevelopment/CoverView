@@ -23,6 +23,9 @@ def get_transcripts_overlapping_position(transcript_database, chrom, pos):
     for key, value in transcript_coordinates.items():
         transcripts.append(key.gene_symbol + ':' + key.ensembl_id + ':' + value)
 
+    if len(transcripts) == 0:
+        return '.'
+
     return ','.join(transcripts)
 
 
@@ -140,7 +143,7 @@ class RegionsOutput(object):
         self.config = config
         self.options = options
 
-        if options.transcript_db is not None and "transcript" in config and "regions" in config['transcript']:
+        if options.transcript_db is not None and config['transcript'].get('regions') is True:
             self.output_transcript_data = True
         else:
             self.output_transcript_data = False

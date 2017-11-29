@@ -92,6 +92,7 @@ def read_config_file(fn, _logger):
     ret['transcript'] = {}
     ret['transcript']['regions'] = process_option(_logger, ini_data, 'TRANSCRIPT.REGIONS_FILE', 'boolean', True)
     ret['transcript']['profiles'] = process_option(_logger, ini_data, 'TRANSCRIPT.PROFILES_FILE', 'boolean', True)
+    ret['transcript']['poor'] = ret['transcript']['profiles']
 
     ret['pass'] = process_pass_option(_logger, ini_data)
 
