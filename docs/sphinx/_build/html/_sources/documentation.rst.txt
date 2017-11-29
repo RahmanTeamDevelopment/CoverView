@@ -304,6 +304,13 @@ Mandatory command line options are:
 * -i specifies the input file name prefix (i.e. *example_regions.txt*, *example_profiles.txt*, *example_summary.txt* etc. files should be in the directory /path/to/data/) 
 * -r specifies the reference genome FASTA file. Note that the reference genome file must be indexed by `samtools faidx <http://www.htslib.org/doc/samtools.html>`_ and the .fai index file has to be in the same directory as the FASTA file. The genome build must be the same as used for creating the BED file
 
+Note that in order to be accepted by the GUI, the CoverView output are required to be generated with the following configuration settings::
+
+    [outputs]
+    regions_file = true
+    profiles_file = true
+    only_flagged_profiles = false
+
 The CoverView GUI consists of the following four views discussed in the next subsections:
 
 * Analysis View
