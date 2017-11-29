@@ -2,6 +2,7 @@
 
 from optparse import OptionParser
 from gui_ import main
+from gui_ import parsers
 
 # Version
 _version = '1.4.1'
@@ -12,6 +13,16 @@ parser = OptionParser(usage='CoverView-{}/gui <options>'.format(_version), versi
 parser.add_option('-i', default=None, dest='input', action='store', help="Input data file names prefix")
 parser.add_option('-r', default=None, dest='ref', action='store', help="Reference genome file")
 (options, args) = parser.parse_args()
+
+meta = parsers.read_metadata(options.input)
+if meta['config_opts']['outputs']['regions'] == False or meta['config_opts']['outputs']['profiles'] == False or meta['config_opts']['only_flagged_profiles'] == True:
+    print '\nCoverView GUI cannot open the input data specified.'
+    print 'The following configuration settings are required for generating CoverView output to be accepted by the GUI:'
+    print '\n[outputs]'
+    print 'regions_file = true'
+    print 'profiles_file = true'
+    print 'only_flagged_profiles = false\n'
+    quit()
 
 print '\n----------------------------------------------------------------'
 print 'Welcome to CoverView GUI {}'.format(_version)
