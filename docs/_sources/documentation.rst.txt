@@ -13,7 +13,7 @@ Installation
 Dependencies
 ============
 
-To install and run CoverView v1.4.1 you will need the following dependencies installed:
+To install and run CoverView v1.4.2 you will need the following dependencies installed:
 
 * Python 2.7.9 or later (Python2 series) 
 * GCC and GNU make
@@ -32,20 +32,20 @@ If not already installed on your system, *virtualenv* can be set up by::
 Installation on Linux or Mac
 =============================
 
-CoverView v1.4.1 can be downloaded from GitHub `here <https://github.com/RahmanTeamDevelopment/CoverView/releases/tag/v1.4.1>`_ in either ``.zip`` or ``.tar.gz`` format. To unpack these run one of the following commands::
+CoverView v1.4.2 can be downloaded from GitHub `here <https://github.com/RahmanTeamDevelopment/CoverView/releases/tag/v1.4.2>`_ in either ``.zip`` or ``.tar.gz`` format. To unpack these run one of the following commands::
 
-	unzip CoverView-1.4.1.zip
+	unzip CoverView-1.4.2.zip
 
 or::
 
-	tar -xvzf CoverView-1.4.1.tar.gz
+	tar -xvzf CoverView-1.4.2.tar.gz
 
 and then you can install CoverView with the following commands::
 
-    cd CoverView-1.4.1
+    cd CoverView-1.4.2
     ./install.sh
 
-CoverView uses *virtualenv* and *pip* to manage all its extra dependencies, which means that it will not clutter up your system by installing things globally. Everthing it installs will go into a sub-directory in the ``CoverView-1.4.1`` directory. If
+CoverView uses *virtualenv* and *pip* to manage all its extra dependencies, which means that it will not clutter up your system by installing things globally. Everthing it installs will go into a sub-directory in the ``CoverView-1.4.2`` directory. If
 you delete CoverView then everything it has installed will also be deleted. Once the installation script has finished successfully, CoverView is ready for use. 
 
 
@@ -66,11 +66,11 @@ With BED file
 
 Once correctly installed, CoverView can be run with the following simple command::
 
-    CoverView-1.4.1/coverview -c config.txt -i input.bam –b panel.bed -o example
+    CoverView-1.4.2/coverview -c config.txt -i input.bam –b panel.bed -o example
 
 or you can optionally supply a transcript database::
 
-    CoverView-1.4.1/coverview -c config.txt -i input.bam –b panel.bed -o example -t transcript_database.gz
+    CoverView-1.4.2/coverview -c config.txt -i input.bam –b panel.bed -o example -t transcript_database.gz
 
 By default, CoverView takes four command line arguments: the name of the configuration file (-c), the
 name of the input BAM file (-i), the name of a BED file (-b) and the output file name prefix (-o). 
@@ -85,7 +85,7 @@ Without BED file
 
 The -b command line flag is optional. If a bed file is not specified, only a simplified chromosome level read count summary will be outputted::
 
-    CoverView-1.4.1/coverview -c config.txt -i input.bam -o example
+    CoverView-1.4.2/coverview -c config.txt -i input.bam -o example
 
 
 .. _ensembldb_section:
@@ -99,7 +99,7 @@ For example, you can generate a transcript database file based on Ensembl releas
 
 ::
 
-    CoverView-1.4.1/ensembl_db -e 75 -o output
+    CoverView-1.4.2/ensembl_db -e 75 -o output
 
 where -e specifies the Ensembl release version and -o sets the output file name prefix. The resulting *output.gz* file can be supplied to CoverView by its -t command line option (see :ref:`run_section`). 
 
@@ -107,7 +107,7 @@ Alternatively, an input text file containing a list of Ensembl ENST identifiers 
 
 ::
 
-    CoverView-1.4.1/ensembl_db -i input.txt -e 75 -o output
+    CoverView-1.4.2/ensembl_db -i input.txt -e 75 -o output
 
 .. _config_section:
 
@@ -130,8 +130,8 @@ The CoverView configuration file uses the `INI format <https://en.m.wikipedia.or
 	only_flagged_profiles = false
 
 	[transcript]
-	regions_file = true
-	profiles_file = true
+	regions_file = false
+	profiles_file = false
 
 	[quality]
 	low_bq = 10
@@ -151,8 +151,8 @@ The following options may be specified in the configuration file
     outputs, regions_file, Boolean, true, if true then the _regions.txt output file will be written
     outputs, profiles_file, Boolean, true, if true then the _profiles.txt output file will be written
     outputs, only_flagged_profiles, Boolean, false, if true then the _profiles.txt output file will  contain flagged regions only
-    transcript, regions_file, Boolean, true, if true then transcript coordinates are reported in the _regions.txt file
-    transcript, profiles_file, Boolean, true, if true then transcript coordinates are reported in the _profiles.txt file
+    transcript, regions_file, Boolean, false, if true then transcript coordinates are reported in the _regions.txt file
+    transcript, profiles_file, Boolean, false, if true then transcript coordinates are reported in the _profiles.txt file
     quality, low_bq, Integer, 10, base quality cut-off used in the FLBQ metrics 
 	quality, low_mq, Integer, 20, mapping quality cut-off used in the FLMQ metrics
 	pass, ?_MIN / ?_MAX, Integer, none, requirements a region must satisfy to be labelled as *PASS*  
@@ -295,7 +295,7 @@ Graphical User Interface (GUI)
 
 CoverView provides an interactive GUI that allows visual exploration of the QC results. The GUI can be run from the terminal importing a CoverView output prevously generated for a sample::
 
-    CoverView-1.4.1/gui -i /path/to/data/example -r /path/to/reference/reference.fasta
+    CoverView-1.4.2/gui -i /path/to/data/example -r /path/to/reference/reference.fasta
 
 The GUI opens in the web browser (*Chrome*, *Safari* and *Firefox* are supported). 
 

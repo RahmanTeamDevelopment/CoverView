@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>1. Introduction &#8212; CoverView 1.4.1 documentation</title>
+    <title>1. Introduction &#8212; CoverView 1.4.2 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.4.1',
+        VERSION:     '1.4.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="CoverView v1.4.1 documentation" href="index.html" /> 
+    <link rel="prev" title="CoverView v1.4.2 documentation" href="index.html" /> 
   </head>
   <body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -33,9 +33,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="index.html" title="CoverView v1.4.1 documentation"
+          <a href="index.html" title="CoverView v1.4.2 documentation"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">CoverView 1.4.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">CoverView 1.4.2 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -52,7 +52,7 @@
 <h1>2. Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="dependencies">
 <h2>2.1. Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
-<p>To install and run CoverView v1.4.1 you will need the following dependencies installed:</p>
+<p>To install and run CoverView v1.4.2 you will need the following dependencies installed:</p>
 <ul class="simple">
 <li>Python 2.7.9 or later (Python2 series)</li>
 <li>GCC and GNU make</li>
@@ -69,20 +69,20 @@
 </div>
 <div class="section" id="installation-on-linux-or-mac">
 <h2>2.2. Installation on Linux or Mac<a class="headerlink" href="#installation-on-linux-or-mac" title="Permalink to this headline">¶</a></h2>
-<p>CoverView v1.4.1 can be downloaded from GitHub <a class="reference external" href="https://github.com/RahmanTeamDevelopment/CoverView/releases/tag/v1.4.1">here</a> in either <code class="docutils literal"><span class="pre">.zip</span></code> or <code class="docutils literal"><span class="pre">.tar.gz</span></code> format. To unpack these run one of the following commands:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">unzip</span> <span class="n">CoverView</span><span class="o">-</span><span class="mf">1.4</span><span class="o">.</span><span class="mf">1.</span><span class="n">zip</span>
+<p>CoverView v1.4.2 can be downloaded from GitHub <a class="reference external" href="https://github.com/RahmanTeamDevelopment/CoverView/releases/tag/v1.4.2">here</a> in either <code class="docutils literal"><span class="pre">.zip</span></code> or <code class="docutils literal"><span class="pre">.tar.gz</span></code> format. To unpack these run one of the following commands:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">unzip</span> <span class="n">CoverView</span><span class="o">-</span><span class="mf">1.4</span><span class="o">.</span><span class="mf">2.</span><span class="n">zip</span>
 </pre></div>
 </div>
 <p>or:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">tar</span> <span class="o">-</span><span class="n">xvzf</span> <span class="n">CoverView</span><span class="o">-</span><span class="mf">1.4</span><span class="o">.</span><span class="mf">1.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">tar</span> <span class="o">-</span><span class="n">xvzf</span> <span class="n">CoverView</span><span class="o">-</span><span class="mf">1.4</span><span class="o">.</span><span class="mf">2.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
 </pre></div>
 </div>
 <p>and then you can install CoverView with the following commands:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">CoverView</span><span class="o">-</span><span class="mf">1.4</span><span class="o">.</span><span class="mi">1</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">CoverView</span><span class="o">-</span><span class="mf">1.4</span><span class="o">.</span><span class="mi">2</span>
 <span class="o">./</span><span class="n">install</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
-<p>CoverView uses <em>virtualenv</em> and <em>pip</em> to manage all its extra dependencies, which means that it will not clutter up your system by installing things globally. Everthing it installs will go into a sub-directory in the <code class="docutils literal"><span class="pre">CoverView-1.4.1</span></code> directory. If
+<p>CoverView uses <em>virtualenv</em> and <em>pip</em> to manage all its extra dependencies, which means that it will not clutter up your system by installing things globally. Everthing it installs will go into a sub-directory in the <code class="docutils literal"><span class="pre">CoverView-1.4.2</span></code> directory. If
 you delete CoverView then everything it has installed will also be deleted. Once the installation script has finished successfully, CoverView is ready for use.</p>
 </div>
 <div class="section" id="installation-on-windows">
@@ -95,11 +95,11 @@ you delete CoverView then everything it has installed will also be deleted. Once
 <div class="section" id="with-bed-file">
 <h2>3.1. With BED file<a class="headerlink" href="#with-bed-file" title="Permalink to this headline">¶</a></h2>
 <p>Once correctly installed, CoverView can be run with the following simple command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>CoverView-1.4.1/coverview -c config.txt -i input.bam –b panel.bed -o example
+<div class="highlight-default"><div class="highlight"><pre><span></span>CoverView-1.4.2/coverview -c config.txt -i input.bam –b panel.bed -o example
 </pre></div>
 </div>
 <p>or you can optionally supply a transcript database:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>CoverView-1.4.1/coverview -c config.txt -i input.bam –b panel.bed -o example -t transcript_database.gz
+<div class="highlight-default"><div class="highlight"><pre><span></span>CoverView-1.4.2/coverview -c config.txt -i input.bam –b panel.bed -o example -t transcript_database.gz
 </pre></div>
 </div>
 <p>By default, CoverView takes four command line arguments: the name of the configuration file (-c), the
@@ -114,7 +114,7 @@ name of the input BAM file (-i), the name of a BED file (-b) and the output file
 <div class="section" id="without-bed-file">
 <h2>3.2. Without BED file<a class="headerlink" href="#without-bed-file" title="Permalink to this headline">¶</a></h2>
 <p>The -b command line flag is optional. If a bed file is not specified, only a simplified chromosome level read count summary will be outputted:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CoverView</span><span class="o">-</span><span class="mf">1.4</span><span class="o">.</span><span class="mi">1</span><span class="o">/</span><span class="n">coverview</span> <span class="o">-</span><span class="n">c</span> <span class="n">config</span><span class="o">.</span><span class="n">txt</span> <span class="o">-</span><span class="n">i</span> <span class="nb">input</span><span class="o">.</span><span class="n">bam</span> <span class="o">-</span><span class="n">o</span> <span class="n">example</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CoverView</span><span class="o">-</span><span class="mf">1.4</span><span class="o">.</span><span class="mi">2</span><span class="o">/</span><span class="n">coverview</span> <span class="o">-</span><span class="n">c</span> <span class="n">config</span><span class="o">.</span><span class="n">txt</span> <span class="o">-</span><span class="n">i</span> <span class="nb">input</span><span class="o">.</span><span class="n">bam</span> <span class="o">-</span><span class="n">o</span> <span class="n">example</span>
 </pre></div>
 </div>
 </div>
@@ -122,12 +122,12 @@ name of the input BAM file (-i), the name of a BED file (-b) and the output file
 <span id="ensembldb-section"></span><h2>3.3. The ensembl_db tool<a class="headerlink" href="#the-ensembl-db-tool" title="Permalink to this headline">¶</a></h2>
 <p>If transcript coordinates are to be outputted, CoverView requires a transcript database file. The <code class="docutils literal"><span class="pre">ensembl_db</span></code> tool can be used to generate the transcript database file for an arbitrary Ensembl release.</p>
 <p>For example, you can generate a transcript database file based on Ensembl release 75 by running</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CoverView</span><span class="o">-</span><span class="mf">1.4</span><span class="o">.</span><span class="mi">1</span><span class="o">/</span><span class="n">ensembl_db</span> <span class="o">-</span><span class="n">e</span> <span class="mi">75</span> <span class="o">-</span><span class="n">o</span> <span class="n">output</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CoverView</span><span class="o">-</span><span class="mf">1.4</span><span class="o">.</span><span class="mi">2</span><span class="o">/</span><span class="n">ensembl_db</span> <span class="o">-</span><span class="n">e</span> <span class="mi">75</span> <span class="o">-</span><span class="n">o</span> <span class="n">output</span>
 </pre></div>
 </div>
 <p>where -e specifies the Ensembl release version and -o sets the output file name prefix. The resulting <em>output.gz</em> file can be supplied to CoverView by its -t command line option (see <a class="reference internal" href="#run-section"><span class="std std-ref">Running CoverView</span></a>).</p>
 <p>Alternatively, an input text file containing a list of Ensembl ENST identifiers (a single ID per each line) can be specified in order to include only the listed transcripts in the database:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CoverView</span><span class="o">-</span><span class="mf">1.4</span><span class="o">.</span><span class="mi">1</span><span class="o">/</span><span class="n">ensembl_db</span> <span class="o">-</span><span class="n">i</span> <span class="nb">input</span><span class="o">.</span><span class="n">txt</span> <span class="o">-</span><span class="n">e</span> <span class="mi">75</span> <span class="o">-</span><span class="n">o</span> <span class="n">output</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CoverView</span><span class="o">-</span><span class="mf">1.4</span><span class="o">.</span><span class="mi">2</span><span class="o">/</span><span class="n">ensembl_db</span> <span class="o">-</span><span class="n">i</span> <span class="nb">input</span><span class="o">.</span><span class="n">txt</span> <span class="o">-</span><span class="n">e</span> <span class="mi">75</span> <span class="o">-</span><span class="n">o</span> <span class="n">output</span>
 </pre></div>
 </div>
 </div>
@@ -145,8 +145,8 @@ name of the input BAM file (-i), the name of a BED file (-b) and the output file
 <span class="n">only_flagged_profiles</span> <span class="o">=</span> <span class="n">false</span>
 
 <span class="p">[</span><span class="n">transcript</span><span class="p">]</span>
-<span class="n">regions_file</span> <span class="o">=</span> <span class="n">true</span>
-<span class="n">profiles_file</span> <span class="o">=</span> <span class="n">true</span>
+<span class="n">regions_file</span> <span class="o">=</span> <span class="n">false</span>
+<span class="n">profiles_file</span> <span class="o">=</span> <span class="n">false</span>
 
 <span class="p">[</span><span class="n">quality</span><span class="p">]</span>
 <span class="n">low_bq</span> <span class="o">=</span> <span class="mi">10</span>
@@ -207,13 +207,13 @@ name of the input BAM file (-i), the name of a BED file (-b) and the output file
 <tr class="row-odd"><td>transcript</td>
 <td>regions_file</td>
 <td>Boolean</td>
-<td>true</td>
+<td>false</td>
 <td>if true then transcript coordinates are reported in the _regions.txt file</td>
 </tr>
 <tr class="row-even"><td>transcript</td>
 <td>profiles_file</td>
 <td>Boolean</td>
-<td>true</td>
+<td>false</td>
 <td>if true then transcript coordinates are reported in the _profiles.txt file</td>
 </tr>
 <tr class="row-odd"><td>quality</td>
@@ -438,7 +438,7 @@ name of the input BAM file (-i), the name of a BED file (-b) and the output file
 <div class="section" id="graphical-user-interface-gui">
 <h1>6. Graphical User Interface (GUI)<a class="headerlink" href="#graphical-user-interface-gui" title="Permalink to this headline">¶</a></h1>
 <p>CoverView provides an interactive GUI that allows visual exploration of the QC results. The GUI can be run from the terminal importing a CoverView output prevously generated for a sample:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CoverView</span><span class="o">-</span><span class="mf">1.4</span><span class="o">.</span><span class="mi">1</span><span class="o">/</span><span class="n">gui</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">example</span> <span class="o">-</span><span class="n">r</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">reference</span><span class="o">/</span><span class="n">reference</span><span class="o">.</span><span class="n">fasta</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CoverView</span><span class="o">-</span><span class="mf">1.4</span><span class="o">.</span><span class="mi">2</span><span class="o">/</span><span class="n">gui</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">example</span> <span class="o">-</span><span class="n">r</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">reference</span><span class="o">/</span><span class="n">reference</span><span class="o">.</span><span class="n">fasta</span>
 </pre></div>
 </div>
 <p>The GUI opens in the web browser (<em>Chrome</em>, <em>Safari</em> and <em>Firefox</em> are supported).</p>
@@ -534,7 +534,7 @@ name of the input BAM file (-i), the name of a BED file (-b) and the output file
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">CoverView v1.4.1 documentation</a></p>
+                        title="previous chapter">CoverView v1.4.2 documentation</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -563,9 +563,9 @@ name of the input BAM file (-i), the name of a BED file (-b) and the output file
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="index.html" title="CoverView v1.4.1 documentation"
+          <a href="index.html" title="CoverView v1.4.2 documentation"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">CoverView 1.4.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">CoverView 1.4.2 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
