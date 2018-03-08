@@ -17,7 +17,7 @@ from .calculators import calculate_minimal_chromosome_coverage_metrics
 from .statistics import median
 
 
-_version = 'v1.4.1'
+_version = 'v1.4.2'
 _logger = logging.getLogger("coverview_")
 
 
@@ -271,7 +271,7 @@ def load_and_validate_config(config_file_name):
 
 
 def get_input_options(command_line_args):
-    parser = argparse.ArgumentParser(usage="CoverView-1.4.1/coverview <options>", description='CoverView v1.4.1')
+    parser = argparse.ArgumentParser(usage="CoverView-1.4.2/coverview <options>", description='CoverView v1.4.2')
 
     parser.add_argument(
         "-i",
