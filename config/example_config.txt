@@ -8,8 +8,8 @@ profiles_file = true
 only_flagged_profiles = false
 
 [transcript]
-regions_file = true
-profiles_file = true
+regions_file = false
+profiles_file = false
 
 [quality]
 low_bq = 10
