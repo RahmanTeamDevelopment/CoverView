@@ -1,3 +1,6 @@
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.1203275.svg
+   :target: https://doi.org/10.5281/zenodo.1203275
+
 ====================================
 CoverView Releases and Documentation
 ====================================
