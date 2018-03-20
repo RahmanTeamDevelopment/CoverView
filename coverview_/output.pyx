@@ -12,12 +12,12 @@ _logger = logging.getLogger("coverview_")
 _canonical_chromosomes = set( range(1, 23) + ["X", "Y", "MT"] )
 
 
-def get_transcripts_overlapping_position(transcript_database, chrom, pos):
+def get_transcripts_overlapping_position(overlapping_transcripts, chrom, pos):
     """
     Returns a comma-separated list of the transcripts which overlap this base, and the coordinate of
     the base within each transcript, in.
     """
-    transcript_coordinates = transcript.get_transcript_coordinates(transcript_database, chrom, pos)
+    transcript_coordinates = transcript.get_transcript_coordinates(overlapping_transcripts, chrom, pos)
     transcripts = []
 
     for key, value in transcript_coordinates.items():

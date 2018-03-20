@@ -7,6 +7,7 @@ from __future__ import division
 import tgmi.bamutils
 import logging
 import output
+from . import transcript
 
 from cpython cimport array
 from libc.stdint cimport uint32_t, uint64_t, uint8_t
@@ -564,6 +565,8 @@ class PerBaseCoverageSummary(object):
         cdef bytes transcripts_overlapping_start_of_low_qual_window = None
         cdef bytes transcripts_overlapping_end_of_low_qual_window = None
 
+        overlapping_transcripts = transcript.get_overlaping_transcripts(transcript_database, chromosome, start_position, end_position)
+
         output_file.write('\n')
         output_file.write('[{}]\n'.format(region_name))
 
@@ -590,7 +593,7 @@ class PerBaseCoverageSummary(object):
             if write_directional_summaries == 0:
                 if write_transcripts_in_profiles == 1:
                     transcripts_overlapping = output.get_transcripts_overlapping_position(
-                        transcript_database,
+                        overlapping_transcripts,
                         chromosome,
                         start_position + i
                     )
@@ -623,7 +626,7 @@ class PerBaseCoverageSummary(object):
             else:
                 if write_transcripts_in_profiles == 1:
                     transcripts_overlapping = output.get_transcripts_overlapping_position(
-                        transcript_database,
+                        overlapping_transcripts,
                         chromosome,
                         start_position + i
                     )
@@ -687,7 +690,7 @@ class PerBaseCoverageSummary(object):
                     if low_qual_window_start == -1:
                         low_qual_window_start = start_position + i
                         transcripts_overlapping_start_of_low_qual_window = output.get_transcripts_overlapping_position(
-                            transcript_database,
+                            overlapping_transcripts,
                             chromosome,
                             start_position + i
                         )
@@ -696,7 +699,7 @@ class PerBaseCoverageSummary(object):
                         low_qual_window_end = start_position + i
 
                         transcripts_overlapping_end_of_low_qual_window = output.get_transcripts_overlapping_position(
-                            transcript_database,
+                            overlapping_transcripts,
                             chromosome,
                             start_position + i
                         )
@@ -720,7 +723,7 @@ class PerBaseCoverageSummary(object):
             low_qual_window_end = start_position + num_bases
 
             transcripts_overlapping_end_of_low_qual_window = output.get_transcripts_overlapping_position(
-                transcript_database,
+                overlapping_transcripts,
                 chromosome,
                 start_position + num_bases
             )

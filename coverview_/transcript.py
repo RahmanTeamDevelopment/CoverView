@@ -221,26 +221,42 @@ def find_transcripts(transcript_database, chrom, pos):
     return overlapping_transcripts
 
 
-def get_transcript_coordinates(transcript_database, chrom, pos):
+def get_transcript_coordinates(overlapping_transcripts, chrom, pos):
+
     ret = OrderedDict()
-    transcripts = find_transcripts(transcript_database, chrom, pos)
 
-    for ensembl_id, transcript in transcripts.items():
-        transcript_coordinates = get_csn_coordinates(
-            pos,
-            transcript
-        )
+    overlapping_transcripts = [x for x in overlapping_transcripts if x.transcript_start <= pos < x.transcript_end]
 
+    if len(overlapping_transcripts) == 0:
+        return ret
+
+    for transcript in overlapping_transcripts:
+        transcript_coordinates = get_csn_coordinates(pos, transcript)
         ret[transcript] = transcript_coordinates
+
+    return ret
+
+
+def get_overlaping_transcripts(transcript_database, chrom, start, end):
+
+    ret = []
+    region = "{}:{}-{}".format(chrom, start, end)
+
+    try:
+        hits = transcript_database.fetch(region=region)
+    except ValueError:
+        return ret
+
+    for line in hits:
+        transcript = create_transcript_from_line_of_old_database(line)
+        ret.append(transcript)
+
     return ret
 
 
 def get_csn_coordinates(position, transcript):
 
-    coding_position, distance_to_exon = get_position_in_coding_sequence(
-        position,
-        transcript
-    )
+    coding_position, distance_to_exon = get_position_in_coding_sequence(position, transcript)
 
     if coding_position <= 0:
         coding_position -= 1
