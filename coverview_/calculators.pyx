@@ -565,7 +565,10 @@ class PerBaseCoverageSummary(object):
         cdef bytes transcripts_overlapping_start_of_low_qual_window = None
         cdef bytes transcripts_overlapping_end_of_low_qual_window = None
 
-        overlapping_transcripts = transcript.get_overlaping_transcripts(transcript_database, chromosome, start_position, end_position)
+        if write_transcripts_in_profiles == 1:
+            overlapping_transcripts = transcript.get_overlaping_transcripts(transcript_database, chromosome, start_position, end_position)
+        else:
+            overlapping_transcripts = None
 
         output_file.write('\n')
         output_file.write('[{}]\n'.format(region_name))

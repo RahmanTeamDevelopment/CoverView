@@ -225,6 +225,11 @@ class RegionsOutput(object):
         region_end = coverage_data.end_position
         coverage_summary = coverage_data.summary
 
+        if self.output_transcript_data:
+            overlapping_transcripts = transcript.get_overlaping_transcripts(transcript_database, chrom, region_start, region_end)
+        else:
+            overlapping_transcripts = None
+
         if not chrom.startswith("chr") and chrom in _canonical_chromosomes:
             chrom = "chr{}".format(chrom)
 
@@ -238,11 +243,11 @@ class RegionsOutput(object):
         if self.output_transcript_data:
 
             transcripts_overlapping_start = get_transcripts_overlapping_position(
-                transcript_database, chrom, region_start
+                overlapping_transcripts, chrom, region_start
             )
 
             transcripts_overlapping_end = get_transcripts_overlapping_position(
-                transcript_database, chrom, region_end
+                overlapping_transcripts, chrom, region_end
             )
 
             output_record.extend([
