@@ -5,7 +5,7 @@ from gui_ import main
 from gui_ import parsers
 
 # Version
-_version = '1.4.2'
+_version = '1.4.3'
 
 # Command line argument parsing
 descr = 'CoverView GUI v'+_version

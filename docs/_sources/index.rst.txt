@@ -1,5 +1,5 @@
 
-CoverView v1.4.2 documentation
+CoverView v1.4.3 documentation
 ===============================
 
 .. toctree::

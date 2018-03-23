@@ -69,7 +69,7 @@ modules = [
 
 setup(
     name="CoverView",
-    version='1.4.2',
+    version='1.4.3',
     description="A coverage and quality evaluation tool for targeted and whole exome next-generation sequencing",
     url='https://github.com/RahmanTeam/CoverView',
     author='RahmanTeam',
