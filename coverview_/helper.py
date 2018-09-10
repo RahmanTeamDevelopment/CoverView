@@ -66,7 +66,7 @@ def process_pass_option(_logger, ini_data):
         if ret is None:
             ret = {}
         try:
-            ret[flag] = int(v)
+            ret[flag] = float(v)
         except:
             msg = 'Configuration option \"[pass]/{}\" has incorrect value ({})'.format(flag, ini_data['PASS.'+flag])
             _logger.error(msg)
